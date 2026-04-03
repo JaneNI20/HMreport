@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solution Concept Matrix</title>
+<style>
+:root{
+  --bg:#f8fafc;--surface:#fff;--border:rgba(0,0,0,.10);--border-mid:rgba(0,0,0,.18);
+  --text:#0f172a;--text-sec:#475569;--text-hint:#94a3b8;--radius:12px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0f1117;--surface:#1a1d27;--border:rgba(255,255,255,.10);--border-mid:rgba(255,255,255,.20);
+  --text:#f0f4ff;--text-sec:#94a3b8;--text-hint:#475569;
+}}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;}
+.page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem;}
+h1{font-size:22px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.desc{font-size:13px;color:var(--text-sec);margin-bottom:1.5rem;}
+.section-label{font-size:10px;font-weight:600;color:var(--text-hint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.controls{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;align-items:flex-end;}
+.btn-group{display:flex;flex-wrap:wrap;gap:6px;}
+button.seg,button.flt,button.toggle{font-size:12px;border:1.5px solid var(--border-mid);background:var(--surface);color:var(--text-sec);cursor:pointer;padding:6px 13px;border-radius:20px;transition:all .15s;}
+button.seg.active,button.flt.active{background:#2563eb;border-color:#2563eb;color:#fff;font-weight:600;box-shadow:0 0 0 3px rgba(37,99,235,.18);}
+button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:600;}
+@media(prefers-color-scheme:dark){button.toggle.on{background:#f0f4ff;border-color:#f0f4ff;color:#0f172a;}}
+
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:10px;position:relative;}
+.legend-row{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text-hint);margin-bottom:2rem;align-items:center;}
+.ld{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px;vertical-align:middle;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px;display:flex;flex-direction:column;gap:7px;}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.rank-badge{font-size:10px;font-weight:700;color:var(--text-sec);background:var(--bg);border:1px solid var(--border);padding:2px 7px;border-radius:5px;}
+.i-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;}
+.i-hi{background:#FEF2F2;color:#991b1b;}
+.i-mid{background:#FFFBEB;color:#92400e;}
+.i-lo{background:#EFF6FF;color:#1e40af;}
+@media(prefers-color-scheme:dark){
+  .i-hi{background:#3d1515;color:#fca5a5;}.i-mid{background:#3d2e0a;color:#fcd34d;}.i-lo{background:#1e2d4d;color:#93c5fd;}
+}
+.card-name{font-size:11px;font-weight:600;color:var(--text);line-height:1.4;min-height:30px;}
+.bar-row{display:flex;flex-direction:column;gap:3px;}
+.bar-label{display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint);}
+.bar-bg{height:4px;background:var(--bg);border-radius:2px;border:1px solid var(--border);overflow:hidden;}
+.bar-x{height:100%;background:#94a3b8;border-radius:2px;}
+.bar-y{height:100%;background:#2563eb;border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Solution Concept Matrix</h1>
+  <p class="desc">X轴 = 选择率(%) · Y轴 = I值(重要性) · 虚线 = 极差中点 · 标签渲染已优化</p>
+
+  <div class="controls">
+    <div><div class="section-label">画像</div><div class="btn-group" id="segs"></div></div>
+    <div><div class="section-label">显示数量 (依I值)</div><div class="btn-group" id="filters"></div></div>
+    <div>
+      <div class="section-label">标签</div>
+      <div class="btn-group">
+        <button class="toggle on" id="toggleLabel" onclick="toggleLabels()">标签：显示</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-box">
+    <div style="position:relative;width:100%;height:600px;"><canvas id="mc"></canvas></div>
+  </div>
+
+  <div class="legend-row">
+    <span><span class="ld" style="background:rgba(239,68,68,.8)"></span>I值 ≥ 3.7 高</span>
+    <span><span class="ld" style="background:rgba(245,158,11,.8)"></span>I值 3.3–3.7 中</span>
+    <span><span class="ld" style="background:rgba(37,99,235,.8)"></span>I值 &lt; 3.3 一般</span>
+  </div>
+
+  <div class="grid" id="cardGrid"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const RAW = [
+  {name:"Trim-to-fit foam window panel", rate:{"Guardian":7,"Extreme comfort seeker":9,"Rational emergency prep":14,"小户型客厅":3,"小户型卧室":14,"总计":10}, ival:{"Guardian":3.3,"Extreme comfort seeker":3.2,"Rational emergency prep":3.1,"小户型客厅":3.2,"小户型卧室":3.3,"总计":3.2}},
+  {name:"Integrated window sealing strips", rate:{"Guardian":7,"Extreme comfort seeker":6,"Rational emergency prep":10,"小户型客厅":13,"小户型卧室":16,"总计":7}, ival:{"Guardian":3.2,"Extreme comfort seeker":3.3,"Rational emergency prep":2.6,"小户型客厅":2.8,"小户型卧室":3.4,"总计":3.1}},
+  {name:"Tool-free snap-in installation", rate:{"Guardian":6,"Extreme comfort seeker":4,"Rational emergency prep":10,"小户型客厅":null,"小户型卧室":8,"总计":5}, ival:{"Guardian":3.1,"Extreme comfort seeker":3.8,"Rational emergency prep":3.5,"小户型客厅":null,"小户型卧室":2.9,"总计":3.2}},
+  {name:"Auto shut-off overflow protection", rate:{"Guardian":10,"Extreme comfort seeker":15,"Rational emergency prep":17,"小户型客厅":25,"小户型卧室":14,"总计":15}, ival:{"Guardian":3.8,"Extreme comfort seeker":3.7,"Rational emergency prep":3.5,"小户型客厅":3.1,"小户型卧室":3.5,"总计":3.5}},
+  {name:"Smart water-level detection & alerts", rate:{"Guardian":19,"Extreme comfort seeker":22,"Rational emergency prep":28,"小户型客厅":22,"小户型卧室":22,"总计":21}, ival:{"Guardian":3.8,"Extreme comfort seeker":3.4,"Rational emergency prep":3.5,"小户型客厅":3.5,"小户型卧室":3.4,"总计":3.5}},
+  {name:"Large-capacity water tank", rate:{"Guardian":12,"Extreme comfort seeker":17,"Rational emergency prep":17,"小户型客厅":19,"小户型卧室":12,"总计":15}, ival:{"Guardian":3.6,"Extreme comfort seeker":3.8,"Rational emergency prep":2.7,"小户型客厅":3.4,"小户型卧室":3.0,"总计":3.6}},
+  {name:"Built-in pump with drain hose", rate:{"Guardian":17,"Extreme comfort seeker":18,"Rational emergency prep":24,"小户型客厅":16,"小户型卧室":12,"总计":17}, ival:{"Guardian":3.8,"Extreme comfort seeker":3.8,"Rational emergency prep":3.7,"小户型客厅":3.3,"小户型卧室":3.4,"总计":3.7}},
+  {name:"Self-evaporating condensate system", rate:{"Guardian":9,"Extreme comfort seeker":15,"Rational emergency prep":14,"小户型客厅":25,"小户型卧室":16,"总计":14}, ival:{"Guardian":3.8,"Extreme comfort seeker":3.8,"Rational emergency prep":4.4,"小户型客厅":3.6,"小户型卧室":4.0,"总计":3.8}},
+  {name:"Tool-free snap-out filter", rate:{"Guardian":12,"Extreme comfort seeker":13,"Rational emergency prep":14,"小户型客厅":9,"小户型卧室":6,"总计":13}, ival:{"Guardian":3.5,"Extreme comfort seeker":3.2,"Rational emergency prep":2.9,"小户型客厅":3.0,"小户型卧室":3.3,"总计":3.2}},
+  {name:"Washable filter (easy rinse)", rate:{"Guardian":21,"Extreme comfort seeker":28,"Rational emergency prep":17,"小户型客厅":25,"小户型卧室":14,"总计":23}, ival:{"Guardian":3.6,"Extreme comfort seeker":3.4,"Rational emergency prep":3.1,"小户型客厅":3.4,"小户型卧室":3.5,"总计":3.4}},
+  {name:"Filter cleaning reminder", rate:{"Guardian":19,"Extreme comfort seeker":21,"Rational emergency prep":28,"小户型客厅":9,"小户型卧室":14,"总计":19}, ival:{"Guardian":3.2,"Extreme comfort seeker":3.3,"Rational emergency prep":2.9,"小户型客厅":3.8,"小户型卧室":3.1,"总计":3.2}},
+  {name:"Heavy-duty carpet-friendly wheels", rate:{"Guardian":12,"Extreme comfort seeker":12,"Rational emergency prep":3,"小户型客厅":34,"小户型卧室":20,"总计":15}, ival:{"Guardian":3.8,"Extreme comfort seeker":3.4,"Rational emergency prep":3.2,"小户型客厅":3.2,"小户型卧室":3.2,"总计":3.4}},
+  {name:"Integrated ergonomic handles", rate:{"Guardian":5,"Extreme comfort seeker":13,"Rational emergency prep":3,"小户型客厅":3,"小户型卧室":16,"总计":9}, ival:{"Guardian":3.3,"Extreme comfort seeker":3.3,"Rational emergency prep":4.4,"小户型客厅":2.6,"小户型卧室":3.5,"总计":3.4}},
+  {name:"Lightweight, optimized structure", rate:{"Guardian":20,"Extreme comfort seeker":23,"Rational emergency prep":17,"小户型客厅":28,"小户型卧室":24,"总计":22}, ival:{"Guardian":3.7,"Extreme comfort seeker":3.3,"Rational emergency prep":3.1,"小户型客厅":3.6,"小户型卧室":3.6,"总计":3.5}},
+  {name:"All-in-One storage", rate:{"Guardian":17,"Extreme comfort seeker":12,"Rational emergency prep":14,"小户型客厅":6,"小户型卧室":10,"总计":13}, ival:{"Guardian":3.1,"Extreme comfort seeker":3.0,"Rational emergency prep":2.6,"小户型客厅":3.7,"小户型卧室":3.2,"总计":3.1}},
+  {name:"Smart energy-saving suggestions", rate:{"Guardian":24,"Extreme comfort seeker":17,"Rational emergency prep":21,"小户型客厅":22,"小户型卧室":18,"总计":20}, ival:{"Guardian":3.6,"Extreme comfort seeker":3.1,"Rational emergency prep":3.4,"小户型客厅":3.7,"小户型卧室":3.5,"总计":3.4}},
+  {name:"Quieter fan & compressor control", rate:{"Guardian":5,"Extreme comfort seeker":12,"Rational emergency prep":10,"小户型客厅":16,"小户型卧室":14,"总计":10}, ival:{"Guardian":4.0,"Extreme comfort seeker":3.3,"Rational emergency prep":3.2,"小户型客厅":4.0,"小户型卧室":4.0,"总计":3.6}},
+  {name:"Slim tower design (A4 footprint)", rate:{"Guardian":24,"Extreme comfort seeker":14,"Rational emergency prep":7,"小户型客厅":6,"小户型卧室":22,"总计":17}, ival:{"Guardian":3.6,"Extreme comfort seeker":3.3,"Rational emergency prep":3.0,"小户型客厅":3.8,"小户型卧室":3.3,"总计":3.5}},
+  {name:"Built-in cooling + air purification", rate:{"Guardian":3,"Extreme comfort seeker":2,"Rational emergency prep":0,"小户型客厅":3,"小户型卧室":4,"总计":3}, ival:{"Guardian":3.7,"Extreme comfort seeker":3.9,"Rational emergency prep":null,"小户型客厅":3.6,"小户型卧室":3.8,"总计":3.8}},
+];
+
+const SEGS=["Guardian","Extreme comfort seeker","Rational emergency prep","小户型客厅","小户型卧室","总计"];
+const FLTS=[{l:"全部",v:"all"},{l:"Top 5",v:"top5"},{l:"Top 10",v:"top10"}];
+let seg="总计", flt="all", chart=null, showLabels=true;
+
+const isDark=()=>matchMedia('(prefers-color-scheme:dark)').matches;
+
+function toggleLabels(){
+  showLabels=!showLabels;
+  const btn=document.getElementById('toggleLabel');
+  btn.textContent=`标签：${showLabels?'显示':'隐藏'}`;
+  btn.className=`toggle ${showLabels?'on':''}`;
+  if(chart) chart.update();
+}
+
+function getAxisConfig(s){
+  const valid=RAW.filter(d=>d.rate[s]!=null&&d.ival[s]!=null);
+  const xs=valid.map(d=>d.rate[s]), ys=valid.map(d=>d.ival[s]);
+  const maxX=Math.max(...xs), minX=Math.min(...xs);
+  const maxY=Math.max(...ys), minY=Math.min(...ys);
+  const domX=Math.ceil((maxX*1.2)/5)*5;
+  const domY=parseFloat((Math.ceil((maxY*1.1)*10)/10).toFixed(1));
+  const midX=minX+(maxX-minX)/2;
+  const midY=minY+(maxY-minY)/2;
+  return{domX,domY,midX,midY,minY};
+}
+
+function getData(){
+  let d=RAW.filter(r=>r.rate[seg]!=null&&r.ival[seg]!=null)
+    .map(r=>({name:r.name,x:r.rate[seg],y:r.ival[seg]}));
+  d.sort((a,b)=>b.y-a.y); // 按I值排
+  if(flt==="top5") return d.slice(0,5);
+  if(flt==="top10") return d.slice(0,10);
+  return d;
+}
+
+function buildBtns(){
+  const sc=document.getElementById('segs'); sc.innerHTML='';
+  SEGS.forEach(s=>{
+    const b=document.createElement('button'); b.className='seg'+(s===seg?' active':'');
+    b.textContent=s; b.onclick=()=>{seg=s; refresh();}; sc.appendChild(b);
+  });
+  const fc=document.getElementById('filters'); fc.innerHTML='';
+  FLTS.forEach(f=>{
+    const b=document.createElement('button'); b.className='flt'+(f.v===flt?' active':'');
+    b.textContent=f.l; b.onclick=()=>{flt=f.v; refresh();}; fc.appendChild(b);
+  });
+}
+
+function buildChart(data,cfg){
+  const dark=isDark();
+  const dpr=window.devicePixelRatio || 1;
+  const ctx=document.getElementById('mc').getContext('2d');
+
+  const pts=data.map(d=>({x:d.x,y:d.y,label:d.name,iVal:d.y}));
+  const gc=dark?'rgba(255,255,255,.07)':'rgba(0,0,0,.06)';
+  const tc=dark?'#94a3b8':'#64748b';
+  const labelBg=dark?'rgba(26,29,39,0.85)':'rgba(255,255,255,0.85)';
+  const labelStroke=dark?'#f0f4ff':'#0f172a';
+
+  if(chart)chart.destroy();
+  chart=new Chart(ctx,{
+    type:'scatter',
+    data:{datasets:[{
+      data:pts,
+      pointRadius:7,
+      pointHoverRadius:9,
+      backgroundColor:pts.map(p=>p.iVal>=3.7?'#ef4444':p.iVal>=3.3?'#f59e0b':'#3b82f6'),
+      borderWidth:0
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      devicePixelRatio:dpr, // 解决模糊核心：匹配硬件像素比
+      layout:{padding:30},
+      plugins:{
+        legend:{display:false},
+        tooltip:{padding:12,bodyFont:{size:13}}
+      },
+      scales:{
+        x:{min:0,max:cfg.domX,title:{display:true,text:'选择率 (%)',color:tc},grid:{color:gc}},
+        y:{min:Math.floor((cfg.minY-0.1)*10)/10,max:cfg.domY,title:{display:true,text:'I值',color:tc},grid:{color:gc}}
+      }
+    },
+    plugins:[{
+      id:'customDraw',
+      afterDraw(ch){
+        const {ctx,chartArea:ca,scales:{x,y}}=ch;
+        ctx.save();
+
+        // 1. 绘制中位线
+        ctx.setLineDash([6,4]);ctx.strokeStyle='#6366f1';ctx.lineWidth=1.5;
+        const px=x.getPixelForValue(cfg.midX), py=y.getPixelForValue(cfg.midY);
+        ctx.beginPath();ctx.moveTo(px,ca.top);ctx.lineTo(px,ca.bottom);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(ca.left,py);ctx.lineTo(ca.right,py);ctx.stroke();
+
+        if(!showLabels) { ctx.restore(); return; }
+
+        // 2. 绘制高清标签
+        ctx.setLineDash([]);
+        ctx.font='500 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+        ctx.textBaseline='middle';
+
+        pts.forEach(p=>{
+          const cx=x.getPixelForValue(p.x), cy=y.getPixelForValue(p.y);
+          const txt=p.label;
+          const tw=ctx.measureText(txt).width;
+          const th=14;
+
+          // 计算标签位置（避开原点）
+          let lx=cx+10, ly=cy-4;
+          if(lx+tw > ca.right) lx = cx - tw - 10;
+
+          // 绘制标签背景阴影/框
+          ctx.fillStyle=labelBg;
+          ctx.beginPath();
+          ctx.roundRect(lx-4, ly-th/2, tw+8, th, 4);
+          ctx.fill();
+
+          // 绘制文字
+          ctx.fillStyle=labelStroke;
+          // 增加文字锐度设置
+          ctx.fillText(txt, lx, ly);
+        });
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+function buildCards(data,cfg){
+  const g=document.getElementById('cardGrid'); g.innerHTML='';
+  data.forEach((item,i)=>{
+    const c=document.createElement('div'); c.className='card';
+    c.innerHTML=`
+      <div class="card-top"><span class="rank-badge">#${i+1}</span><span class="i-badge ${item.y>=3.7?'i-hi':item.y>=3.3?'i-mid':'i-lo'}">I值 ${item.y.toFixed(2)}</span></div>
+      <div class="card-name">${item.name}</div>
+      <div class="bar-row">
+        <div class="bar-label"><span>选择率</span><span>${item.x}%</span></div>
+        <div class="bar-bg"><div class="bar-x" style="width:${(item.x/cfg.domX)*100}%"></div></div>
+      </div>`;
+    g.appendChild(c);
+  });
+}
+
+function refresh(){
+  buildBtns();
+  const cfg=getAxisConfig(seg);
+  const data=getData();
+  buildChart(data,cfg);
+  buildCards(data,cfg);
+}
+
+window.addEventListener('resize',()=>chart && chart.resize());
+refresh();
+</script>
+</body>
+</html>
