@@ -25,7 +25,6 @@ button.seg,button.flt,button.toggle{font-size:12px;border:1.5px solid var(--bord
 button.seg.active,button.flt.active{background:#2563eb;border-color:#2563eb;color:#fff;font-weight:600;box-shadow:0 0 0 3px rgba(37,99,235,.18);}
 button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:600;}
 @media(prefers-color-scheme:dark){button.toggle.on{background:#f0f4ff;border-color:#f0f4ff;color:#0f172a;}}
-
 .chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:10px;position:relative;}
 .legend-row{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text-hint);margin-bottom:2rem;align-items:center;}
 .ld{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px;vertical-align:middle;}
@@ -51,7 +50,7 @@ button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:
 <body>
 <div class="page">
   <h1>Solution Concept Matrix</h1>
-  <p class="desc">X轴 = 选择率(%) · Y轴 = I值(重要性) · 虚线 = 极差中点 · 标签渲染已优化</p>
+  <p class="desc">X轴 = 选择率(%) · Y轴 = I值(重要性) · 虚线 = 极差中点 · 悬浮标签已置顶</p>
 
   <div class="controls">
     <div><div class="section-label">画像</div><div class="btn-group" id="segs"></div></div>
@@ -104,6 +103,7 @@ const RAW = [
 const SEGS=["Guardian","Extreme comfort seeker","Rational emergency prep","小户型客厅","小户型卧室","总计"];
 const FLTS=[{l:"全部",v:"all"},{l:"Top 5",v:"top5"},{l:"Top 10",v:"top10"}];
 let seg="总计", flt="all", chart=null, showLabels=true;
+let currentCfg=null, currentPts=[];
 
 const isDark=()=>matchMedia('(prefers-color-scheme:dark)').matches;
 
@@ -130,7 +130,7 @@ function getAxisConfig(s){
 function getData(){
   let d=RAW.filter(r=>r.rate[seg]!=null&&r.ival[seg]!=null)
     .map(r=>({name:r.name,x:r.rate[seg],y:r.ival[seg]}));
-  d.sort((a,b)=>b.y-a.y); // 按I值排
+  d.sort((a,b)=>b.y-a.y);
   if(flt==="top5") return d.slice(0,5);
   if(flt==="top10") return d.slice(0,10);
   return d;
@@ -149,83 +149,138 @@ function buildBtns(){
   });
 }
 
-function buildChart(data,cfg){
+function buildChart(data, cfg){
   const dark=isDark();
-  const dpr=window.devicePixelRatio || 1;
-  const ctx=document.getElementById('mc').getContext('2d');
+  currentCfg=cfg;
+  currentPts=data.map(d=>({x:d.x,y:d.y,label:d.name,iVal:d.y}));
 
-  const pts=data.map(d=>({x:d.x,y:d.y,label:d.name,iVal:d.y}));
   const gc=dark?'rgba(255,255,255,.07)':'rgba(0,0,0,.06)';
   const tc=dark?'#94a3b8':'#64748b';
-  const labelBg=dark?'rgba(26,29,39,0.85)':'rgba(255,255,255,0.85)';
-  const labelStroke=dark?'#f0f4ff':'#0f172a';
 
-  if(chart)chart.destroy();
-  chart=new Chart(ctx,{
+  if(chart) chart.destroy();
+
+  chart=new Chart(document.getElementById('mc'),{
     type:'scatter',
     data:{datasets:[{
-      data:pts,
+      data:currentPts,
       pointRadius:7,
-      pointHoverRadius:9,
-      backgroundColor:pts.map(p=>p.iVal>=3.7?'#ef4444':p.iVal>=3.3?'#f59e0b':'#3b82f6'),
-      borderWidth:0
+      pointHoverRadius:10,
+      backgroundColor:currentPts.map(p=>p.iVal>=3.7?'#ef4444':p.iVal>=3.3?'#f59e0b':'#3b82f6'),
+      borderWidth:1,
+      borderColor:'#fff'
     }]},
     options:{
-      responsive:true,maintainAspectRatio:false,
-      devicePixelRatio:dpr, // 解决模糊核心：匹配硬件像素比
+      responsive:true, maintainAspectRatio:false,
       layout:{padding:30},
+      interaction:{mode:'nearest', intersect:false},
       plugins:{
         legend:{display:false},
-        tooltip:{padding:12,bodyFont:{size:13}}
+        tooltip:{
+          enabled:true,
+          padding:12,
+          backgroundColor:dark?'#1e293b':'#ffffff',
+          titleColor:dark?'#f1f5f9':'#0f172a',
+          titleFont:{size:13,weight:'bold'},
+          bodyColor:dark?'#94a3b8':'#475569',
+          bodyFont:{size:12},
+          borderColor:dark?'#334155':'#e2e8f0',
+          borderWidth:1,
+          cornerRadius:8,
+          displayColors:true,
+          callbacks:{
+            title:items=>items[0].raw.label,
+            label:item=>[`选择率: ${item.raw.x}%`,`I值: ${item.raw.y.toFixed(2)}`]
+          }
+        }
       },
       scales:{
         x:{min:0,max:cfg.domX,title:{display:true,text:'选择率 (%)',color:tc},grid:{color:gc}},
         y:{min:Math.floor((cfg.minY-0.1)*10)/10,max:cfg.domY,title:{display:true,text:'I值',color:tc},grid:{color:gc}}
       }
     },
-    plugins:[{
-      id:'customDraw',
-      afterDraw(ch){
-        const {ctx,chartArea:ca,scales:{x,y}}=ch;
-        ctx.save();
+    plugins:[
+      {
+        id:'refLines',
+        afterDatasetsDraw(ch){
+          const {ctx,chartArea:ca,scales:{x,y}}=ch;
+          ctx.save();
+          ctx.setLineDash([6,4]); ctx.strokeStyle='#6366f1'; ctx.lineWidth=1.5;
+          const px=x.getPixelForValue(cfg.midX), py=y.getPixelForValue(cfg.midY);
+          ctx.beginPath(); ctx.moveTo(px,ca.top); ctx.lineTo(px,ca.bottom); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(ca.left,py); ctx.lineTo(ca.right,py); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.font='600 10px sans-serif'; ctx.fillStyle='#6366f1';
+          ctx.fillText(`中点 ${cfg.midX.toFixed(1)}%`, px+4, ca.top+14);
+          ctx.fillText(`中点 ${cfg.midY.toFixed(2)}`, ca.right-68, py-6);
+          const qc=dark?'rgba(255,255,255,.12)':'rgba(0,0,0,.12)';
+          ctx.fillStyle=qc; ctx.font='600 10px sans-serif';
+          ctx.fillText('高选择·高I值', ca.right-60, ca.top+14);
+          ctx.fillText('低选择·低I值', ca.left+4, ca.bottom-8);
+          ctx.restore();
+        }
+      },
+      {
+        id:'staticLabels',
+        afterDatasetsDraw(ch){
+          if(!showLabels) return;
+          const {ctx,chartArea:ca,scales:{x,y}}=ch;
+          const dark2=isDark();
+          const labelBg=dark2?'rgba(26,29,39,0.88)':'rgba(255,255,255,0.88)';
+          const labelColor=dark2?'rgba(220,235,255,.88)':'rgba(10,20,50,.80)';
+          const connColor=dark2?'rgba(148,163,184,.3)':'rgba(71,85,105,.25)';
 
-        // 1. 绘制中位线
-        ctx.setLineDash([6,4]);ctx.strokeStyle='#6366f1';ctx.lineWidth=1.5;
-        const px=x.getPixelForValue(cfg.midX), py=y.getPixelForValue(cfg.midY);
-        ctx.beginPath();ctx.moveTo(px,ca.top);ctx.lineTo(px,ca.bottom);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(ca.left,py);ctx.lineTo(ca.right,py);ctx.stroke();
+          ctx.save();
+          ctx.font='500 10px -apple-system,BlinkMacSystemFont,sans-serif';
+          ctx.textBaseline='middle';
 
-        if(!showLabels) { ctx.restore(); return; }
+          const objs=currentPts.map(p=>{
+            const cx=x.getPixelForValue(p.x), cy=y.getPixelForValue(p.y);
+            const txt=p.label;  // 完整显示，不截断
+            const w=ctx.measureText(txt).width+8;
+            return{txt,cx,cy,lx:cx+10+w/2,ly:cy-8,w,h:13};
+          });
 
-        // 2. 绘制高清标签
-        ctx.setLineDash([]);
-        ctx.font='500 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-        ctx.textBaseline='middle';
+          for(let it=0;it<120;it++){
+            let moved=false;
+            for(let i=0;i<objs.length;i++){
+              for(let j=i+1;j<objs.length;j++){
+                const a=objs[i],b=objs[j];
+                const ox=(a.w/2+b.w/2+2)-Math.abs(a.lx-b.lx);
+                const oy=(a.h/2+b.h/2+2)-Math.abs(a.ly-b.ly);
+                if(ox>0&&oy>0){
+                  const dx=a.lx-b.lx||.01, dy=a.ly-b.ly||.01;
+                  const d=Math.sqrt(dx*dx+dy*dy)||1;
+                  a.lx+=(ox/2)*(dx/d); a.ly+=(oy/2)*(dy/d);
+                  b.lx-=(ox/2)*(dx/d); b.ly-=(oy/2)*(dy/d);
+                  moved=true;
+                }
+              }
+            }
+            if(!moved) break;
+          }
 
-        pts.forEach(p=>{
-          const cx=x.getPixelForValue(p.x), cy=y.getPixelForValue(p.y);
-          const txt=p.label;
-          const tw=ctx.measureText(txt).width;
-          const th=14;
+          objs.forEach(o=>{
+            const lx=Math.max(ca.left+o.w/2+2,Math.min(ca.right-o.w/2-2,o.lx));
+            const ly=Math.max(ca.top+o.h/2+2,Math.min(ca.bottom-o.h/2-2,o.ly));
+            const dx=lx-o.cx, dy=ly-o.cy, dist=Math.sqrt(dx*dx+dy*dy)||1;
+            if(dist>10){
+              ctx.beginPath();
+              ctx.moveTo(o.cx+(dx/dist)*8, o.cy+(dy/dist)*8);
+              ctx.lineTo(lx-(dx>0?o.w/2:-o.w/2), ly);
+              ctx.strokeStyle=connColor; ctx.lineWidth=0.8; ctx.stroke();
+            }
+            ctx.fillStyle=labelBg;
+            ctx.beginPath();
+            ctx.roundRect(lx-o.w/2, ly-o.h/2, o.w, o.h, 3);
+            ctx.fill();
+            ctx.fillStyle=labelColor;
+            ctx.fillText(o.txt, lx-o.w/2+4, ly);
+          });
 
-          // 计算标签位置（避开原点）
-          let lx=cx+10, ly=cy-4;
-          if(lx+tw > ca.right) lx = cx - tw - 10;
-
-          // 绘制标签背景阴影/框
-          ctx.fillStyle=labelBg;
-          ctx.beginPath();
-          ctx.roundRect(lx-4, ly-th/2, tw+8, th, 4);
-          ctx.fill();
-
-          // 绘制文字
-          ctx.fillStyle=labelStroke;
-          // 增加文字锐度设置
-          ctx.fillText(txt, lx, ly);
-        });
-        ctx.restore();
+          ctx.restore();
+        }
       }
-    }]
+    ]
   });
 }
 
@@ -252,7 +307,7 @@ function refresh(){
   buildCards(data,cfg);
 }
 
-window.addEventListener('resize',()=>chart && chart.resize());
+window.addEventListener('resize',()=>chart&&chart.resize());
 refresh();
 </script>
 </body>
