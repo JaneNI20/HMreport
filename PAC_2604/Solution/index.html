@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Solution Concept Matrix</title>
+<title>Solution Concept Matrix - V2</title>
 <style>
 :root{
   --bg:#f8fafc;--surface:#fff;--border:rgba(0,0,0,.10);--border-mid:rgba(0,0,0,.18);
@@ -44,19 +44,18 @@ button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:
 .bar-label{display:flex;justify-content:space-between;font-size:9px;color:var(--text-hint);}
 .bar-bg{height:4px;background:var(--bg);border-radius:2px;border:1px solid var(--border);overflow:hidden;}
 .bar-x{height:100%;background:#94a3b8;border-radius:2px;}
-.bar-y{height:100%;background:#2563eb;border-radius:2px;}
 </style>
 </head>
 <body>
 <div class="page">
   <h1>Solution Concept Matrix</h1>
-  <p class="desc">X轴 = 选择率(%) · Y轴 = I值(重要性) · 虚线 = 极差中点 · 悬浮标签已置顶</p>
+  <p class="desc">X轴 = 选择率(%) · Y轴 = I值(重要性) </p> #· 标签仅在鼠标精准悬停圆点时显示
 
   <div class="controls">
     <div><div class="section-label">画像</div><div class="btn-group" id="segs"></div></div>
     <div><div class="section-label">显示数量 (依I值)</div><div class="btn-group" id="filters"></div></div>
     <div>
-      <div class="section-label">标签</div>
+      <div class="section-label">全局常驻标签</div>
       <div class="btn-group">
         <button class="toggle on" id="toggleLabel" onclick="toggleLabels()">标签：显示</button>
       </div>
@@ -165,6 +164,7 @@ function buildChart(data, cfg){
       data:currentPts,
       pointRadius:7,
       pointHoverRadius:10,
+      hitRadius: 10, // 增加鼠标点击/悬浮的响应热区
       backgroundColor:currentPts.map(p=>p.iVal>=3.7?'#ef4444':p.iVal>=3.3?'#f59e0b':'#3b82f6'),
       borderWidth:1,
       borderColor:'#fff'
@@ -172,7 +172,11 @@ function buildChart(data, cfg){
     options:{
       responsive:true, maintainAspectRatio:false,
       layout:{padding:30},
-      interaction:{mode:'nearest', intersect:false},
+      // --- 关键改动：精准相交模式 ---
+      interaction:{
+        mode:'nearest', 
+        intersect:true // 只有鼠标进入圆点像素范围才触发标签显示
+      },
       plugins:{
         legend:{display:false},
         tooltip:{
@@ -235,7 +239,7 @@ function buildChart(data, cfg){
 
           const objs=currentPts.map(p=>{
             const cx=x.getPixelForValue(p.x), cy=y.getPixelForValue(p.y);
-            const txt=p.label;  // 完整显示，不截断
+            const txt=p.label;
             const w=ctx.measureText(txt).width+8;
             return{txt,cx,cy,lx:cx+10+w/2,ly:cy-8,w,h:13};
           });
