@@ -63,7 +63,7 @@ button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:
 
   <div class="controls">
     <div><div class="section-label">用户画像</div><div class="btn-group" id="segs"></div></div>
-    <div><div class="section-label">筛选方案</div><div class="btn-group" id="filters"></div></div>
+    <div><div class="section-label">显示数量_I值</div><div class="btn-group" id="filters"></div></div>
     <div>
       <div class="section-label">图表设置</div>
       <div class="btn-group">
@@ -261,7 +261,7 @@ const RAW_DATA = [
 ];
 
 const SEGS = ["Guardian", "Extreme comfort seeker", "Rational emergency prep", "小户型客厅", "小户型卧室", "总计"];
-const FLTS = [{l:"全部方案",v:"all"},{l:"I值 Top 5",v:"top5"},{l:"I值 Top 10",v:"top10"}];
+const FLTS = [{l:"全部(32)",v:"all"},{l:"Top 5",v:"top5"},{l:"Top 10",v:"top10"}];
 let seg = "总计", flt = "all", chart = null, showLabels = true;
 let currentCfg = null, currentPts = [];
 
