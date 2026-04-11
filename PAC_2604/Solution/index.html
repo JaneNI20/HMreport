@@ -274,26 +274,17 @@ function toggleLabels(){
   if(chart) chart.update();
 }
 
-// ── 核心改动：始终基于该画像的全量数据计算轴范围和虚线中点 ──
 function getAxisConfig(s){
-  // 全量：不受 flt 筛选影响，取该画像下所有有效数据
   const all = RAW_DATA.filter(d => d.rate[s] != null && d.use[s] != null);
   const xs  = all.map(d => d.rate[s]);
   const ys  = all.map(d => d.use[s]);
-
   const maxX = Math.max(...xs), minX = Math.min(...xs);
   const maxY = Math.max(...ys), minY = Math.min(...ys);
-
-  // 虚线位置 = 最小值 + (最大值 - 最小值) / 2
   const midX = minX + (maxX - minX) / 2;
   const midY = minY + (maxY - minY) / 2;
-
-  // 坐标轴范围 = 全量最值 ± 小量 padding，向外取整到最近 5 的倍数（X）
   const domX = Math.ceil((maxX * 1.12) / 5) * 5;
-  // Y 轴：有用性评分固定 1–5，下边界比全量最小值略低，上边界 5.2
   const yMin = Math.max(1.0, Math.floor((minY - 0.3) * 10) / 10);
   const domY = 5.2;
-
   return { domX, domY, yMin, midX, midY, maxX, minX, maxY, minY };
 }
 
@@ -329,12 +320,31 @@ function updateStatus(data, cfg){
   document.getElementById('listTitle').textContent = `方案清单 — ${seg} (按 I 值降序)`;
 }
 
+// 工具函数：判断矩形是否与圆形相交（用于避让圆点）
+function isRectIntersectingCircle(rect, circle) {
+    const distX = Math.abs(circle.x - rect.x - rect.w / 2);
+    const distY = Math.abs(circle.y - rect.y - rect.h / 2);
+
+    if (distX > (rect.w / 2 + circle.r)) { return false; }
+    if (distY > (rect.h / 2 + circle.r)) { return false; }
+
+    if (distX <= (rect.w / 2)) { return true; }
+    if (distY <= (rect.h / 2)) { return true; }
+
+    const dx = distX - rect.w / 2;
+    const dy = distY - rect.h / 2;
+    return (dx * dx + dy * dy <= (circle.r * circle.r));
+}
+
 function buildChart(data, cfg){
   const dark = isDark();
   currentCfg = cfg;
   currentPts = data.map(d => ({
     x: d.x, y: d.y,
+    // 气泡半径，用于图表绘制
     r: (d.ival - 2) * 6,
+    // 实际像素半径，用于避让算法，增加少量 padding (2px)
+    pixelR: (d.ival - 2) * 6 + 2,
     label: d.name, ival: d.ival
   }));
 
@@ -362,7 +372,7 @@ function buildChart(data, cfg){
     }]},
     options: {
       responsive: true, maintainAspectRatio: false,
-      layout: { padding: { top: 40, right: 40, bottom: 20, left: 20 } },
+      layout: { padding: { top: 40, right: 60, bottom: 20, left: 20 } }, // 稍微增加右侧 padding，给侧边标签留空间
       plugins: {
         legend: { display: false },
         tooltip: { callbacks: {
@@ -406,6 +416,7 @@ function buildChart(data, cfg){
       },
       {
         id: 'staticLabels',
+        // 在气泡绘制之后绘制，确保标签在气泡上方
         afterDatasetsDraw(ch){
           if(!showLabels) return;
           const {ctx, chartArea:ca, scales:{x,y}} = ch;
@@ -413,14 +424,142 @@ function buildChart(data, cfg){
           ctx.save();
           ctx.font = '500 10px sans-serif';
           ctx.textBaseline = 'middle';
+
+          // 1. 预计算所有圆点的像素坐标和半径，作为标签不能覆盖的“禁区”
+          const dotExclusions = currentPts.map(p => ({
+              x: x.getPixelForValue(p.x),
+              y: y.getPixelForValue(p.y),
+              r: p.pixelR
+          }));
+
+          // 记录已占用矩形，用于标签互不重叠算法
+          const drawnRects = [];
+
           currentPts.forEach(p => {
-            const cx = x.getPixelForValue(p.x), cy = y.getPixelForValue(p.y);
+            const cx = x.getPixelForValue(p.x);
+            const cy = y.getPixelForValue(p.y);
             const txt = p.label;
             const tw = ctx.measureText(txt).width;
-            ctx.fillStyle = dark2 ? 'rgba(26,29,39,0.88)' : 'rgba(255,255,255,0.88)';
-            ctx.fillRect(cx - tw/2 - 2, cy - p.r - 14, tw + 4, 12);
+            const th = 12; // 标签高度估计
+            const labelW = tw + 4;
+
+            let finalRect = null;
+            let textAlign = 'center';
+            let useFallback = false;
+
+            // 2. 多方向空间探测策略：尝试找到既不重叠气泡也不重叠其他标签的位置
+            // 策略列表：[Y偏移, X偏移模式('center', 'left', 'right'), 描述]
+            const strategies = [
+                [-p.pixelR - th/2 - 3, 'center'], // 尝试 1: 正上方
+                [p.pixelR + th/2 + 3, 'center'],  // 尝试 2: 正下方
+                [0, 'left'],                      // 尝试 3: 右侧 (文字在 cx 右边)
+                [0, 'right']                      // 尝试 4: 左侧 (文字在 cx 左边)
+            ];
+
+            for (const strat of strategies) {
+                const [yOffset, xMode] = strat;
+                let rectX, rectAlign;
+
+                if (xMode === 'center') {
+                    rectX = cx - labelW / 2;
+                    rectAlign = 'center';
+                } else if (xMode === 'left') {
+                    rectX = cx + p.pixelR + 2;
+                    rectAlign = 'left';
+                } else { // xMode === 'right'
+                    rectX = cx - p.pixelR - labelW - 2;
+                    rectAlign = 'right';
+                }
+
+                const rectY = cy + yOffset - th / 2;
+
+                // 构建候选矩形
+                const candidateRect = {
+                    x1: rectX,
+                    y1: rectY,
+                    x2: rectX + labelW,
+                    y2: rectY + th,
+                    // 用于碰撞函数的数据结构
+                    x: rectX,
+                    y: rectY,
+                    w: labelW,
+                    h: th
+                };
+
+                // 图表边界限制：不允许超出绘图区
+                if (candidateRect.x1 < ca.left || candidateRect.x2 > ca.right || candidateRect.y1 < ca.top || candidateRect.y2 > ca.bottom) {
+                    continue;
+                }
+
+                // A) 检查是否与其他已绘制标签重叠
+                const isLabelCollision = drawnRects.some(r => {
+                    return !(candidateRect.x2 < r.x1 || candidateRect.x1 > r.x2 || candidateRect.y2 < r.y1 || candidateRect.y1 > r.y2);
+                });
+
+                if (isLabelCollision) continue;
+
+                // B) 检查是否遮挡任何气泡（圆点禁区）
+                const isDotCollision = dotExclusions.some(circle => isRectIntersectingCircle(candidateRect, circle));
+
+                if (!isDotCollision) {
+                    // 找到完美位置
+                    finalRect = candidateRect;
+                    textAlign = rectAlign;
+                    break;
+                }
+            }
+
+            // 3. 兜底策略：如果所有方向探测都失败，采用“向下堆叠”模式放置在气泡上方，优先保证不重叠标签，允许遮挡气泡
+            if (!finalRect) {
+                useFallback = true;
+                let fallbackY = cy - p.pixelR - th / 2 - 2;
+                let rect = {
+                    x1: cx - labelW / 2,
+                    y1: fallbackY,
+                    x2: cx + labelW / 2,
+                    y2: fallbackY + th,
+                    x: cx - labelW / 2,
+                    y: fallbackY,
+                    w: labelW,
+                    h: th
+                };
+
+                // 兜底模式下仅进行标签重叠检测，向下挪动
+                let attempts = 0;
+                while (attempts < 6) {
+                    const collision = drawnRects.some(r => {
+                        return !(rect.x2 < r.x1 || rect.x1 > r.x2 || rect.y2 < r.y1 || rect.y1 > r.y2);
+                    });
+
+                    if (collision) {
+                        rect.y1 += (th + 2); rect.y2 += (th + 2); rect.y += (th + 2);
+                        attempts++;
+                    } else { break; }
+                }
+                finalRect = rect;
+                textAlign = 'center';
+            }
+
+            drawnRects.push(finalRect);
+
+            // 4. 绘图阶段
+            // 兜底模式下使用更深的背景，确保遮挡气泡时文字可读
+            const bgColorFallback = dark2 ? 'rgba(15,17,23, 0.95)' : 'rgba(255,255,255, 0.95)';
+            const bgColorStandard = dark2 ? 'rgba(26,29,39, 0.8)' : 'rgba(255,255,255, 0.8)';
+            ctx.fillStyle = useFallback ? bgColorFallback : bgColorStandard;
+            ctx.fillRect(finalRect.x1, finalRect.y1, labelW, th);
+
             ctx.fillStyle = dark2 ? '#f0f4ff' : '#0f172a';
-            ctx.fillText(txt, cx - tw/2, cy - p.r - 8);
+            // 轻微的斜体以区分兜底标签
+            if(useFallback) ctx.font = 'italic 500 10px sans-serif';
+            else ctx.font = '500 10px sans-serif';
+
+            let textX;
+            if (textAlign === 'center') textX = finalRect.x1 + 2;
+            else if (textAlign === 'left') textX = finalRect.x1 + 2;
+            else textX = finalRect.x1 + 2; //textAlign === 'right'
+
+            ctx.fillText(txt, textX, finalRect.y1 + th / 2);
           });
           ctx.restore();
         }
@@ -454,8 +593,8 @@ function buildCards(data, cfg){
 
 function refresh(){
   buildBtns();
-  const cfg  = getAxisConfig(seg);   // 永远用全量计算
-  const data = getData();             // 受 flt 筛选
+  const cfg  = getAxisConfig(seg);
+  const data = getData();
   updateStatus(data, cfg);
   buildChart(data, cfg);
   buildCards(data, cfg);
