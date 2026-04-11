@@ -87,8 +87,8 @@ button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:
   <div class="legend-row">
     <span><span class="ld" style="background:rgba(239,68,68,.8)"></span>I值 ≥ 3.7 (高买单意愿)</span>
     <span><span class="ld" style="background:rgba(245,158,11,.8)"></span>I值 3.3–3.7 (中买单意愿)</span>
-    <span><span class="ld" style="background:rgba(37,99,235,.8)"></span>I值 < 3.3 (一般)</span>
-    <span style="margin-left:auto; font-style: italic;">* 虚线表示当前数据集的极差中点</span>
+    <span><span class="ld" style="background:rgba(37,99,235,.8)"></span>I值 &lt; 3.3 (一般)</span>
+    <span style="margin-left:auto;font-style:italic;">* 虚线 = 全量数据极差中点，轴范围 = 全量最值</span>
   </div>
 
   <div class="list-title" id="listTitle"></div>
@@ -98,166 +98,134 @@ button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const RAW_DATA = [
-  { name: "Trim-to-fit foam window panel", 
+  { name: "Trim-to-fit foam window panel",
     rate: {"Guardian":7,"Extreme comfort seeker":9,"Rational emergency prep":14,"小户型客厅":3,"小户型卧室":14,"总计":10},
     use:  {"Guardian":3.8,"Extreme comfort seeker":4.0,"Rational emergency prep":4.0,"小户型客厅":2.0,"小户型卧室":4.6,"总计":4.0},
-    ival: {"Guardian":3.3,"Extreme comfort seeker":3.2,"Rational emergency prep":3.1,"小户型客厅":3.2,"小户型卧室":3.3,"总计":3.2}
-  },
-  { name: "Integrated window sealing strips", 
+    ival: {"Guardian":3.3,"Extreme comfort seeker":3.2,"Rational emergency prep":3.1,"小户型客厅":3.2,"小户型卧室":3.3,"总计":3.2}},
+  { name: "Integrated window sealing strips",
     rate: {"Guardian":7,"Extreme comfort seeker":6,"Rational emergency prep":10,"小户型客厅":13,"小户型卧室":16,"总计":7},
     use:  {"Guardian":4.3,"Extreme comfort seeker":4.1,"Rational emergency prep":3.0,"小户型客厅":4.3,"小户型卧室":4.0,"总计":4.0},
-    ival: {"Guardian":3.2,"Extreme comfort seeker":3.3,"Rational emergency prep":2.6,"小户型客厅":2.8,"小户型卧室":3.4,"总计":3.1}
-  },
-  { name: "Tool-free snap-in installation", 
+    ival: {"Guardian":3.2,"Extreme comfort seeker":3.3,"Rational emergency prep":2.6,"小户型客厅":2.8,"小户型卧室":3.4,"总计":3.1}},
+  { name: "Tool-free snap-in installation",
     rate: {"Guardian":6,"Extreme comfort seeker":4,"Rational emergency prep":10,"小户型客厅":0,"小户型卧室":8,"总计":5},
     use:  {"Guardian":4.0,"Extreme comfort seeker":4.3,"Rational emergency prep":3.3,"小户型客厅":null,"小户型卧室":2.8,"总计":3.7},
-    ival: {"Guardian":3.1,"Extreme comfort seeker":3.8,"Rational emergency prep":3.5,"小户型客厅":null,"小户型卧室":2.9,"总计":3.2}
-  },
-  { name: "Auto shut-off overflow protection", 
+    ival: {"Guardian":3.1,"Extreme comfort seeker":3.8,"Rational emergency prep":3.5,"小户型客厅":null,"小户型卧室":2.9,"总计":3.2}},
+  { name: "Auto shut-off overflow protection",
     rate: {"Guardian":10,"Extreme comfort seeker":15,"Rational emergency prep":17,"小户型客厅":25,"小户型卧室":14,"总计":15},
     use:  {"Guardian":4.3,"Extreme comfort seeker":4.7,"Rational emergency prep":4.0,"小户型客厅":3.8,"小户型卧室":4.1,"总计":4.3},
-    ival: {"Guardian":3.8,"Extreme comfort seeker":3.7,"Rational emergency prep":3.5,"小户型客厅":3.1,"小户型卧室":3.5,"总计":3.5}
-  },
-  { name: "Smart water-level detection & drainage alerts", 
+    ival: {"Guardian":3.8,"Extreme comfort seeker":3.7,"Rational emergency prep":3.5,"小户型客厅":3.1,"小户型卧室":3.5,"总计":3.5}},
+  { name: "Smart water-level detection & drainage alerts",
     rate: {"Guardian":19,"Extreme comfort seeker":22,"Rational emergency prep":28,"小户型客厅":22,"小户型卧室":22,"总计":21},
     use:  {"Guardian":3.9,"Extreme comfort seeker":4.2,"Rational emergency prep":4.0,"小户型客厅":4.6,"小户型卧室":4.0,"总计":4.1},
-    ival: {"Guardian":3.8,"Extreme comfort seeker":3.4,"Rational emergency prep":3.5,"小户型客厅":3.5,"小户型卧室":3.4,"总计":3.5}
-  },
-  { name: "Large-capacity water tank", 
+    ival: {"Guardian":3.8,"Extreme comfort seeker":3.4,"Rational emergency prep":3.5,"小户型客厅":3.5,"小户型卧室":3.4,"总计":3.5}},
+  { name: "Large-capacity water tank",
     rate: {"Guardian":12,"Extreme comfort seeker":17,"Rational emergency prep":17,"小户型客厅":19,"小户型卧室":12,"总计":15},
     use:  {"Guardian":4.1,"Extreme comfort seeker":4.2,"Rational emergency prep":3.8,"小户型客厅":4.5,"小户型卧室":3.3,"总计":4.0},
-    ival: {"Guardian":3.6,"Extreme comfort seeker":3.8,"Rational emergency prep":2.7,"小户型客厅":3.4,"小户型卧室":3.0,"总计":3.6}
-  },
-  { name: "Built-in pump with extended drain hose", 
+    ival: {"Guardian":3.6,"Extreme comfort seeker":3.8,"Rational emergency prep":2.7,"小户型客厅":3.4,"小户型卧室":3.0,"总计":3.6}},
+  { name: "Built-in pump with extended drain hose",
     rate: {"Guardian":17,"Extreme comfort seeker":18,"Rational emergency prep":24,"小户型客厅":16,"小户型卧室":12,"总计":17},
     use:  {"Guardian":4.2,"Extreme comfort seeker":4.3,"Rational emergency prep":4.3,"小户型客厅":4.6,"小户型卧室":4.0,"总计":4.2},
-    ival: {"Guardian":3.8,"Extreme comfort seeker":3.8,"Rational emergency prep":3.7,"小户型客厅":3.3,"小户型卧室":3.4,"总计":3.7}
-  },
-  { name: "Self-evaporating condensate system", 
+    ival: {"Guardian":3.8,"Extreme comfort seeker":3.8,"Rational emergency prep":3.7,"小户型客厅":3.3,"小户型卧室":3.4,"总计":3.7}},
+  { name: "Self-evaporating condensate system",
     rate: {"Guardian":9,"Extreme comfort seeker":15,"Rational emergency prep":14,"小户型客厅":25,"小户型卧室":16,"总计":14},
     use:  {"Guardian":4.1,"Extreme comfort seeker":4.7,"Rational emergency prep":4.3,"小户型客厅":4.1,"小户型卧室":4.6,"总计":4.4},
-    ival: {"Guardian":3.8,"Extreme comfort seeker":3.8,"Rational emergency prep":4.4,"小户型客厅":3.6,"小户型卧室":4.0,"总计":3.8}
-  },
-  { name: "Tool-free snap-out filter", 
+    ival: {"Guardian":3.8,"Extreme comfort seeker":3.8,"Rational emergency prep":4.4,"小户型客厅":3.6,"小户型卧室":4.0,"总计":3.8}},
+  { name: "Tool-free snap-out filter",
     rate: {"Guardian":12,"Extreme comfort seeker":13,"Rational emergency prep":14,"小户型客厅":9,"小户型卧室":6,"总计":13},
     use:  {"Guardian":4.4,"Extreme comfort seeker":4.3,"Rational emergency prep":4.0,"小户型客厅":4.7,"小户型卧室":3.7,"总计":4.4},
-    ival: {"Guardian":3.5,"Extreme comfort seeker":3.2,"Rational emergency prep":2.9,"小户型客厅":3.0,"小户型卧室":3.3,"总计":3.2}
-  },
-  { name: "Washable filter (easy rinse clean)", 
+    ival: {"Guardian":3.5,"Extreme comfort seeker":3.2,"Rational emergency prep":2.9,"小户型客厅":3.0,"小户型卧室":3.3,"总计":3.2}},
+  { name: "Washable filter (easy rinse clean)",
     rate: {"Guardian":21,"Extreme comfort seeker":28,"Rational emergency prep":17,"小户型客厅":25,"小户型卧室":14,"总计":23},
     use:  {"Guardian":4.6,"Extreme comfort seeker":4.3,"Rational emergency prep":4.4,"小户型客厅":4.3,"小户型卧室":4.6,"总计":4.4},
-    ival: {"Guardian":3.6,"Extreme comfort seeker":3.4,"Rational emergency prep":3.1,"小户型客厅":3.4,"小户型卧室":3.5,"总计":3.4}
-  },
-  { name: "Filter cleaning reminder", 
+    ival: {"Guardian":3.6,"Extreme comfort seeker":3.4,"Rational emergency prep":3.1,"小户型客厅":3.4,"小户型卧室":3.5,"总计":3.4}},
+  { name: "Filter cleaning reminder",
     rate: {"Guardian":19,"Extreme comfort seeker":21,"Rational emergency prep":28,"小户型客厅":9,"小户型卧室":14,"总计":19},
     use:  {"Guardian":4.2,"Extreme comfort seeker":4.0,"Rational emergency prep":3.6,"小户型客厅":3.3,"小户型卧室":4.4,"总计":4.0},
-    ival: {"Guardian":3.2,"Extreme comfort seeker":3.3,"Rational emergency prep":2.9,"小户型客厅":3.8,"小户型卧室":3.1,"总计":3.2}
-  },
-  { name: "Heavy-duty multi-directional wheels", 
+    ival: {"Guardian":3.2,"Extreme comfort seeker":3.3,"Rational emergency prep":2.9,"小户型客厅":3.8,"小户型卧室":3.1,"总计":3.2}},
+  { name: "Heavy-duty multi-directional wheels",
     rate: {"Guardian":12,"Extreme comfort seeker":12,"Rational emergency prep":3,"小户型客厅":34,"小户型卧室":20,"总计":15},
     use:  {"Guardian":4.4,"Extreme comfort seeker":3.8,"Rational emergency prep":5.0,"小户型客厅":4.2,"小户型卧室":3.6,"总计":4.1},
-    ival: {"Guardian":3.8,"Extreme comfort seeker":3.4,"Rational emergency prep":3.2,"小户型客厅":3.2,"小户型卧室":3.2,"总计":3.4}
-  },
-  { name: "Integrated ergonomic handles", 
+    ival: {"Guardian":3.8,"Extreme comfort seeker":3.4,"Rational emergency prep":3.2,"小户型客厅":3.2,"小户型卧室":3.2,"总计":3.4}},
+  { name: "Integrated ergonomic handles",
     rate: {"Guardian":5,"Extreme comfort seeker":13,"Rational emergency prep":3,"小户型客厅":3,"小户型卧室":16,"总计":9},
     use:  {"Guardian":3.8,"Extreme comfort seeker":3.6,"Rational emergency prep":5.0,"小户型客厅":4.0,"小户型卧室":4.4,"总计":3.9},
-    ival: {"Guardian":3.3,"Extreme comfort seeker":3.3,"Rational emergency prep":4.4,"小户型客厅":2.6,"小户型卧室":3.5,"总计":3.4}
-  },
-  { name: "Lightweight, optimized structure", 
+    ival: {"Guardian":3.3,"Extreme comfort seeker":3.3,"Rational emergency prep":4.4,"小户型客厅":2.6,"小户型卧室":3.5,"总计":3.4}},
+  { name: "Lightweight, optimized structure",
     rate: {"Guardian":20,"Extreme comfort seeker":23,"Rational emergency prep":17,"小户型客厅":28,"小户型卧室":24,"总计":22},
     use:  {"Guardian":4.6,"Extreme comfort seeker":4.4,"Rational emergency prep":4.4,"小户型客厅":4.8,"小户型卧室":4.3,"总计":4.5},
-    ival: {"Guardian":3.7,"Extreme comfort seeker":3.3,"Rational emergency prep":3.1,"小户型客厅":3.6,"小户型卧室":3.6,"总计":3.5}
-  },
-  { name: "Optional dust cover or storage bag", 
+    ival: {"Guardian":3.7,"Extreme comfort seeker":3.3,"Rational emergency prep":3.1,"小户型客厅":3.6,"小户型卧室":3.6,"总计":3.5}},
+  { name: "Optional dust cover or storage bag",
     rate: {"Guardian":7,"Extreme comfort seeker":6,"Rational emergency prep":14,"小户型客厅":3,"小户型卧室":2,"总计":6},
     use:  {"Guardian":3.8,"Extreme comfort seeker":3.7,"Rational emergency prep":3.8,"小户型客厅":4.0,"小户型卧室":3.0,"总计":3.7},
-    ival: {"Guardian":2.9,"Extreme comfort seeker":2.6,"Rational emergency prep":2.8,"小户型客厅":4.2,"小户型卧室":null,"总计":3.0}
-  },
-  { name: "All-in-One storage", 
+    ival: {"Guardian":2.9,"Extreme comfort seeker":2.6,"Rational emergency prep":2.8,"小户型客厅":4.2,"小户型卧室":null,"总计":3.0}},
+  { name: "All-in-One storage",
     rate: {"Guardian":17,"Extreme comfort seeker":12,"Rational emergency prep":14,"小户型客厅":6,"小户型卧室":10,"总计":13},
     use:  {"Guardian":4.2,"Extreme comfort seeker":4.1,"Rational emergency prep":4.3,"小户型客厅":4.0,"小户型卧室":4.2,"总计":4.2},
-    ival: {"Guardian":3.1,"Extreme comfort seeker":3.0,"Rational emergency prep":2.6,"小户型客厅":3.7,"小户型卧室":3.2,"总计":3.1}
-  },
-  { name: "Optimized energy-saving settings", 
+    ival: {"Guardian":3.1,"Extreme comfort seeker":3.0,"Rational emergency prep":2.6,"小户型客厅":3.7,"小户型卧室":3.2,"总计":3.1}},
+  { name: "Optimized energy-saving settings",
     rate: {"Guardian":19,"Extreme comfort seeker":13,"Rational emergency prep":14,"小户型客厅":19,"小户型卧室":22,"总计":17},
     use:  {"Guardian":3.9,"Extreme comfort seeker":3.7,"Rational emergency prep":4.3,"小户型客厅":4.0,"小户型卧室":4.0,"总计":3.9},
-    ival: {"Guardian":3.3,"Extreme comfort seeker":3.0,"Rational emergency prep":2.9,"小户型客厅":3.6,"小户型卧室":3.3,"总计":3.2}
-  },
-  { name: "One-touch ECO mode", 
+    ival: {"Guardian":3.3,"Extreme comfort seeker":3.0,"Rational emergency prep":2.9,"小户型客厅":3.6,"小户型卧室":3.3,"总计":3.2}},
+  { name: "One-touch ECO mode",
     rate: {"Guardian":12,"Extreme comfort seeker":18,"Rational emergency prep":7,"小户型客厅":19,"小户型卧室":22,"总计":14},
     use:  {"Guardian":4.1,"Extreme comfort seeker":3.8,"Rational emergency prep":4.5,"小户型客厅":4.0,"小户型卧室":3.7,"总计":3.9},
-    ival: {"Guardian":3.1,"Extreme comfort seeker":3.0,"Rational emergency prep":3.2,"小户型客厅":3.6,"小户型卧室":3.0,"总计":3.1}
-  },
-  { name: "Smart energy-saving suggestions", 
+    ival: {"Guardian":3.1,"Extreme comfort seeker":3.0,"Rational emergency prep":3.2,"小户型客厅":3.6,"小户型卧室":3.0,"总计":3.1}},
+  { name: "Smart energy-saving suggestions",
     rate: {"Guardian":24,"Extreme comfort seeker":17,"Rational emergency prep":21,"小户型客厅":22,"小户型卧室":18,"总计":20},
     use:  {"Guardian":4.3,"Extreme comfort seeker":3.8,"Rational emergency prep":3.8,"小户型客厅":4.4,"小户型卧室":4.4,"总计":4.1},
-    ival: {"Guardian":3.6,"Extreme comfort seeker":3.1,"Rational emergency prep":3.4,"小户型客厅":3.7,"小户型卧室":3.5,"总计":3.4}
-  },
-  { name: "Estimated energy usage display", 
+    ival: {"Guardian":3.6,"Extreme comfort seeker":3.1,"Rational emergency prep":3.4,"小户型客厅":3.7,"小户型卧室":3.5,"总计":3.4}},
+  { name: "Estimated energy usage display",
     rate: {"Guardian":17,"Extreme comfort seeker":20,"Rational emergency prep":21,"小户型客厅":22,"小户型卧室":20,"总计":19},
     use:  {"Guardian":4.2,"Extreme comfort seeker":3.6,"Rational emergency prep":4.3,"小户型客厅":4.6,"小户型卧室":4.4,"总计":4.0},
-    ival: {"Guardian":3.2,"Extreme comfort seeker":2.9,"Rational emergency prep":3.3,"小户型客厅":3.7,"小户型卧室":3.4,"总计":3.2}
-  },
-  { name: "Savings comparison vs. central AC", 
+    ival: {"Guardian":3.2,"Extreme comfort seeker":2.9,"Rational emergency prep":3.3,"小户型客厅":3.7,"小户型卧室":3.4,"总计":3.2}},
+  { name: "Savings comparison vs. central AC",
     rate: {"Guardian":12,"Extreme comfort seeker":10,"Rational emergency prep":14,"小户型客厅":13,"小户型卧室":8,"总计":11},
     use:  {"Guardian":3.9,"Extreme comfort seeker":3.5,"Rational emergency prep":4.3,"小户型客厅":4.3,"小户型卧室":3.8,"总计":3.8},
-    ival: {"Guardian":3.0,"Extreme comfort seeker":2.8,"Rational emergency prep":3.6,"小户型客厅":3.6,"小户型卧室":3.0,"总计":3.1}
-  },
-  { name: "Quieter operation control", 
+    ival: {"Guardian":3.0,"Extreme comfort seeker":2.8,"Rational emergency prep":3.6,"小户型客厅":3.6,"小户型卧室":3.0,"总计":3.1}},
+  { name: "Quieter operation control",
     rate: {"Guardian":5,"Extreme comfort seeker":12,"Rational emergency prep":10,"小户型客厅":16,"小户型卧室":14,"总计":10},
     use:  {"Guardian":4.3,"Extreme comfort seeker":4.1,"Rational emergency prep":4.7,"小户型客厅":4.0,"小户型卧室":4.7,"总计":4.2},
-    ival: {"Guardian":4.0,"Extreme comfort seeker":3.3,"Rational emergency prep":3.2,"小户型客厅":4.0,"小户型卧室":4.0,"总计":3.6}
-  },
-  { name: "Meeting mode / Ultra-quiet", 
+    ival: {"Guardian":4.0,"Extreme comfort seeker":3.3,"Rational emergency prep":3.2,"小户型客厅":4.0,"小户型卧室":4.0,"总计":3.6}},
+  { name: "Meeting mode / Ultra-quiet",
     rate: {"Guardian":3,"Extreme comfort seeker":13,"Rational emergency prep":7,"小户型客厅":9,"小户型卧室":8,"总计":9},
     use:  {"Guardian":4.5,"Extreme comfort seeker":4.2,"Rational emergency prep":5.0,"小户型客厅":4.7,"小户型卧室":4.0,"总计":4.2},
-    ival: {"Guardian":3.7,"Extreme comfort seeker":3.5,"Rational emergency prep":3.8,"小户型客厅":3.9,"小户型卧室":3.9,"总计":3.6}
-  },
-  { name: "One-touch Sleep/Night mode", 
+    ival: {"Guardian":3.7,"Extreme comfort seeker":3.5,"Rational emergency prep":3.8,"小户型客厅":3.9,"小户型卧室":3.9,"总计":3.6}},
+  { name: "One-touch Sleep/Night mode",
     rate: {"Guardian":4,"Extreme comfort seeker":3,"Rational emergency prep":3,"小户型客厅":6,"小户型卧室":6,"总计":4},
     use:  {"Guardian":3.8,"Extreme comfort seeker":4.0,"Rational emergency prep":3.0,"小户型客厅":3.0,"小户型卧室":4.7,"总计":3.9},
-    ival: {"Guardian":3.1,"Extreme comfort seeker":3.6,"Rational emergency prep":2.6,"小户型客厅":3.7,"小户型卧室":3.7,"总计":3.4}
-  },
-  { name: "Dim backlight display", 
+    ival: {"Guardian":3.1,"Extreme comfort seeker":3.6,"Rational emergency prep":2.6,"小户型客厅":3.7,"小户型卧室":3.7,"总计":3.4}},
+  { name: "Dim backlight display",
     rate: {"Guardian":7,"Extreme comfort seeker":4,"Rational emergency prep":7,"小户型客厅":13,"小户型卧室":4,"总计":5},
     use:  {"Guardian":4.5,"Extreme comfort seeker":3.8,"Rational emergency prep":4.5,"小户型客厅":3.8,"小户型卧室":3.5,"总计":4.0},
-    ival: {"Guardian":3.0,"Extreme comfort seeker":3.4,"Rational emergency prep":3.3,"小户型客厅":3.8,"小户型卧室":3.2,"总计":3.3}
-  },
-  { name: "Motion-activated soft backlight", 
+    ival: {"Guardian":3.0,"Extreme comfort seeker":3.4,"Rational emergency prep":3.3,"小户型客厅":3.8,"小户型卧室":3.2,"总计":3.3}},
+  { name: "Motion-activated soft backlight",
     rate: {"Guardian":3,"Extreme comfort seeker":4,"Rational emergency prep":0,"小户型客厅":9,"小户型卧室":2,"总计":4},
     use:  {"Guardian":4.5,"Extreme comfort seeker":3.0,"Rational emergency prep":null,"小户型客厅":4.3,"小户型卧室":4.0,"总计":3.9},
-    ival: {"Guardian":3.3,"Extreme comfort seeker":3.5,"Rational emergency prep":null,"小户型客厅":3.5,"小户型卧室":2.6,"总计":3.4}
-  },
-  { name: "Tactile physical buttons", 
+    ival: {"Guardian":3.3,"Extreme comfort seeker":3.5,"Rational emergency prep":null,"小户型客厅":3.5,"小户型卧室":2.6,"总计":3.4}},
+  { name: "Tactile physical buttons",
     rate: {"Guardian":1,"Extreme comfort seeker":1,"Rational emergency prep":7,"小户型客厅":13,"小户型卧室":0,"总计":2},
     use:  {"Guardian":5.0,"Extreme comfort seeker":4.0,"Rational emergency prep":3.5,"小户型客厅":4.0,"小户型卧室":null,"总计":4.0},
-    ival: {"Guardian":3.2,"Extreme comfort seeker":3.7,"Rational emergency prep":2.9,"小户型客厅":3.5,"小户型卧室":null,"总计":3.4}
-  },
-  { name: "Slim tower design", 
+    ival: {"Guardian":3.2,"Extreme comfort seeker":3.7,"Rational emergency prep":2.9,"小户型客厅":3.5,"小户型卧室":null,"总计":3.4}},
+  { name: "Slim tower design",
     rate: {"Guardian":24,"Extreme comfort seeker":14,"Rational emergency prep":7,"小户型客厅":6,"小户型卧室":22,"总计":17},
     use:  {"Guardian":4.2,"Extreme comfort seeker":4.2,"Rational emergency prep":3.5,"小户型客厅":4.0,"小户型卧室":4.1,"总计":4.2},
-    ival: {"Guardian":3.6,"Extreme comfort seeker":3.3,"Rational emergency prep":3.0,"小户型客厅":3.8,"小户型卧室":3.3,"总计":3.5}
-  },
-  { name: "Minimalist finishes", 
+    ival: {"Guardian":3.6,"Extreme comfort seeker":3.3,"Rational emergency prep":3.0,"小户型客厅":3.8,"小户型卧室":3.3,"总计":3.5}},
+  { name: "Minimalist finishes",
     rate: {"Guardian":7,"Extreme comfort seeker":6,"Rational emergency prep":3,"小户型客厅":3,"小户型卧室":18,"总计":8},
     use:  {"Guardian":3.2,"Extreme comfort seeker":3.7,"Rational emergency prep":2.0,"小户型客厅":4.0,"小户型卧室":3.4,"总计":3.5},
-    ival: {"Guardian":3.2,"Extreme comfort seeker":2.8,"Rational emergency prep":null,"小户型客厅":2.0,"小户型卧室":3.5,"总计":3.1}
-  },
-  { name: "Blend like furniture", 
+    ival: {"Guardian":3.2,"Extreme comfort seeker":2.8,"Rational emergency prep":null,"小户型客厅":2.0,"小户型卧室":3.5,"总计":3.1}},
+  { name: "Blend like furniture",
     rate: {"Guardian":12,"Extreme comfort seeker":8,"Rational emergency prep":3,"小户型客厅":6,"小户型卧室":8,"总计":9},
     use:  {"Guardian":3.7,"Extreme comfort seeker":3.8,"Rational emergency prep":2.0,"小户型客厅":4.0,"小户型卧室":4.0,"总计":3.8},
-    ival: {"Guardian":3.3,"Extreme comfort seeker":2.9,"Rational emergency prep":null,"小户型客厅":3.2,"小户型卧室":3.5,"总计":3.2}
-  },
-  { name: "Built-in cooling + purification", 
+    ival: {"Guardian":3.3,"Extreme comfort seeker":2.9,"Rational emergency prep":null,"小户型客厅":3.2,"小户型卧室":3.5,"总计":3.2}},
+  { name: "Built-in cooling + purification",
     rate: {"Guardian":3,"Extreme comfort seeker":2,"Rational emergency prep":0,"小户型客厅":3,"小户型卧室":4,"总计":3},
     use:  {"Guardian":5.0,"Extreme comfort seeker":4.7,"Rational emergency prep":null,"小户型客厅":2.0,"小户型卧室":4.0,"总计":4.4},
-    ival: {"Guardian":3.7,"Extreme comfort seeker":3.9,"Rational emergency prep":null,"小户型客厅":3.6,"小户型卧室":3.8,"总计":3.8}
-  },
-  { name: "Built-in cooling + heating", 
+    ival: {"Guardian":3.7,"Extreme comfort seeker":3.9,"Rational emergency prep":null,"小户型客厅":3.6,"小户型卧室":3.8,"总计":3.8}},
+  { name: "Built-in cooling + heating",
     rate: {"Guardian":3,"Extreme comfort seeker":4,"Rational emergency prep":0,"小户型客厅":0,"小户型卧室":2,"总计":3},
     use:  {"Guardian":3.5,"Extreme comfort seeker":3.7,"Rational emergency prep":null,"小户型客厅":null,"小户型卧室":3.0,"总计":3.5},
-    ival: {"Guardian":3.3,"Extreme comfort seeker":2.7,"Rational emergency prep":null,"小户型客厅":null,"小户型卧室":3.8,"总计":2.9}
-  }
+    ival: {"Guardian":3.3,"Extreme comfort seeker":2.7,"Rational emergency prep":null,"小户型客厅":null,"小户型卧室":3.8,"总计":2.9}}
 ];
 
 const SEGS = ["Guardian", "Extreme comfort seeker", "Rational emergency prep", "小户型客厅", "小户型卧室", "总计"];
@@ -275,33 +243,35 @@ function toggleLabels(){
   if(chart) chart.update();
 }
 
+// ── 核心改动：始终基于该画像的全量数据计算轴范围和虚线中点 ──
 function getAxisConfig(s){
-  const valid = RAW_DATA.filter(d => d.rate[s] != null && d.use[s] != null);
-  const xs = valid.map(d => d.rate[s]);
-  const ys = valid.map(d => d.use[s]);
-  
+  // 全量：不受 flt 筛选影响，取该画像下所有有效数据
+  const all = RAW_DATA.filter(d => d.rate[s] != null && d.use[s] != null);
+  const xs  = all.map(d => d.rate[s]);
+  const ys  = all.map(d => d.use[s]);
+
   const maxX = Math.max(...xs), minX = Math.min(...xs);
   const maxY = Math.max(...ys), minY = Math.min(...ys);
-  
-  const domX = Math.ceil((maxX * 1.15) / 5) * 5;
-  const domY = 5.0; // 有用性固定最高5
+
+  // 虚线位置 = 最小值 + (最大值 - 最小值) / 2
   const midX = minX + (maxX - minX) / 2;
   const midY = minY + (maxY - minY) / 2;
-  
-  return { domX, domY, midX, midY, minX, minY };
+
+  // 坐标轴范围 = 全量最值 ± 小量 padding，向外取整到最近 5 的倍数（X）
+  const domX = Math.ceil((maxX * 1.12) / 5) * 5;
+  // Y 轴：有用性评分固定 1–5，下边界比全量最小值略低，上边界 5.2
+  const yMin = Math.max(1.0, Math.floor((minY - 0.3) * 10) / 10);
+  const domY = 5.2;
+
+  return { domX, domY, yMin, midX, midY, maxX, minX, maxY, minY };
 }
 
 function getData(){
-  let d = RAW_DATA.filter(r => r.rate[seg] != null && r.use[seg] != null && r.ival[seg] != null)
-    .map(r => ({
-      name: r.name,
-      x: r.rate[seg],
-      y: r.use[seg],
-      ival: r.ival[seg]
-    }));
-  
+  let d = RAW_DATA
+    .filter(r => r.rate[seg] != null && r.use[seg] != null && r.ival[seg] != null)
+    .map(r => ({ name: r.name, x: r.rate[seg], y: r.use[seg], ival: r.ival[seg] }));
   d.sort((a,b) => b.ival - a.ival);
-  if(flt === "top5") return d.slice(0, 5);
+  if(flt === "top5")  return d.slice(0, 5);
   if(flt === "top10") return d.slice(0, 10);
   return d;
 }
@@ -322,24 +292,19 @@ function buildBtns(){
 function updateStatus(data, cfg){
   document.getElementById('sSeg').textContent = seg;
   const count = data.length;
-  document.getElementById('sFlt').textContent = flt === 'all' ? `全部 ${count} 项` : (flt === 'top5' ? 'Top 5' : 'Top 10');
-  document.getElementById('sAxis').textContent = 
-    `X轴 选择率 | Y轴 有用性 | 中点: X=${cfg.midX.toFixed(1)}% Y=${cfg.midY.toFixed(2)}`;
-  document.getElementById('listTitle').textContent = 
-    `方案清单 — ${seg} (按 I 值降序)`;
+  document.getElementById('sFlt').textContent = flt === 'all' ? `全部 ${count} 项` : flt === 'top5' ? 'Top 5' : 'Top 10';
+  document.getElementById('sAxis').textContent =
+    `X轴 0–${cfg.domX}% (全量 ${cfg.minX}–${cfg.maxX}%) · Y轴 有用性 · 虚线中点 X=${cfg.midX.toFixed(1)}% Y=${cfg.midY.toFixed(2)}`;
+  document.getElementById('listTitle').textContent = `方案清单 — ${seg} (按 I 值降序)`;
 }
 
 function buildChart(data, cfg){
   const dark = isDark();
   currentCfg = cfg;
-  
-  // 气泡半径映射逻辑：I值通常在2.5-4.5之间，映射到半径5-15
   currentPts = data.map(d => ({
-    x: d.x,
-    y: d.y,
-    r: (d.ival - 2) * 6, // 动态气泡半径
-    label: d.name,
-    ival: d.ival
+    x: d.x, y: d.y,
+    r: (d.ival - 2) * 6,
+    label: d.name, ival: d.ival
   }));
 
   const gc = dark ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.06)';
@@ -349,100 +314,80 @@ function buildChart(data, cfg){
 
   chart = new Chart(document.getElementById('mc'), {
     type: 'bubble',
-    data: {
-      datasets: [{
-        data: currentPts,
-        backgroundColor: currentPts.map(p => 
-          p.ival >= 3.7 ? 'rgba(239, 68, 68, 0.7)' : 
-          p.ival >= 3.3 ? 'rgba(245, 158, 11, 0.7)' : 
-          'rgba(59, 130, 246, 0.7)'
-        ),
-        hoverBackgroundColor: currentPts.map(p => 
-          p.ival >= 3.7 ? 'rgba(239, 68, 68, 1)' : 
-          p.ival >= 3.3 ? 'rgba(245, 158, 11, 1)' : 
-          'rgba(59, 130, 246, 1)'
-        ),
-        borderWidth: 1,
-        borderColor: dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'
-      }]
-    },
+    data: { datasets: [{
+      data: currentPts,
+      backgroundColor: currentPts.map(p =>
+        p.ival >= 3.7 ? 'rgba(239,68,68,0.7)' :
+        p.ival >= 3.3 ? 'rgba(245,158,11,0.7)' :
+        'rgba(59,130,246,0.7)'
+      ),
+      hoverBackgroundColor: currentPts.map(p =>
+        p.ival >= 3.7 ? 'rgba(239,68,68,1)' :
+        p.ival >= 3.3 ? 'rgba(245,158,11,1)' :
+        'rgba(59,130,246,1)'
+      ),
+      borderWidth: 1,
+      borderColor: dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'
+    }]},
     options: {
       responsive: true, maintainAspectRatio: false,
       layout: { padding: { top: 40, right: 40, bottom: 20, left: 20 } },
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            title: items => items[0].raw.label,
-            label: item => [
-              `选择率: ${item.raw.x}%`,
-              `有用性评分: ${item.raw.y.toFixed(2)}`,
-              `I值 (买单意愿): ${item.raw.ival.toFixed(2)}`
-            ]
-          }
-        }
+        tooltip: { callbacks: {
+          title: items => items[0].raw.label,
+          label: item => [
+            `选择率: ${item.raw.x}%`,
+            `有用性评分: ${item.raw.y.toFixed(2)}`,
+            `I值 (买单意愿): ${item.raw.ival.toFixed(2)}`
+          ]
+        }}
       },
       scales: {
-        x: { 
-          min: 0, 
-          max: cfg.domX, 
-          title: { display: true, text: '选择率 (%)', color: tc, font: { weight: 'bold' } },
-          grid: { color: gc } 
-        },
-        y: { 
-          min: 1.5, // 有用性评估最低分约2.0
-          max: 5.2, 
-          title: { display: true, text: '有用性评估 (Usefulness)', color: tc, font: { weight: 'bold' } },
-          grid: { color: gc } 
-        }
+        x: { min: 0, max: cfg.domX,
+          title: { display: true, text: '选择率 (%)', color: tc, font: { weight: 'bold' }},
+          grid: { color: gc }},
+        y: { min: cfg.yMin, max: cfg.domY,
+          title: { display: true, text: '有用性评估 (Usefulness)', color: tc, font: { weight: 'bold' }},
+          grid: { color: gc }}
       }
     },
     plugins: [
       {
         id: 'refLines',
-        afterDatasetsDraw(ch) {
+        afterDatasetsDraw(ch){
           const {ctx, chartArea:ca, scales:{x,y}} = ch;
           ctx.save();
           ctx.setLineDash([6,4]); ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 1.2;
           const px = x.getPixelForValue(cfg.midX), py = y.getPixelForValue(cfg.midY);
-          
-          // 垂直虚线
-          ctx.beginPath(); ctx.moveTo(px, ca.top); ctx.lineTo(px, ca.bottom); ctx.stroke();
-          // 水平虚线
-          ctx.beginPath(); ctx.moveTo(ca.left, py); ctx.lineTo(ca.right, py); ctx.stroke();
-          
+          ctx.beginPath(); ctx.moveTo(px, ca.top);    ctx.lineTo(px, ca.bottom); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(ca.left, py);   ctx.lineTo(ca.right, py);  ctx.stroke();
           ctx.setLineDash([]);
           ctx.font = '600 10px sans-serif'; ctx.fillStyle = '#6366f1';
           ctx.fillText(`中点 ${cfg.midX.toFixed(1)}%`, px + 4, ca.top + 15);
-          ctx.fillText(`中点 ${cfg.midY.toFixed(2)}`, ca.right - 65, py - 6);
-          
+          ctx.fillText(`中点 ${cfg.midY.toFixed(2)}`,   ca.right - 65, py - 6);
           const qc = dark ? 'rgba(255,255,255,.15)' : 'rgba(0,0,0,.15)';
           ctx.fillStyle = qc; ctx.font = 'italic 10px sans-serif';
           ctx.fillText('高选·有用', ca.right - 50, ca.top + 15);
-          ctx.fillText('低选·低效', ca.left + 5, ca.bottom - 10);
+          ctx.fillText('低选·低效', ca.left + 5,   ca.bottom - 10);
           ctx.restore();
         }
       },
       {
         id: 'staticLabels',
-        afterDatasetsDraw(ch) {
+        afterDatasetsDraw(ch){
           if(!showLabels) return;
           const {ctx, chartArea:ca, scales:{x,y}} = ch;
           const dark2 = isDark();
           ctx.save();
           ctx.font = '500 10px sans-serif';
           ctx.textBaseline = 'middle';
-
           currentPts.forEach(p => {
             const cx = x.getPixelForValue(p.x), cy = y.getPixelForValue(p.y);
             const txt = p.label;
             const tw = ctx.measureText(txt).width;
-            
-            // 标签背景
-            ctx.fillStyle = dark2 ? 'rgba(26,29,39,0.8)' : 'rgba(255,255,255,0.8)';
+            ctx.fillStyle = dark2 ? 'rgba(26,29,39,0.88)' : 'rgba(255,255,255,0.88)';
             ctx.fillRect(cx - tw/2 - 2, cy - p.r - 14, tw + 4, 12);
-            
-            // 标签文字
             ctx.fillStyle = dark2 ? '#f0f4ff' : '#0f172a';
             ctx.fillText(txt, cx - tw/2, cy - p.r - 8);
           });
@@ -460,13 +405,13 @@ function buildCards(data, cfg){
     const iClass = item.ival >= 3.7 ? 'i-hi' : item.ival >= 3.3 ? 'i-mid' : 'i-lo';
     c.innerHTML = `
       <div class="card-top">
-        <span class="rank-badge"> #${i+1}</span>
+        <span class="rank-badge">#${i+1}</span>
         <span class="i-badge ${iClass}">I值 ${item.ival.toFixed(2)}</span>
       </div>
       <div class="card-name">${item.name}</div>
       <div class="bar-row">
         <div class="bar-label"><span>有用性评分</span><span>${item.y.toFixed(1)} / 5</span></div>
-        <div class="bar-bg"><div class="bar-x" style="width:${(item.y/5)*100}%; background:#2563eb;"></div></div>
+        <div class="bar-bg"><div class="bar-x" style="width:${(item.y/5)*100}%;background:#2563eb;"></div></div>
       </div>
       <div class="bar-row">
         <div class="bar-label"><span>选择率</span><span>${item.x}%</span></div>
@@ -478,8 +423,8 @@ function buildCards(data, cfg){
 
 function refresh(){
   buildBtns();
-  const cfg = getAxisConfig(seg);
-  const data = getData();
+  const cfg  = getAxisConfig(seg);   // 永远用全量计算
+  const data = getData();             // 受 flt 筛选
   updateStatus(data, cfg);
   buildChart(data, cfg);
   buildCards(data, cfg);
