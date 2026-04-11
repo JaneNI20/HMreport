@@ -25,9 +25,19 @@ button.seg,button.flt,button.toggle{font-size:12px;border:1.5px solid var(--bord
 button.seg.active,button.flt.active{background:#2563eb;border-color:#2563eb;color:#fff;font-weight:600;box-shadow:0 0 0 3px rgba(37,99,235,.18);}
 button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:600;}
 @media(prefers-color-scheme:dark){button.toggle.on{background:#f0f4ff;border-color:#f0f4ff;color:#0f172a;}}
+.status{
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  margin-bottom:1.25rem;font-size:12px;color:var(--text-sec);
+}
+.pill{
+  background:#EFF6FF;color:#1e40af;
+  padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;
+}
+@media(prefers-color-scheme:dark){.pill{background:#1e2d4d;color:#93c5fd;}}
 .chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;margin-bottom:10px;position:relative;}
 .legend-row{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text-hint);margin-bottom:2rem;align-items:center;}
 .ld{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:3px;vertical-align:middle;}
+.list-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px;}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px;display:flex;flex-direction:column;gap:7px;}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;}
@@ -49,8 +59,7 @@ button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:
 <body>
 <div class="page">
   <h1>Portable AC Solution Concept Matrix</h1>
-  <p class="desc">X轴 = 感兴趣(%) · Y轴 = I值(买单意愿) </p>
-  <!-- #· 标签仅在鼠标精准悬停圆点时显示 -->
+  <p class="desc">X轴 = 感兴趣(%) · Y轴 = I值(买单意愿) · 虚线 = 极差中点</p>
 
   <div class="controls">
     <div><div class="section-label">画像</div><div class="btn-group" id="segs"></div></div>
@@ -63,6 +72,14 @@ button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:
     </div>
   </div>
 
+  <div class="status">
+    当前：<span class="pill" id="sSeg"></span>
+    <span style="color:var(--border-mid)">·</span>
+    <span class="pill" id="sFlt"></span>
+    <span style="color:var(--border-mid)">·</span>
+    <span id="sAxis" style="font-size:11px;color:var(--text-hint);"></span>
+  </div>
+
   <div class="chart-box">
     <div style="position:relative;width:100%;height:600px;"><canvas id="mc"></canvas></div>
   </div>
@@ -73,6 +90,7 @@ button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:
     <span><span class="ld" style="background:rgba(37,99,235,.8)"></span>I值 &lt; 3.3 一般</span>
   </div>
 
+  <div class="list-title" id="listTitle"></div>
   <div class="grid" id="cardGrid"></div>
 </div>
 
@@ -162,6 +180,19 @@ function buildBtns(){
   });
 }
 
+function updateStatus(data, cfg){
+  document.getElementById('sSeg').textContent = seg;
+  const count = data.length;
+  const fltLabel = flt==='all' ? `全部 ${count} 个方案`
+                 : flt==='top5' ? `Top 5（${count} 个）`
+                 : `Top 10（${count} 个）`;
+  document.getElementById('sFlt').textContent = fltLabel;
+  document.getElementById('sAxis').textContent =
+    `X轴 0–${cfg.domX}% · Y轴 ${cfg.minY.toFixed(1)}–${cfg.domY} · 象限中点 X=${cfg.midX.toFixed(1)}% Y=${cfg.midY.toFixed(2)}`;
+  document.getElementById('listTitle').textContent =
+    `方案清单 — ${seg} · ${flt==='all'?`全部 ${count} 项`:flt==='top5'?'Top 5':'Top 10'} · 按 I 值排序`;
+}
+
 function buildChart(data, cfg){
   const dark=isDark();
   currentCfg=cfg;
@@ -172,39 +203,45 @@ function buildChart(data, cfg){
 
   if(chart) chart.destroy();
 
+  const positioner = function(elements, eventPosition){
+    if(!elements.length) return false;
+    const el=elements[0];
+    return{x:el.element.x, y:el.element.y-14};
+  };
+  Chart.Tooltip.positioners.abovePoint=positioner;
+
   chart=new Chart(document.getElementById('mc'),{
     type:'scatter',
     data:{datasets:[{
       data:currentPts,
       pointRadius:7,
       pointHoverRadius:10,
-      hitRadius: 10, // 增加鼠标点击/悬浮的响应热区
+      hitRadius:10,
       backgroundColor:currentPts.map(p=>p.iVal>=3.7?'#ef4444':p.iVal>=3.3?'#f59e0b':'#3b82f6'),
-      borderWidth:1,
+      borderWidth:1.5,
       borderColor:'#fff'
     }]},
     options:{
       responsive:true, maintainAspectRatio:false,
       layout:{padding:30},
-      // --- 关键改动：精准相交模式 ---
-      interaction:{
-        mode:'nearest', 
-        intersect:true // 只有鼠标进入圆点像素范围才触发标签显示
-      },
+      interaction:{mode:'nearest', intersect:true},
       plugins:{
         legend:{display:false},
         tooltip:{
           enabled:true,
-          padding:12,
-          backgroundColor:dark?'#1e293b':'#ffffff',
+          position:'abovePoint',
+          padding:10,
+          backgroundColor:dark?'rgba(15,23,42,0.97)':'rgba(255,255,255,0.97)',
           titleColor:dark?'#f1f5f9':'#0f172a',
-          titleFont:{size:13,weight:'bold'},
+          titleFont:{size:12,weight:'bold'},
           bodyColor:dark?'#94a3b8':'#475569',
-          bodyFont:{size:12},
-          borderColor:dark?'#334155':'#e2e8f0',
+          bodyFont:{size:11},
+          borderColor:dark?'#334155':'#cbd5e1',
           borderWidth:1,
-          cornerRadius:8,
-          displayColors:true,
+          cornerRadius:7,
+          displayColors:false,
+          caretSize:5,
+          caretPadding:6,
           callbacks:{
             title:items=>items[0].raw.label,
             label:item=>[`选择率: ${item.raw.x}%`,`I值: ${item.raw.y.toFixed(2)}`]
@@ -243,9 +280,9 @@ function buildChart(data, cfg){
           if(!showLabels) return;
           const {ctx,chartArea:ca,scales:{x,y}}=ch;
           const dark2=isDark();
-          const labelBg=dark2?'rgba(26,29,39,0.88)':'rgba(255,255,255,0.88)';
-          const labelColor=dark2?'rgba(220,235,255,.88)':'rgba(10,20,50,.80)';
-          const connColor=dark2?'rgba(148,163,184,.3)':'rgba(71,85,105,.25)';
+          const labelBg=dark2?'rgba(15,23,42,0.97)':'rgba(255,255,255,0.97)';
+          const labelColor=dark2?'rgba(220,235,255,.95)':'rgba(10,20,50,.90)';
+          const connColor=dark2?'rgba(148,163,184,.4)':'rgba(71,85,105,.35)';
 
           ctx.save();
           ctx.font='500 10px -apple-system,BlinkMacSystemFont,sans-serif';
@@ -255,16 +292,17 @@ function buildChart(data, cfg){
             const cx=x.getPixelForValue(p.x), cy=y.getPixelForValue(p.y);
             const txt=p.label;
             const w=ctx.measureText(txt).width+8;
-            return{txt,cx,cy,lx:cx+10+w/2,ly:cy-8,w,h:13};
+            const h=13;
+            return{txt,cx,cy,lx:cx+w/2+10,ly:cy-10,w,h};
           });
 
-          for(let it=0;it<120;it++){
+          for(let it=0;it<200;it++){
             let moved=false;
             for(let i=0;i<objs.length;i++){
               for(let j=i+1;j<objs.length;j++){
                 const a=objs[i],b=objs[j];
-                const ox=(a.w/2+b.w/2+2)-Math.abs(a.lx-b.lx);
-                const oy=(a.h/2+b.h/2+2)-Math.abs(a.ly-b.ly);
+                const ox=(a.w/2+b.w/2+3)-Math.abs(a.lx-b.lx);
+                const oy=(a.h/2+b.h/2+3)-Math.abs(a.ly-b.ly);
                 if(ox>0&&oy>0){
                   const dx=a.lx-b.lx||.01, dy=a.ly-b.ly||.01;
                   const d=Math.sqrt(dx*dx+dy*dy)||1;
@@ -281,16 +319,18 @@ function buildChart(data, cfg){
             const lx=Math.max(ca.left+o.w/2+2,Math.min(ca.right-o.w/2-2,o.lx));
             const ly=Math.max(ca.top+o.h/2+2,Math.min(ca.bottom-o.h/2-2,o.ly));
             const dx=lx-o.cx, dy=ly-o.cy, dist=Math.sqrt(dx*dx+dy*dy)||1;
-            if(dist>10){
+            if(dist>14){
               ctx.beginPath();
               ctx.moveTo(o.cx+(dx/dist)*8, o.cy+(dy/dist)*8);
               ctx.lineTo(lx-(dx>0?o.w/2:-o.w/2), ly);
-              ctx.strokeStyle=connColor; ctx.lineWidth=0.8; ctx.stroke();
+              ctx.strokeStyle=connColor; ctx.lineWidth=1.0; ctx.stroke();
             }
             ctx.fillStyle=labelBg;
             ctx.beginPath();
             ctx.roundRect(lx-o.w/2, ly-o.h/2, o.w, o.h, 3);
             ctx.fill();
+            ctx.strokeStyle=dark2?'rgba(255,255,255,.12)':'rgba(0,0,0,.10)';
+            ctx.lineWidth=0.5; ctx.stroke();
             ctx.fillStyle=labelColor;
             ctx.fillText(o.txt, lx-o.w/2+4, ly);
           });
@@ -321,6 +361,7 @@ function refresh(){
   buildBtns();
   const cfg=getAxisConfig(seg);
   const data=getData();
+  updateStatus(data, cfg);
   buildChart(data,cfg);
   buildCards(data,cfg);
 }
