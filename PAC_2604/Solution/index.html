@@ -59,7 +59,7 @@ button.toggle.on{background:#0f172a;border-color:#0f172a;color:#fff;font-weight:
 <body>
 <div class="page">
   <h1>Portable AC Solution Concept Matrix</h1>
-  <p class="desc">X轴 = 选择率(%) · Y轴 = 有用性评分 (1-5) · 气泡大小 = I值 (买单意愿)</p>
+  <p class="desc">X轴 = 感兴趣占比(%) · Y轴 = 有用性评分 (1-5) · 气泡大小 = I值 (买单意愿)</p>
 
   <div class="controls">
     <div><div class="section-label">用户画像</div><div class="btn-group" id="segs"></div></div>
@@ -378,7 +378,7 @@ function buildChart(data, cfg){
         tooltip: { callbacks: {
           title: items => items[0].raw.label,
           label: item => [
-            `选择率: ${item.raw.x}%`,
+            `感兴趣占比: ${item.raw.x}%`,
             `有用性评分: ${item.raw.y.toFixed(2)}`,
             `I值 (买单意愿): ${item.raw.ival.toFixed(2)}`
           ]
@@ -386,7 +386,7 @@ function buildChart(data, cfg){
       },
       scales: {
         x: { min: 0, max: cfg.domX,
-          title: { display: true, text: '选择率 (%)', color: tc, font: { weight: 'bold' }},
+          title: { display: true, text: '感兴趣占比 (%)', color: tc, font: { weight: 'bold' }},
           grid: { color: gc }},
         y: { min: cfg.yMin, max: cfg.domY,
           title: { display: true, text: '有用性评估 (Usefulness)', color: tc, font: { weight: 'bold' }},
@@ -584,7 +584,7 @@ function buildCards(data, cfg){
         <div class="bar-bg"><div class="bar-x" style="width:${(item.y/5)*100}%;background:#2563eb;"></div></div>
       </div>
       <div class="bar-row">
-        <div class="bar-label"><span>选择率</span><span>${item.x}%</span></div>
+        <div class="bar-label"><span>感兴趣占比</span><span>${item.x}%</span></div>
         <div class="bar-bg"><div class="bar-x" style="width:${(item.x/cfg.domX)*100}%;"></div></div>
       </div>`;
     g.appendChild(c);
