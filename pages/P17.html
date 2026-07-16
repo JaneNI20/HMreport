@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>产品方案价格推测 V4</title>
+  <style>
+    :root{
+      --bg:#f4f6f9;
+      --card:#ffffff;
+      --line:#d8e1ec;
+      --text:#0f172a;
+      --sub:#475569;
+      --blue:#2563eb;
+      --blue-soft:#eaf2ff;
+      --teal:#0f766e;
+      --teal-soft:#ecfeff;
+      --amber:#b45309;
+      --amber-soft:#fff7ed;
+      --shadow:0 16px 40px rgba(15,23,42,.08);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1440px;
+      margin:0 auto;
+      padding:28px;
+      display:grid;
+      gap:22px;
+    }
+    .panel{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:30px 34px;
+      display:grid;
+      gap:18px;
+    }
+    .kicker{
+      font-size:13px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#64748b;
+      font-weight:800;
+    }
+    h1,h2,h3,p{margin:0}
+    h1{
+      font-size:38px;
+      line-height:1.18;
+      letter-spacing:-.02em;
+    }
+    h2{
+      font-size:26px;
+      line-height:1.25;
+    }
+    h3{
+      font-size:20px;
+      line-height:1.3;
+    }
+    .subtitle{
+      color:var(--sub);
+      font-size:18px;
+      line-height:1.8;
+      max-width:1120px;
+    }
+    .grid-2{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:18px;
+    }
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:18px;
+    }
+    .card,.table-card{
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:22px;
+      background:#fcfdff;
+      display:grid;
+      gap:16px;
+    }
+    .card-headline{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+    .sku-pill{display:inline-flex;width:max-content;padding:7px 10px;border-radius:999px;background:#eef4ff;color:#1d4ed8;font-size:12px;font-weight:900;white-space:nowrap;}
+    .card .metric strong{font-size:18px;}
+    .card .metric span{font-size:11px;}
+    .tag{
+      display:inline-flex;
+      width:max-content;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.04em;
+      color:var(--blue);
+      background:var(--blue-soft);
+    }
+    .tag.warn{
+      color:var(--amber);
+      background:var(--amber-soft);
+    }
+    .big-price{
+      font-size:34px;
+      font-weight:900;
+      color:var(--blue);
+      line-height:1.1;
+    }
+    .desc{
+      color:var(--sub);
+      font-size:16px;
+      line-height:1.75;
+    }
+    .metric-row{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+    }
+    .metric{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px 14px 12px;
+    }
+    .metric span{
+      display:block;
+      font-size:12px;
+      color:#64748b;
+      margin-bottom:6px;
+      font-weight:700;
+    }
+    .metric strong{
+      font-size:22px;
+      color:#1d4ed8;
+      line-height:1.2;
+    }
+    .insight{
+      background:linear-gradient(135deg,#eef6ff 0%, #f8fbff 100%);
+      border:1px solid #cfe0ff;
+      border-left:6px solid #3b82f6;
+      border-radius:16px;
+      padding:16px 18px;
+      font-size:17px;
+      line-height:1.8;
+      color:#1e3a8a;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:15px;
+    }
+    th,td{
+      text-align:left;
+      vertical-align:top;
+      padding:14px 12px;
+      border-bottom:1px solid #e6edf5;
+      line-height:1.65;
+    }
+    th{
+      font-size:12px;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:#64748b;
+      background:#f8fafc;
+      font-weight:800;
+    }
+    .bar-wrap{
+      display:grid;
+      gap:16px;
+    }
+    .bar-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fcfdff;
+      padding:18px;
+      display:grid;
+      gap:14px;
+    }
+    .bar-head{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      align-items:flex-start;
+    }
+    .axis{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      font-size:12px;
+      color:#64748b;
+      gap:8px;
+    }
+    .track{
+      position:relative;
+      height:28px;
+      border-radius:999px;
+      background:#edf2f7;
+      overflow:hidden;
+    }
+    .range{
+      position:absolute;
+      top:5px;
+      height:18px;
+      border-radius:999px;
+    }
+    .range.overall{background:#94a3b8;}
+    .range.target{background:#2563eb;}
+    .range.test{background:#7c3aed;}
+    .legend{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      color:var(--sub);
+      font-size:14px;
+    }
+    .legend span{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .dot{
+      width:14px;
+      height:14px;
+      border-radius:999px;
+      display:inline-block;
+    }
+    .dot.overall{background:#94a3b8;}
+    .dot.target{background:#2563eb;}
+    .dot.test{background:#7c3aed;}
+    .note{
+      color:var(--sub);
+      font-size:15px;
+      line-height:1.75;
+    }
+    @media (max-width:1100px){
+      .grid-2,.grid-3,.metric-row{grid-template-columns:1fr}
+      h1{font-size:32px}
+      .big-price{font-size:30px}
+    }
+  </style>
+
+<style id="visual-polish-v26">
+  :root {
+    --v26-bg: #f3f6f9;
+    --v26-paper: #ffffff;
+    --v26-paper-soft: #f8fafc;
+    --v26-ink: #17283b;
+    --v26-ink-soft: #4f6476;
+    --v26-muted: #6d7f8f;
+    --v26-line: #d8e1ea;
+    --v26-line-strong: #bccbd8;
+    --v26-brand: #2f6f9f;
+    --v26-brand-dark: #1f4f73;
+    --v26-brand-soft: #eaf3fa;
+    --v26-accent: #6f8f9f;
+    --v26-highlight: #b7791f;
+    --v26-shadow: 0 10px 26px rgba(23, 40, 59, .075);
+  }
+  html, body {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    color: var(--v26-ink) !important;
+    background: var(--v26-bg) !important;
+    text-rendering: geometricPrecision;
+  }
+  body { font-size: 15px; line-height: 1.6; }
+  h1, h2, h3, h4, .title, .section-title {
+    color: var(--v26-brand-dark) !important;
+    letter-spacing: 0 !important;
+  }
+  h1 {
+    font-size: clamp(30px, 3.2vw, 38px) !important;
+    line-height: 1.16 !important;
+    font-weight: 800 !important;
+  }
+  h2 {
+    font-size: clamp(22px, 2.2vw, 28px) !important;
+    line-height: 1.22 !important;
+    font-weight: 800 !important;
+  }
+  h3 {
+    font-size: 18px !important;
+    line-height: 1.28 !important;
+    font-weight: 800 !important;
+  }
+  h4 { font-size: 15px !important; line-height: 1.35 !important; font-weight: 800 !important; }
+  p, li, td, .subtitle, .desc, .note, .small, .muted, .cluster-desc, .cluster-diff, .body-copy {
+    color: var(--v26-ink-soft);
+    letter-spacing: 0 !important;
+  }
+  .wrap {
+    padding: 28px 24px 42px !important;
+  }
+  .panel, .hero, .card, .table-card, .chartPanel, .chart-panel, .chart-card,
+  .field-card, .cluster-card, .metric, .mini-card, .detail, .insight-card,
+  .overview-card, .persona-card, .concept-card, .price-card, .recommend-card {
+    border-radius: 8px !important;
+    border-color: var(--v26-line) !important;
+    box-shadow: var(--v26-shadow) !important;
+  }
+  .panel, .hero {
+    background: var(--v26-paper) !important;
+  }
+  .card, .table-card, .chartPanel, .chart-panel, .chart-card, .field-card,
+  .metric, .mini-card, .detail, .insight-card, .overview-card, .persona-card,
+  .concept-card, .price-card, .recommend-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%) !important;
+  }
+  .kicker, .eyebrow, .tag, .pill, .badge, .sku-pill, .chip, .mini-title,
+  .control-title, .card-headline, .meta {
+    letter-spacing: .04em !important;
+    font-weight: 800 !important;
+  }
+  .kicker, .eyebrow, .mini-title, .control-title {
+    color: var(--v26-muted) !important;
+    text-transform: uppercase;
+  }
+  .subtitle, .lead {
+    color: var(--v26-ink-soft) !important;
+    font-size: 16px !important;
+    line-height: 1.72 !important;
+  }
+  strong, b {
+    color: #20384e !important;
+    font-weight: 800 !important;
+  }
+  .takeaway, .insight, .field-insight, .recommendation, .opportunity,
+  .summary, .callout, .conclusion, .note-card {
+    border-radius: 8px !important;
+    border-color: #bfd3e4 !important;
+    background: #f3f8fc !important;
+    box-shadow: 0 8px 18px rgba(47, 111, 159, .07) !important;
+  }
+  .field-insight summary,
+  .takeaway strong,
+  .insight strong,
+  .recommendation strong,
+  .opportunity strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100%;
+  }
+  th {
+    background: #f3f7fb !important;
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  td, th {
+    border-color: #dbe4ed !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  tr:nth-child(even) td {
+    background-color: rgba(248, 250, 252, .62);
+  }
+  button, select, input {
+    font-family: inherit !important;
+  }
+  button, .tab, .toggle, .filter, .chip, .pill, select {
+    border-radius: 6px !important;
+  }
+  button:hover, .chip:hover, .pill:hover {
+    border-color: #9fb8cc !important;
+  }
+  .barwrap, .bar-wrap, .bar-track, .track {
+    background: #edf2f7 !important;
+  }
+  .value, .num, .big-number, .big-price, .score, .metric strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  .legend, .legend span, .axis, .tick, .label, .name {
+    color: #52687a !important;
+    font-size: 12px !important;
+    line-height: 1.42 !important;
+  }
+  svg text {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    fill: #52687a;
+  }
+  .grid, .grid-2, .grid-3, .charts, .overview-grid {
+    gap: 16px !important;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--v26-line);
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 14px 32px !important; }
+    h1 { font-size: 29px !important; }
+    h2 { font-size: 22px !important; }
+  }
+</style>
+
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel">
+      <div class="kicker">Bundle Pricing</div>
+      <h1>产品方案评估及价格建议</h1>
+      <p class="subtitle">💡两个方案放到整体市场里看，都有机会进入 <strong>$351–$450</strong>，但真正落价还要看它们分别卖给谁。<strong>方案1（PAC018）</strong>更匹配低 BTU 人群，所以最终建议下修到 <strong>$251–$350</strong>；<strong>方案2（PAC021）</strong>面对 <strong>8,000–11,999 BTU</strong> 用户时，依然能稳稳放在 <strong>$351–$450</strong>。</p>
+      <div class="insight">
+        <strong>主要结论：</strong><strong>方案1（PAC018）</strong> 如果面向 <strong>Less than 8,000 BTU</strong> 用户，建议主价格带收在 <strong>$251–$350</strong>；
+        <strong>方案2（PAC021）</strong> 面向 <strong>8,000–11,999 BTU</strong> 用户时，可以稳定落在 <strong>$351–$450</strong>。
+        但<strong>方案2B（10,000–11,999 BTU）</strong>的预测价格中位数更高（<strong>$419 vs $367</strong>），上四分位也更高（<strong>$588 vs $443</strong>）。
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>一、最终建议价格带</h2>
+      <div class="grid-3">
+        <section class="card">
+          <div class="card-headline"><div class="tag warn">方案1 | 入门升级包</div><span class="sku-pill">PAC018</span></div>
+          <h3>静音 + 72h免排水 + 3分钟安装 + 3way控制</h3>
+          <div class="big-price">$251 – $350</div>
+          <p class="desc">Less than 8,000 BTU 用户的预测价格中位数为 <strong>$331</strong>，建议价格带仍放在 <strong>$251–$350</strong>。这个方案更像轻量升级包，不建议默认按高配旗舰定价。</p>
+          <div class="metric-row">
+            <div class="metric"><span>有效样本</span><strong>22</strong></div>
+            <div class="metric"><span>当前基础价格均值</span><strong>$277</strong></div>
+            <div class="metric"><span>加权溢价中位数</span><strong>20.5%</strong></div>
+            <div class="metric"><span>预测价格中位数</span><strong>$331</strong></div>
+            <div class="metric"><span>价格四分位</span><strong>$229–$400</strong></div>
+            <div class="metric"><span>最集中预测价位段</span><strong>$351 – $450 / 27%</strong></div>
+            <div class="metric"><span>原始主价位段</span><strong>$151 – $250 / 32%</strong></div>
+          </div>
+        </section>
+    
+        <section class="card">
+          <div class="card-headline"><div class="tag ">方案2A | 8,000–9,999 BTU</div><span class="sku-pill">PAC021</span></div>
+          <h3>方案1 + 变频，面向 8,000–9,999 BTU 用户</h3>
+          <div class="big-price">$351 – $450</div>
+          <p class="desc">2A 的建议价位带仍是 <strong>$351–$450</strong>，预测价格中位数约 <strong>$367</strong>。它能支撑高一档价格，但位置更靠近该价位带下沿。</p>
+          <div class="metric-row">
+            <div class="metric"><span>有效样本</span><strong>51</strong></div>
+            <div class="metric"><span>当前基础价格均值</span><strong>$318</strong></div>
+            <div class="metric"><span>加权溢价中位数</span><strong>26.0%</strong></div>
+            <div class="metric"><span>预测价格中位数</span><strong>$367</strong></div>
+            <div class="metric"><span>价格四分位</span><strong>$252–$443</strong></div>
+            <div class="metric"><span>最集中预测价位段</span><strong>$351 – $450 / 29%</strong></div>
+            <div class="metric"><span>原始主价位段</span><strong>$151 – $250 / 35%</strong></div>
+          </div>
+        </section>
+    
+        <section class="card">
+          <div class="card-headline"><div class="tag ">方案2B | 10,000–11,999 BTU</div><span class="sku-pill">PAC021</span></div>
+          <h3>方案1 + 变频，面向 10,000–11,999 BTU 用户</h3>
+          <div class="big-price">$351 – $450</div>
+          <p class="desc">2B 的建议价位带同样是 <strong>$351–$450</strong>，但预测价格中位数约 <strong>$419</strong>，上四分位到 <strong>$588</strong>，更适合表达为同价位带内的高配/上探版本。</p>
+          <div class="metric-row">
+            <div class="metric"><span>有效样本</span><strong>56</strong></div>
+            <div class="metric"><span>当前基础价格均值</span><strong>$346</strong></div>
+            <div class="metric"><span>加权溢价中位数</span><strong>33.3%</strong></div>
+            <div class="metric"><span>预测价格中位数</span><strong>$419</strong></div>
+            <div class="metric"><span>价格四分位</span><strong>$287–$588</strong></div>
+            <div class="metric"><span>最集中预测价位段</span><strong>$351 – $450 / 20%</strong></div>
+            <div class="metric"><span>原始主价位段</span><strong>$251 – $350 / 27%</strong></div>
+          </div>
+        </section>
+    </div>
+    </section>
+
+    <section class="panel">
+      <h2>二、拆分后的价格判断矩阵</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>方案</th>
+            <th>BTU口径</th>
+            <th>有效样本</th>
+            <th>预测价格中位数</th>
+            <th>价格四分位</th>
+            <th>建议价格带</th>
+            <th>怎么讲更清楚</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>方案1</strong></td>
+            <td>Less than 8,000 BTU</td>
+            <td>22</td>
+            <td>$331</td>
+            <td>$229–$400</td>
+            <td><strong>$251 – $350</strong></td>
+            <td>轻量升级包，建议守住 $251–$350。</td>
+          </tr>
+          <tr>
+            <td><strong>方案2A</strong></td>
+            <td>8,000–9,999 BTU</td>
+            <td>51</td>
+            <td>$367</td>
+            <td>$252–$443</td>
+            <td><strong>$351 – $450</strong></td>
+            <td>可以放在 $351–$450，但更接近该价格带下沿。</td>
+          </tr>
+          <tr>
+            <td><strong>方案2B</strong></td>
+            <td>10,000–11,999 BTU</td>
+            <td>56</td>
+            <td>$419</td>
+            <td>$287–$588</td>
+            <td><strong>$351 – $450</strong></td>
+            <td>仍是 $351–$450，但更偏高配，后续可测试 $451–$550 上探。</td>
+          </tr>
+    </tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <h2>三、方案内概念贡献</h2>
+      <div class="grid-3">
+        <section class="table-card">
+          <h3>方案1 的概念构成贡献</h3>
+          <table>
+            <thead><tr><th>概念</th><th>IC均值</th><th>有溢价回答占比</th><th>平均溢价幅度</th></tr></thead>
+            <tbody><tr><td>46/43dB静音概念</td><td>52.4</td><td>32%</td><td>25.9%</td></tr><tr><td>3分钟安装概念</td><td>41.5</td><td>32%</td><td>24.1%</td></tr><tr><td>72h免排水概念</td><td>38.4</td><td>27%</td><td>27.3%</td></tr><tr><td>3way控制概念</td><td>29.4</td><td>14%</td><td>16.7%</td></tr></tbody>
+          </table>
+        </section>
+    
+        <section class="table-card">
+          <h3>方案2A 的概念构成贡献</h3>
+          <table>
+            <thead><tr><th>概念</th><th>IC均值</th><th>有溢价回答占比</th><th>平均溢价幅度</th></tr></thead>
+            <tbody><tr><td>72h免排水概念</td><td>44.6</td><td>37%</td><td>28.0%</td></tr><tr><td>46/43dB静音概念</td><td>43.4</td><td>27%</td><td>28.1%</td></tr><tr><td>变频概念</td><td>42.5</td><td>35%</td><td>32.6%</td></tr><tr><td>3分钟安装概念</td><td>37.7</td><td>33%</td><td>23.5%</td></tr><tr><td>3way控制概念</td><td>37.4</td><td>29%</td><td>20.8%</td></tr></tbody>
+          </table>
+        </section>
+    
+        <section class="table-card">
+          <h3>方案2B 的概念构成贡献</h3>
+          <table>
+            <thead><tr><th>概念</th><th>IC均值</th><th>有溢价回答占比</th><th>平均溢价幅度</th></tr></thead>
+            <tbody><tr><td>3分钟安装概念</td><td>48.4</td><td>18%</td><td>26.0%</td></tr><tr><td>变频概念</td><td>46.0</td><td>42%</td><td>35.3%</td></tr><tr><td>72h免排水概念</td><td>43.5</td><td>35%</td><td>27.8%</td></tr><tr><td>46/43dB静音概念</td><td>39.9</td><td>37%</td><td>32.7%</td></tr><tr><td>3way控制概念</td><td>28.9</td><td>28%</td><td>25.8%</td></tr></tbody>
+          </table>
+        </section>
+    </div>
+    </section>
+
+</div>
+</body>
+</html>

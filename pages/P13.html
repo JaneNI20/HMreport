@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>noise_over_time 完整分析 V3</title>
+  <style>
+    :root{
+      --bg:#f4f6f9;
+      --card:#ffffff;
+      --line:#d8e1ec;
+      --text:#0f172a;
+      --sub:#475569;
+      --blue:#2563eb;
+      --blue-soft:#eaf2ff;
+      --teal:#0f766e;
+      --teal-soft:#ecfeff;
+      --amber:#b45309;
+      --amber-soft:#fff7ed;
+      --red:#b91c1c;
+      --red-soft:#fef2f2;
+      --shadow:0 16px 40px rgba(15,23,42,.08);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1480px;
+      margin:0 auto;
+      padding:28px;
+      display:grid;
+      gap:22px;
+    }
+    .panel{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:30px 34px;
+      display:grid;
+      gap:18px;
+    }
+    .kicker{
+      font-size:13px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#64748b;
+      font-weight:800;
+    }
+    h1,h2,h3,p{margin:0}
+    h1{font-size:38px;line-height:1.18;letter-spacing:-.02em;}
+    h2{font-size:26px;line-height:1.25;}
+    h3{font-size:20px;line-height:1.3;}
+    .subtitle{
+      color:var(--sub);
+      font-size:18px;
+      line-height:1.8;
+      max-width:1180px;
+    }
+    .insight{
+      background:linear-gradient(135deg,#eef6ff 0%, #f8fbff 100%);
+      border:1px solid #cfe0ff;
+      border-left:6px solid #3b82f6;
+      border-radius:16px;
+      padding:16px 18px;
+      font-size:17px;
+      line-height:1.8;
+      color:#1e3a8a;
+    }
+    .grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+    .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;}
+    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
+    .metric{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px 14px 12px;
+    }
+    .metric span{
+      display:block;
+      font-size:12px;
+      color:#64748b;
+      margin-bottom:6px;
+      font-weight:700;
+    }
+    .metric strong{
+      font-size:24px;
+      color:#1d4ed8;
+      line-height:1.2;
+    }
+    .metric small{
+      display:block;
+      margin-top:6px;
+      color:var(--sub);
+      line-height:1.6;
+      font-size:13px;
+    }
+    .card{
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:22px;
+      background:#fcfdff;
+      display:grid;
+      gap:16px;
+      box-shadow:0 10px 26px rgba(15,23,42,.06);
+    }
+    .tag{
+      display:inline-flex;
+      width:max-content;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.04em;
+      color:var(--blue);
+      background:var(--blue-soft);
+      box-shadow:0 6px 14px rgba(15,23,42,.06);
+    }
+    .tag.teal{color:var(--teal);background:var(--teal-soft);}
+    .tag.warn{color:var(--amber);background:var(--amber-soft);}
+    .tag.red{color:var(--red);background:var(--red-soft);}
+    .desc{
+      color:var(--sub);
+      font-size:16px;
+      line-height:1.75;
+    }
+    .bars{display:grid;gap:14px;}
+    .bar-row{display:grid;gap:8px;}
+    .bar-head{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      font-size:14px;
+      color:var(--sub);
+      font-weight:700;
+    }
+    .track{
+      width:100%;
+      height:16px;
+      border-radius:999px;
+      background:#edf2f7;
+      overflow:hidden;
+    }
+    .fill{height:100%;border-radius:999px;}
+    .fill.blue{background:#2563eb;}
+    .fill.teal{background:#0f766e;}
+    .fill.red{background:#ef4444;}
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:15px;
+    }
+    th,td{
+      text-align:left;
+      vertical-align:top;
+      padding:14px 12px;
+      border-bottom:1px solid #e6edf5;
+      line-height:1.65;
+    }
+    th{
+      font-size:12px;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:#64748b;
+      background:#f8fafc;
+      font-weight:800;
+    }
+    .note{
+      color:var(--sub);
+      font-size:15px;
+      line-height:1.75;
+    }
+    .callout{
+      border:1px solid var(--line);
+      background:#fcfdff;
+      border-radius:18px;
+      padding:18px;
+      display:grid;
+      gap:10px;
+    }
+    ul{
+      margin:0;
+      padding-left:20px;
+      color:var(--sub);
+      line-height:1.8;
+      font-size:16px;
+    }
+    .mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;}
+    @media (max-width:1100px){
+      .grid-4,.grid-3,.grid-2{grid-template-columns:1fr}
+      h1{font-size:32px}
+    }
+  </style>
+
+<style id="visual-polish-v26">
+  :root {
+    --v26-bg: #f3f6f9;
+    --v26-paper: #ffffff;
+    --v26-paper-soft: #f8fafc;
+    --v26-ink: #17283b;
+    --v26-ink-soft: #4f6476;
+    --v26-muted: #6d7f8f;
+    --v26-line: #d8e1ea;
+    --v26-line-strong: #bccbd8;
+    --v26-brand: #2f6f9f;
+    --v26-brand-dark: #1f4f73;
+    --v26-brand-soft: #eaf3fa;
+    --v26-accent: #6f8f9f;
+    --v26-highlight: #b7791f;
+    --v26-shadow: 0 10px 26px rgba(23, 40, 59, .075);
+  }
+  html, body {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    color: var(--v26-ink) !important;
+    background: var(--v26-bg) !important;
+    text-rendering: geometricPrecision;
+  }
+  body { font-size: 15px; line-height: 1.6; }
+  h1, h2, h3, h4, .title, .section-title {
+    color: var(--v26-brand-dark) !important;
+    letter-spacing: 0 !important;
+  }
+  h1 {
+    font-size: clamp(30px, 3.2vw, 38px) !important;
+    line-height: 1.16 !important;
+    font-weight: 800 !important;
+  }
+  h2 {
+    font-size: clamp(22px, 2.2vw, 28px) !important;
+    line-height: 1.22 !important;
+    font-weight: 800 !important;
+  }
+  h3 {
+    font-size: 18px !important;
+    line-height: 1.28 !important;
+    font-weight: 800 !important;
+  }
+  h4 { font-size: 15px !important; line-height: 1.35 !important; font-weight: 800 !important; }
+  p, li, td, .subtitle, .desc, .note, .small, .muted, .cluster-desc, .cluster-diff, .body-copy {
+    color: var(--v26-ink-soft);
+    letter-spacing: 0 !important;
+  }
+  .wrap {
+    padding: 28px 24px 42px !important;
+  }
+  .panel, .hero, .card, .table-card, .chartPanel, .chart-panel, .chart-card,
+  .field-card, .cluster-card, .metric, .mini-card, .detail, .insight-card,
+  .overview-card, .persona-card, .concept-card, .price-card, .recommend-card {
+    border-radius: 8px !important;
+    border-color: var(--v26-line) !important;
+    box-shadow: var(--v26-shadow) !important;
+  }
+  .panel, .hero {
+    background: var(--v26-paper) !important;
+  }
+  .card, .table-card, .chartPanel, .chart-panel, .chart-card, .field-card,
+  .metric, .mini-card, .detail, .insight-card, .overview-card, .persona-card,
+  .concept-card, .price-card, .recommend-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%) !important;
+  }
+  .kicker, .eyebrow, .tag, .pill, .badge, .sku-pill, .chip, .mini-title,
+  .control-title, .card-headline, .meta {
+    letter-spacing: .04em !important;
+    font-weight: 800 !important;
+  }
+  .kicker, .eyebrow, .mini-title, .control-title {
+    color: var(--v26-muted) !important;
+    text-transform: uppercase;
+  }
+  .subtitle, .lead {
+    color: var(--v26-ink-soft) !important;
+    font-size: 16px !important;
+    line-height: 1.72 !important;
+  }
+  strong, b {
+    color: #20384e !important;
+    font-weight: 800 !important;
+  }
+  .takeaway, .insight, .field-insight, .recommendation, .opportunity,
+  .summary, .callout, .conclusion, .note-card {
+    border-radius: 8px !important;
+    border-color: #bfd3e4 !important;
+    background: #f3f8fc !important;
+    box-shadow: 0 8px 18px rgba(47, 111, 159, .07) !important;
+  }
+  .field-insight summary,
+  .takeaway strong,
+  .insight strong,
+  .recommendation strong,
+  .opportunity strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100%;
+  }
+  th {
+    background: #f3f7fb !important;
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  td, th {
+    border-color: #dbe4ed !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  tr:nth-child(even) td {
+    background-color: rgba(248, 250, 252, .62);
+  }
+  button, select, input {
+    font-family: inherit !important;
+  }
+  button, .tab, .toggle, .filter, .chip, .pill, select {
+    border-radius: 6px !important;
+  }
+  button:hover, .chip:hover, .pill:hover {
+    border-color: #9fb8cc !important;
+  }
+  .barwrap, .bar-wrap, .bar-track, .track {
+    background: #edf2f7 !important;
+  }
+  .value, .num, .big-number, .big-price, .score, .metric strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  .legend, .legend span, .axis, .tick, .label, .name {
+    color: #52687a !important;
+    font-size: 12px !important;
+    line-height: 1.42 !important;
+  }
+  svg text {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    fill: #52687a;
+  }
+  .grid, .grid-2, .grid-3, .charts, .overview-grid {
+    gap: 16px !important;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--v26-line);
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 14px 32px !important; }
+    h1 { font-size: 29px !important; }
+    h2 { font-size: 22px !important; }
+  }
+</style>
+
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel">
+      <p class="subtitle">💡从长期使用结果看，多数用户会逐渐适应噪音，但这不代表噪音不重要。真正让用户始终无法适应的，不是单纯‘有声音’，而是声音打断了他们最在意的场景，比如主卧睡眠、家庭社交，以及出现机械异响或风噪过大的情况。所以这部分更适合支持我们做场景优先级，而不是做强人群切分。</p>
+      <div class="insight">
+        核心结论：
+        <strong>一</strong>，多数现有用户会逐渐适应噪音，或者把它当成背景白噪音；
+        <strong>二</strong>，这题无法强力区分 6 个人群，因此不把它当成核心分群指标；
+        <strong>三</strong>，真正决定用户会不会长期受不了噪音的，是它是否打断了睡眠、社交和正常生活节奏。
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>一、先给产品经理的同步结论</h2>
+      <div class="grid-4">
+        <div class="metric">
+          <span>有效回答样本</span>
+          <strong>200</strong>
+          <small><span class="mono">noise_over_time</span> 有效回答样本，基本来自现有用户</small>
+        </div>
+        <div class="metric">
+          <span>后来习惯了</span>
+          <strong>52%</strong>
+          <small>主流答案，说明长期适应是存在的</small>
+        </div>
+        <div class="metric">
+          <span>背景白噪音</span>
+          <strong>33%</strong>
+          <small>一部分用户会重新解释噪音，而不是持续抗拒</small>
+        </div>
+        <div class="metric">
+          <span>持续困扰</span>
+          <strong>12%</strong>
+          <small>少数但不能忽视，是后续产品优化最该盯住的群体</small>
+        </div>
+      </div>
+      <div class="grid-2">
+        <section class="card">
+          <div class="tag">Can Say</div>
+          <h3>这题可以明确讲什么</h3>
+          <ul>
+            <li>多数用户在长期使用后会对噪音形成某种适应机制。</li>
+            <li>但适应不等于噪音不重要，仍有一部分人会长期被困扰。</li>
+            <li>真正值得产品优先解决的是“会打断关键场景的噪音”。</li>
+          </ul>
+        </section>
+</div>
+    </section>
+
+    <section class="panel">
+      <h2>二、整体适应结果：噪音不会消失，但大多数人会“消化”它</h2>
+      <div class="grid-2">
+        <section class="card">
+          <div class="tag">Overall Pattern</div>
+          <h3>主流不是“完全没问题”，而是“逐渐适应了”</h3>
+          <div class="bars">
+            <div class="bar-row">
+              <div class="bar-head"><span>I got used to it over time</span><span>52%</span></div>
+              <div class="track"><div class="fill blue" style="width:52%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-head"><span>It became more like background white noise</span><span>33%</span></div>
+              <div class="track"><div class="fill teal" style="width:33%"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-head"><span>It continued to bother me</span><span>12%</span></div>
+              <div class="track"><div class="fill red" style="width:12%"></div></div>
+            </div>
+          </div>
+          <p class="note">
+            更接近真实的表述是：噪音并没有自然消失，但大部分用户会在长期使用中形成适应机制；
+            不过这不代表噪音价值不重要，因为还有一部分人始终无法适应。
+          </p>
+        </section>
+        <section class="card">
+          <div class="tag warn">Interpretation</div>
+          <h3>该题可作为“机制题”，而非“满意度题”</h3>
+          <p class="desc">
+            这道题展示的不是“当前觉得吵不吵”，而是
+            <strong>长期使用后，用户对噪音的解释和容忍是否发生变化</strong>。
+            所以将其作为噪音模块里的“适应机制”结论，并不单独承担人群切分任务。
+          </p>
+        </section>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>三、空间差异比人群差异更值得讲</h2>
+      <div class="grid-2">
+        <section class="card">
+          <div class="tag">Big Vs Small</div>
+          <h3>大小户型整体接近</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>组别</th>
+                <th>样本量</th>
+                <th>后来习惯了</th>
+                <th>背景白噪音</th>
+                <th>持续困扰</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>big</td>
+                <td>141</td>
+                <td>53.2%</td>
+                <td>31.9%</td>
+                <td>13.5%</td>
+              </tr>
+              <tr>
+                <td>small</td>
+                <td>59</td>
+                <td>49.2%</td>
+                <td>35.6%</td>
+                <td>8.5%</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="card">
+          <div class="tag red">Room Priority</div>
+          <h3>主卧是噪音最该优先处理的空间</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>房间</th>
+                <th>样本量</th>
+                <th>后来习惯了</th>
+                <th>背景白噪音</th>
+                <th>持续困扰</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Main bedroom</td>
+                <td>69</td>
+                <td>46.4%</td>
+                <td>39.1%</td>
+                <td>14.5%</td>
+              </tr>
+              <tr>
+                <td>Living room</td>
+                <td>53</td>
+                <td>54.7%</td>
+                <td>35.9%</td>
+                <td>9.4%</td>
+              </tr>
+              <tr>
+                <td>Another bedroom</td>
+                <td>29</td>
+                <td>58.6%</td>
+                <td>34.5%</td>
+                <td>6.9%</td>
+              </tr>
+              <tr>
+                <td>Home office/study room</td>
+                <td>12</td>
+                <td>66.7%</td>
+                <td>16.7%</td>
+                <td>16.7%</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="note">
+            主卧是整个噪音体验里最敏感的空间，因为它承接的是睡眠与休息。这意味着“主卧夜间体验”比一般的降噪表达更重要。<br>
+            Home office/study room（n=12）的持续困扰是占比是最大的（17%），感觉变成背景白噪音的占比是最小的（17%）。
+          </p>
+        </section>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>四、6个人群：有趋势，但不能当成显著分层</h2>
+      <div class="grid-4">
+        <div class="metric">
+          <span>6人群样本</span>
+          <strong>194</strong>
+          <small>只保留 6 个正式人群</small>
+        </div>
+        <div class="metric">
+          <span>卡方检验</span>
+          <strong>p = 0.392</strong>
+          <small>三类结果合并后不显著</small>
+        </div>
+        <div class="metric">
+          <span>顺序分值检验</span>
+          <strong>p = 0.559</strong>
+          <small>Kruskal-Wallis 同样不显著</small>
+        </div>
+        <div class="metric">
+          <span>结论</span>
+          <strong>不宜强分群</strong>
+          <small>这题不是用来做 6 人群核心切分的</small>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>人群</th>
+            <th>样本量</th>
+            <th>后来习惯了</th>
+            <th>背景白噪音</th>
+            <th>负向比例</th>
+            <th>适合怎么解读</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>全权掌控个人空间的温度</td>
+            <td>44</td>
+            <td>50.0%</td>
+            <td>25.0%</td>
+            <td>25.0%</td>
+            <td>趋势上最敏感，可作为“高控制感需求用户更难忍受噪音”的方向性观察。</td>
+          </tr>
+          <tr>
+            <td>兼顾小户型的舒适、静音、体积与成本</td>
+            <td>15</td>
+            <td>73.3%</td>
+            <td>20.0%</td>
+            <td>6.7%</td>
+            <td>趋势上最容易适应，但样本偏小，不适合讲成强结论。</td>
+          </tr>
+          <tr>
+            <td>守护家人的睡眠舒适度</td>
+            <td>28</td>
+            <td>50.0%</td>
+            <td>35.7%</td>
+            <td>14.3%</td>
+            <td>更像中间状态，不支持单独把“睡眠诉求人群”讲成更难适应噪音。</td>
+          </tr>
+          <tr>
+            <td>应对紧急情况/极端高温的可靠备用选择</td>
+            <td>28</td>
+            <td>46.4%</td>
+            <td>46.4%</td>
+            <td>7.1%</td>
+            <td>最容易把噪音“合理化”为背景声，更像先解决高温问题的容忍逻辑。</td>
+          </tr>
+          <tr>
+            <td>无需全屋制冷，快速冷却独立小房间</td>
+            <td>21</td>
+            <td>61.9%</td>
+            <td>23.8%</td>
+            <td>14.3%</td>
+            <td>偏向后来习惯了，但并不足以单独定义一个噪音适应型人群。</td>
+          </tr>
+          <tr>
+            <td>空间有限、安装便捷的实用方案</td>
+            <td>58</td>
+            <td>51.7%</td>
+            <td>34.5%</td>
+            <td>13.8%</td>
+            <td>最接近整体平均，可以视为基准参照组。</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="grid-3">
+        <section class="callout">
+          <div class="tag red">趋势 1</div>
+          <h3>最敏感</h3>
+          <p class="desc">
+            `全权掌控个人空间的温度` 负向比例最高，说明一旦用户更强调对空间的掌控，噪音更容易被感知为不可接受。
+          </p>
+        </section>
+        <section class="callout">
+          <div class="tag teal">趋势 2</div>
+          <h3>最容易适应</h3>
+          <p class="desc">
+            `兼顾小户型的舒适、静音、体积与成本` 的“后来习惯了”最高，但更适合作为方向性观察而不是显著分群结论。
+          </p>
+        </section>
+        <section class="callout">
+          <div class="tag warn">趋势 3</div>
+          <h3>最容易白噪音化</h3>
+          <p class="desc">
+            `应对紧急情况/极端高温的可靠备用选择` 更容易接受噪音存在，只要它不妨碍“先把空间降温”。
+          </p>
+        </section>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>五、真正关键的是：哪些噪音会让适应机制失效</h2>
+      <div class="grid-2">
+        <section class="card">
+          <div class="tag red">Significant Items</div>
+          <h3>4 个 pain_noise 项与 noise_over_time 显著相关</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>痛点项</th>
+                <th>Selected N</th>
+                <th>p 值</th>
+                <th>为什么重要</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>family gatherings / hosting at home</td>
+                <td>14</td>
+                <td>0.0004</td>
+                <td>最强信号，说明社交场景被打断时最难被用户接受</td>
+              </tr>
+              <tr>
+                <td>rattling / vibration / mechanical sounds</td>
+                <td>33</td>
+                <td>0.0015</td>
+                <td>异常感强，不像背景声，更像故障或侵入</td>
+              </tr>
+              <tr>
+                <td>especially disruptive at night during sleep</td>
+                <td>28</td>
+                <td>0.0219</td>
+                <td>睡眠场景一旦被打断，长期适应明显变差</td>
+              </tr>
+              <tr>
+                <td>fan / airflow noise was loud</td>
+                <td>55</td>
+                <td>0.0250</td>
+                <td>说明风噪本身过大，也会成为长期困扰来源</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="card">
+          <div class="tag warn">PM Meaning</div>
+          <h3>适应机制失效，往往发生在 3 类场景</h3>
+          <ul>
+            <li><strong>睡眠场景</strong>：夜间持续暴露、难以回避、用户容忍度最低。</li>
+            <li><strong>社交场景</strong>：一旦影响交流，噪音就不再是可被忽略的背景声。</li>
+            <li><strong>异常声场景</strong>：机械异响、振动感、风噪过大，会让用户把问题理解成“机器有问题”。</li>
+          </ul>
+        </section>
+      </div>
+      <div class="grid-3">
+        <section class="callout">
+          <div class="tag red">最强信号</div>
+          <h3>家庭聚会 / 招待被打断</h3>
+          <p class="desc">
+            选中这项的人里，<strong>42.86%</strong> 表示噪音会持续困扰自己；未选中者仅 <strong>9.68%</strong>。
+            这说明只要噪音进入“共享场景”，适应机制就会明显失效。
+          </p>
+        </section>
+        <section class="callout">
+          <div class="tag red">高优先级</div>
+          <h3>夜间睡眠被打断</h3>
+          <p class="desc">
+            选中这项的人里，持续困扰比例达到 <strong>28.57%</strong>。
+            这也是为什么主卧需要被单独看待，而不是放进一般空间里平均处理。
+          </p>
+        </section>
+        <section class="callout">
+          <div class="tag red">高优先级</div>
+          <h3>机械异响 / 风噪过大</h3>
+          <p class="desc">
+            机械异响用户的持续困扰比例为 <strong>24.24%</strong>，风噪过大用户为 <strong>20.00%</strong>。
+            这类问题更像“异常侵入声”，产品上不应只按一般噪音来处理。
+          </p>
+        </section>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>价值点同步</h2>
+      <div class="grid-2">
+        <section class="card">
+          <div class="tag">What To Prioritize</div>
+          <h3>优先级建议</h3>
+          <ul>
+            <li>优先处理主卧 / 夜间使用场景下的噪音表现。</li>
+            <li>优先处理机械异响、振动感、风噪过大这类“异常侵入感”强的问题。</li>
+            <li>如果要讲噪音价值，不要只讲“更安静”，要讲“不会打断睡眠、不会打断社交、不会打断正常生活”。</li>
+          </ul>
+        </section>
+</div>
+      <div class="card">
+        <div class="tag warn">Recommended Script</div>
+        <h3>汇报时建议的讲法</h3>
+        <p class="desc">
+          “从长期使用结果看，多数用户会逐渐适应噪音，但这不代表噪音不重要。真正让用户始终无法适应的，
+          不是单纯‘有声音’，而是声音打断了他们最在意的场景，比如主卧睡眠、家庭社交，以及出现机械异响或风噪过大的情况。
+          所以这部分更适合支持我们做场景优先级，而不是做强人群切分。”
+        </p>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

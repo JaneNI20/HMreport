@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>关键词重要性差异简报</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --panel: #ffffff;
+      --line: #d6dee8;
+      --text: #0f172a;
+      --muted: #475569;
+      --soft: #e8eef5;
+      --shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.55;
+    }
+    .shell {
+      width: min(1400px, calc(100vw - 48px));
+      margin: 28px auto 64px;
+    }
+    .page {
+      background: var(--panel);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 34px 36px 38px;
+      margin-bottom: 26px;
+    }
+    .kicker {
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    h1 {
+      margin: 0;
+      font-size: 38px;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      margin: 14px 0 18px;
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 980px;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #f8fbff;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .chip strong {
+      color: #0f172a;
+      font-weight: 800;
+    }
+    .rule-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      margin-top: 24px;
+    }
+    .rule-card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 20px 22px;
+      background: linear-gradient(180deg, #fbfdff 0%, #f7fafe 100%);
+    }
+    .rule-card h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+    .rule-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+    .overview-card {
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      padding: 20px 20px 18px;
+      background: #ffffff;
+    }
+    .overview-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .concept-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 12px;
+      border-radius: 999px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .overview-tag {
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .overview-card h3 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+    .overview-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .switch-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 4px 0 24px;
+    }
+    .switch-btn {
+      appearance: none;
+      border: 1px solid #cbd5e1;
+      background: #f8fbff;
+      color: #334155;
+      padding: 12px 18px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .switch-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+    .switch-btn.is-active {
+      background: #0f172a;
+      color: #fff;
+      border-color: #0f172a;
+    }
+    .concept-panel {
+      display: none;
+    }
+    .concept-panel.is-active {
+      display: block;
+    }
+    .concept-header h2 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    .panel-subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+    .quote-card {
+      margin-top: 18px;
+      padding: 22px 24px;
+      border-radius: 22px;
+      background: #f8fbff;
+      border: 1px solid #dbe5f0;
+    }
+    .quote-label {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #64748b;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .quote-card p {
+      margin: 0;
+      font-size: 18px;
+      color: #1e293b;
+    }
+    .quote-card strong {
+      color: #0f172a;
+      font-weight: 800;
+    }
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin: 18px 0 20px;
+    }
+    .insight-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px 18px 16px;
+      background: #fff;
+    }
+    .insight-label {
+      display: block;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #64748b;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .insight-card strong {
+      font-size: 16px;
+      line-height: 1.5;
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    .heatmap-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1040px;
+    }
+    .heatmap-table th,
+    .heatmap-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #e5ebf3;
+      border-right: 1px solid #edf2f8;
+      text-align: center;
+      font-size: 14px;
+    }
+    .heatmap-table th {
+      position: sticky;
+      top: 0;
+      background: #f8fbff;
+      z-index: 1;
+      color: #334155;
+      font-weight: 800;
+    }
+    .heatmap-table th:first-child,
+    .heatmap-table td:first-child {
+      text-align: left;
+      min-width: 240px;
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: #ffffff;
+    }
+    .heatmap-table th:first-child {
+      z-index: 3;
+      background: #f8fbff;
+    }
+    .keyword-col {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .metric-cell {
+      font-weight: 800;
+    }
+    .metric-empty {
+      background: #f8fafc;
+      color: #94a3b8;
+    }
+    .footnote {
+      margin-top: 14px;
+      color: #64748b;
+      font-size: 13px;
+    }
+    @media (max-width: 1100px) {
+      .rule-grid,
+      .overview-grid,
+      .insight-grid {
+        grid-template-columns: 1fr;
+      }
+      .shell {
+        width: min(100vw - 24px, 1400px);
+      }
+      .page {
+        padding: 24px 20px 28px;
+        border-radius: 24px;
+      }
+      h1 {
+        font-size: 32px;
+      }
+      .quote-card p {
+        font-size: 17px;
+      }
+    }
+  </style>
+
+<style id="visual-polish-v26">
+  :root {
+    --v26-bg: #f3f6f9;
+    --v26-paper: #ffffff;
+    --v26-paper-soft: #f8fafc;
+    --v26-ink: #17283b;
+    --v26-ink-soft: #4f6476;
+    --v26-muted: #6d7f8f;
+    --v26-line: #d8e1ea;
+    --v26-line-strong: #bccbd8;
+    --v26-brand: #2f6f9f;
+    --v26-brand-dark: #1f4f73;
+    --v26-brand-soft: #eaf3fa;
+    --v26-accent: #6f8f9f;
+    --v26-highlight: #b7791f;
+    --v26-shadow: 0 10px 26px rgba(23, 40, 59, .075);
+  }
+  html, body {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    color: var(--v26-ink) !important;
+    background: var(--v26-bg) !important;
+    text-rendering: geometricPrecision;
+  }
+  body { font-size: 15px; line-height: 1.6; }
+  h1, h2, h3, h4, .title, .section-title {
+    color: var(--v26-brand-dark) !important;
+    letter-spacing: 0 !important;
+  }
+  h1 {
+    font-size: clamp(30px, 3.2vw, 38px) !important;
+    line-height: 1.16 !important;
+    font-weight: 800 !important;
+  }
+  h2 {
+    font-size: clamp(22px, 2.2vw, 28px) !important;
+    line-height: 1.22 !important;
+    font-weight: 800 !important;
+  }
+  h3 {
+    font-size: 18px !important;
+    line-height: 1.28 !important;
+    font-weight: 800 !important;
+  }
+  h4 { font-size: 15px !important; line-height: 1.35 !important; font-weight: 800 !important; }
+  p, li, td, .subtitle, .desc, .note, .small, .muted, .cluster-desc, .cluster-diff, .body-copy {
+    color: var(--v26-ink-soft);
+    letter-spacing: 0 !important;
+  }
+  .wrap {
+    padding: 28px 24px 42px !important;
+  }
+  .panel, .hero, .card, .table-card, .chartPanel, .chart-panel, .chart-card,
+  .field-card, .cluster-card, .metric, .mini-card, .detail, .insight-card,
+  .overview-card, .persona-card, .concept-card, .price-card, .recommend-card {
+    border-radius: 8px !important;
+    border-color: var(--v26-line) !important;
+    box-shadow: var(--v26-shadow) !important;
+  }
+  .panel, .hero {
+    background: var(--v26-paper) !important;
+  }
+  .card, .table-card, .chartPanel, .chart-panel, .chart-card, .field-card,
+  .metric, .mini-card, .detail, .insight-card, .overview-card, .persona-card,
+  .concept-card, .price-card, .recommend-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%) !important;
+  }
+  .kicker, .eyebrow, .tag, .pill, .badge, .sku-pill, .chip, .mini-title,
+  .control-title, .card-headline, .meta {
+    letter-spacing: .04em !important;
+    font-weight: 800 !important;
+  }
+  .kicker, .eyebrow, .mini-title, .control-title {
+    color: var(--v26-muted) !important;
+    text-transform: uppercase;
+  }
+  .subtitle, .lead {
+    color: var(--v26-ink-soft) !important;
+    font-size: 16px !important;
+    line-height: 1.72 !important;
+  }
+  strong, b {
+    color: #20384e !important;
+    font-weight: 800 !important;
+  }
+  .takeaway, .insight, .field-insight, .recommendation, .opportunity,
+  .summary, .callout, .conclusion, .note-card {
+    border-radius: 8px !important;
+    border-color: #bfd3e4 !important;
+    background: #f3f8fc !important;
+    box-shadow: 0 8px 18px rgba(47, 111, 159, .07) !important;
+  }
+  .field-insight summary,
+  .takeaway strong,
+  .insight strong,
+  .recommendation strong,
+  .opportunity strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100%;
+  }
+  th {
+    background: #f3f7fb !important;
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  td, th {
+    border-color: #dbe4ed !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  tr:nth-child(even) td {
+    background-color: rgba(248, 250, 252, .62);
+  }
+  button, select, input {
+    font-family: inherit !important;
+  }
+  button, .tab, .toggle, .filter, .chip, .pill, select {
+    border-radius: 6px !important;
+  }
+  button:hover, .chip:hover, .pill:hover {
+    border-color: #9fb8cc !important;
+  }
+  .barwrap, .bar-wrap, .bar-track, .track {
+    background: #edf2f7 !important;
+  }
+  .value, .num, .big-number, .big-price, .score, .metric strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  .legend, .legend span, .axis, .tick, .label, .name {
+    color: #52687a !important;
+    font-size: 12px !important;
+    line-height: 1.42 !important;
+  }
+  svg text {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    fill: #52687a;
+  }
+  .grid, .grid-2, .grid-3, .charts, .overview-grid {
+    gap: 16px !important;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--v26-line);
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 14px 32px !important; }
+    h1 { font-size: 29px !important; }
+    h2 { font-size: 22px !important; }
+  }
+</style>
+
+</head>
+<body>
+  <div class="shell">
+    <section class="page">
+      <div class="kicker">Keyword Importance / Reason Segments</div>
+      <h1>关键词重要性差异简报</h1>
+      <p class="subtitle">根据6个细分人群，对 Concept 1 / 2 / 6 的关键词“Important”选择率进行对比。</p>
+      <div class="meta-row"><span class='chip'>全权掌控个人空间的温度<strong>n=89</strong></span><span class='chip'>空间有限、安装便捷的实用方案<strong>n=86</strong></span><span class='chip'>守护家人的睡眠舒适度<strong>n=64</strong></span><span class='chip'>无需全屋制冷，快速冷却独立小房间<strong>n=51</strong></span><span class='chip'>兼顾小户型的舒适、静音、体积与成本<strong>n=51</strong></span><span class='chip'>应对紧急情况/极端高温的可靠备用选择<strong>n=39</strong></span></div>
+      <div class="rule-grid">
+        <div class="rule-card">
+          <h3>排序与阅读方式</h3>
+          <p>热力矩阵的行顺序已改为按“整体重要占比”降序排序，整体值为6个主人群按样本量加权平均。</p>
+        </div>
+        <div class="rule-card">
+          <h3>样本范围</h3>
+          <p>本页整体指标仅基于6个主人群计算，加总样本量 n=380。</p>
+        </div>
+      </div>
+      <div class="overview-grid">
+        
+            <div class="overview-card">
+              <div class="overview-top">
+                <span class="concept-badge" style="background:#2F435A;">Concept 1</span>
+                <span class="overview-tag">46dB</span>
+              </div>
+              <h3>sleep</h3>
+              <p><strong>整体最重要关键词</strong></p>
+              <p>flow 在 空间有限、安装便捷的实用方案 (72%) 与 兼顾小户型的舒适、静音、体积与成本 (22%) 之间差距最大</p>
+            </div>
+            
+            <div class="overview-card">
+              <div class="overview-top">
+                <span class="concept-badge" style="background:#5B8296;">Concept 2</span>
+                <span class="overview-tag">43dB</span>
+              </div>
+              <h3>quieter</h3>
+              <p><strong>整体最重要关键词</strong></p>
+              <p>chat 在 空间有限、安装便捷的实用方案 (93%) 与 无需全屋制冷，快速冷却独立小房间 (38%) 之间差距最大</p>
+            </div>
+            
+            <div class="overview-card">
+              <div class="overview-top">
+                <span class="concept-badge" style="background:#C58B58;">Concept 6</span>
+                <span class="overview-tag">变频节能</span>
+              </div>
+              <h3>saving up to 40% energy</h3>
+              <p><strong>整体最重要关键词</strong></p>
+              <p>frequently 在 无需全屋制冷，快速冷却独立小房间 (80%) 与 守护家人的睡眠舒适度 (42%) 之间差距最大</p>
+            </div>
+            
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="kicker">Keyword Importance Heatmap</div>
+      <h1>关键词重要性热力矩阵</h1>
+      
+      <div class="switch-row">
+        <button class='switch-btn is-active' data-concept='1'>Concept 1</button><button class='switch-btn' data-concept='2'>Concept 2</button><button class='switch-btn' data-concept='6'>Concept 6</button>
+      </div>
+      
+            <section class="concept-panel is-active" data-concept-panel="1">
+              <div class="concept-header">
+                <div>
+                  <div class="kicker">Concept 1 / 46dB</div>
+                  <h2>Concept 1 关键词重要性热力矩阵</h2>
+                  <p class="panel-subtitle">行顺序按整体重要占比降序排列，可直接看到“整体优先级”与“人群分化”。</p>
+                </div>
+              </div>
+              <div class="quote-card">
+                <div class="quote-label">概念原句</div>
+                <p><strong>Cross-flow</strong> fan design provides smoother airflow and <strong>quieter</strong> operation compared to <strong>traditional centrifugal fan</strong> systems. Runs as quietly as <strong>46dB</strong>, so you can <strong>sleep</strong>, <strong>relax</strong> or <strong>chat</strong> without being disturbed by AC noise.</p>
+              </div>
+              <div class="insight-grid">
+                <div class="insight-card">
+                  <span class="insight-label">整体最重要</span>
+                  <strong>sleep</strong>
+                </div>
+                <div class="insight-card">
+                  <span class="insight-label">人群差距最大</span>
+                  <strong>cross-flow 在 空间有限、安装便捷的实用方案 (72%) 与 兼顾小户型的舒适、静音、体积与成本 (22%) 之间差距最大</strong>
+                </div>
+                <div class="insight-card">
+                  <span class="insight-label">显著性提示</span>
+                  <strong>暂未出现 p&lt;0.05 的原始显著关键词</strong>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class='heatmap-table'><thead><tr><th>关键词</th><th>整体</th><th>全权掌控个人空间的温度</th><th>空间有限、安装便捷的实用方案</th><th>守护家人的睡眠舒适度</th><th>无需全屋制冷，快速冷却独立小房间</th><th>兼顾小户型的舒适、静音、体积与成本</th><th>应对紧急情况/极端高温的可靠备用选择</th></tr></thead><tbody><tr><td class='keyword-col'>sleep</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.813);color: #ffffff;">89%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.736);color: #ffffff;">80%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.854);color: #ffffff;">94%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.845);color: #ffffff;">93%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.825);color: #ffffff;">91%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.900);color: #ffffff;">100%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.711);color: #ffffff;">77%</td></tr><tr><td class='keyword-col'>quieter</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.810);color: #ffffff;">89%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.845);color: #ffffff;">93%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.809);color: #ffffff;">89%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.736);color: #ffffff;">80%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.825);color: #ffffff;">91%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.809);color: #ffffff;">89%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.837);color: #ffffff;">92%</td></tr><tr><td class='keyword-col'>relax</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.655);color: #ffffff;">70%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.681);color: #ffffff;">73%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.763);color: #ffffff;">83%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.463);color: #0f172a;">47%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.602);color: #0f172a;">64%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.627);color: #0f172a;">67%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.774);color: #ffffff;">85%</td></tr><tr><td class='keyword-col'>46dB</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.561);color: #0f172a;">59%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.463);color: #0f172a;">47%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.718);color: #ffffff;">78%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.517);color: #0f172a;">53%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.676);color: #ffffff;">73%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.536);color: #0f172a;">56%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.395);color: #0f172a;">38%</td></tr><tr><td class='keyword-col'>chat</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.535);color: #0f172a;">55%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.627);color: #0f172a;">67%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.399);color: #0f172a;">39%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.517);color: #0f172a;">53%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.453);color: #0f172a;">45%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.718);color: #ffffff;">78%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.522);color: #0f172a;">54%</td></tr><tr><td class='keyword-col'>cross-flow</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.506);color: #0f172a;">52%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.517);color: #0f172a;">53%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.672);color: #ffffff;">72%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.572);color: #0f172a;">60%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.304);color: #0f172a;">27%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.262);color: #0f172a;">22%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.585);color: #0f172a;">62%</td></tr><tr><td class='keyword-col'>smoother</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.481);color: #0f172a;">49%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.463);color: #0f172a;">47%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.490);color: #0f172a;">50%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.517);color: #0f172a;">53%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.453);color: #0f172a;">45%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.353);color: #0f172a;">33%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.648);color: #ffffff;">69%</td></tr><tr><td class='keyword-col'>traditional centrifugal</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.240);color: #0f172a;">20%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.244);color: #0f172a;">20%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.308);color: #0f172a;">28%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.189);color: #0f172a;">13%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.229);color: #0f172a;">18%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.171);color: #0f172a;">11%</td><td class='metric-cell' style="background: rgba(47, 67, 90, 0.269);color: #0f172a;">23%</td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section class="concept-panel" data-concept-panel="2">
+              <div class="concept-header">
+                <div>
+                  <div class="kicker">Concept 2 / 43dB</div>
+                  <h2>Concept 2 关键词重要性热力矩阵</h2>
+                  <p class="panel-subtitle">行顺序按整体重要占比降序排列，可直接看到“整体优先级”与“人群分化”。</p>
+                </div>
+              </div>
+              <div class="quote-card">
+                <div class="quote-label">概念原句</div>
+                <p><strong>Cross-flow</strong> fan design provides smoother airflow and <strong>quieter</strong> operation compared to <strong>traditional centrifugal fan</strong> systems. Runs as quietly as <strong>43dB</strong>, so you can <strong>sleep</strong>, <strong>relax</strong> or <strong>chat</strong> without being disturbed by AC noise.</p>
+              </div>
+              <div class="insight-grid">
+                <div class="insight-card">
+                  <span class="insight-label">整体最重要</span>
+                  <strong>quieter</strong>
+                </div>
+                <div class="insight-card">
+                  <span class="insight-label">人群差距最大</span>
+                  <strong>chat 在 空间有限、安装便捷的实用方案 (93%) 与 无需全屋制冷，快速冷却独立小房间 (38%) 之间差距最大</strong>
+                </div>
+                <div class="insight-card">
+                  <span class="insight-label">显著性提示</span>
+                  <strong>chat 在 空间有限、安装便捷的实用方案 与 无需全屋制冷，快速冷却独立小房间 之间出现最明显差距（p=0.029）</strong>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class='heatmap-table'><thead><tr><th>关键词</th><th>整体</th><th>全权掌控个人空间的温度</th><th>空间有限、安装便捷的实用方案</th><th>守护家人的睡眠舒适度</th><th>无需全屋制冷，快速冷却独立小房间</th><th>兼顾小户型的舒适、静音、体积与成本</th><th>应对紧急情况/极端高温的可靠备用选择</th></tr></thead><tbody><tr><td class='keyword-col'>quieter</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.868);color: #ffffff;">96%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.852);color: #ffffff;">94%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.900);color: #ffffff;">100%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.832);color: #ffffff;">92%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.900);color: #ffffff;">100%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.832);color: #ffffff;">92%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.900);color: #ffffff;">100%</td></tr><tr><td class='keyword-col'>sleep</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.759);color: #ffffff;">83%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.804);color: #ffffff;">88%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.681);color: #ffffff;">73%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.763);color: #ffffff;">83%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.695);color: #ffffff;">75%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.763);color: #ffffff;">83%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.900);color: #ffffff;">100%</td></tr><tr><td class='keyword-col'>43dB</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.690);color: #ffffff;">74%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.562);color: #0f172a;">59%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.681);color: #ffffff;">73%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.627);color: #0f172a;">67%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.900);color: #ffffff;">100%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.763);color: #ffffff;">83%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.736);color: #ffffff;">80%</td></tr><tr><td class='keyword-col'>relax</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.666);color: #ffffff;">72%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.659);color: #ffffff;">71%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.791);color: #ffffff;">87%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.558);color: #0f172a;">58%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.592);color: #0f172a;">62%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.627);color: #0f172a;">67%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.736);color: #ffffff;">80%</td></tr><tr><td class='keyword-col'>smoother</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.599);color: #0f172a;">63%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.562);color: #0f172a;">59%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.572);color: #0f172a;">60%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.558);color: #0f172a;">58%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.695);color: #ffffff;">75%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.558);color: #0f172a;">58%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.736);color: #ffffff;">80%</td></tr><tr><td class='keyword-col'>chat</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.576);color: #0f172a;">61%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.418);color: #0f172a;">41%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.845);color: #ffffff;">93%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.558);color: #0f172a;">58%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.388);color: #0f172a;">38%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.490);color: #0f172a;">50%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.736);color: #ffffff;">80%</td></tr><tr><td class='keyword-col'>cross-flow</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.564);color: #0f172a;">59%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.562);color: #0f172a;">59%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.572);color: #0f172a;">60%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.558);color: #0f172a;">58%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.490);color: #0f172a;">50%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.627);color: #0f172a;">67%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.572);color: #0f172a;">60%</td></tr><tr><td class='keyword-col'>traditional centrifugal</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.286);color: #0f172a;">25%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.225);color: #0f172a;">18%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.299);color: #0f172a;">27%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.353);color: #0f172a;">33%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.182);color: #0f172a;">12%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.422);color: #0f172a;">42%</td><td class='metric-cell' style="background: rgba(91, 130, 150, 0.244);color: #0f172a;">20%</td></tr></tbody></table>
+              </div>
+            </section>
+            
+            <section class="concept-panel" data-concept-panel="6">
+              <div class="concept-header">
+                <div>
+                  <div class="kicker">Concept 6 / 变频节能</div>
+                  <h2>Concept 6 关键词重要性热力矩阵</h2>
+                  <p class="panel-subtitle">行顺序按整体重要占比降序排列，可直接看到“整体优先级”与“人群分化”。</p>
+                </div>
+              </div>
+              <div class="quote-card">
+                <div class="quote-label">概念原句</div>
+                <p>The <strong>inverter compressor</strong> adjusts its power <strong>smoothly</strong> instead of turning on and off <strong>frequently</strong>, helping maintain the <strong>target temperature</strong> while <strong>saving up to 40% energy</strong> compared with a similar <strong>fixed-speed model</strong>.</p>
+              </div>
+              <div class="insight-grid">
+                <div class="insight-card">
+                  <span class="insight-label">整体最重要</span>
+                  <strong>saving up to 40% energy</strong>
+                </div>
+                <div class="insight-card">
+                  <span class="insight-label">人群差距最大</span>
+                  <strong>frequently 在 无需全屋制冷，快速冷却独立小房间 (80%) 与 守护家人的睡眠舒适度 (42%) 之间差距最大</strong>
+                </div>
+                <div class="insight-card">
+                  <span class="insight-label">显著性提示</span>
+                  <strong>暂未出现 p&lt;0.05 的原始显著关键词</strong>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class='heatmap-table'><thead><tr><th>关键词</th><th>整体</th><th>全权掌控个人空间的温度</th><th>空间有限、安装便捷的实用方案</th><th>守护家人的睡眠舒适度</th><th>无需全屋制冷，快速冷却独立小房间</th><th>兼顾小户型的舒适、静音、体积与成本</th><th>应对紧急情况/极端高温的可靠备用选择</th></tr></thead><tbody><tr><td class='keyword-col'>saving up to 40% energy</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.866);color: #ffffff;">96%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.900);color: #ffffff;">100%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.873);color: #ffffff;">97%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.874);color: #ffffff;">97%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.859);color: #ffffff;">95%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.804);color: #ffffff;">88%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.852);color: #ffffff;">94%</td></tr><tr><td class='keyword-col'>target temperature</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.812);color: #ffffff;">89%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.843);color: #ffffff;">93%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.818);color: #ffffff;">90%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.874);color: #ffffff;">97%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.695);color: #ffffff;">75%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.755);color: #ffffff;">82%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.852);color: #ffffff;">94%</td></tr><tr><td class='keyword-col'>smoothly</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.668);color: #ffffff;">72%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.690);color: #ffffff;">74%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.545);color: #0f172a;">57%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.662);color: #ffffff;">71%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.777);color: #ffffff;">85%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.707);color: #ffffff;">76%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.707);color: #ffffff;">76%</td></tr><tr><td class='keyword-col'>inverter compressor</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.557);color: #0f172a;">58%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.595);color: #0f172a;">63%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.654);color: #ffffff;">70%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.424);color: #0f172a;">42%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.531);color: #0f172a;">55%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.514);color: #0f172a;">53%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.562);color: #0f172a;">59%</td></tr><tr><td class='keyword-col'>frequently</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.536);color: #0f172a;">56%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.576);color: #0f172a;">60%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.463);color: #0f172a;">47%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.424);color: #0f172a;">42%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.736);color: #ffffff;">80%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.514);color: #0f172a;">53%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.562);color: #0f172a;">59%</td></tr><tr><td class='keyword-col'>fixed-speed model</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.361);color: #0f172a;">34%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.461);color: #0f172a;">47%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.244);color: #0f172a;">20%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.397);color: #0f172a;">39%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.285);color: #0f172a;">25%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.369);color: #0f172a;">35%</td><td class='metric-cell' style="background: rgba(197, 139, 88, 0.418);color: #0f172a;">41%</td></tr></tbody></table>
+              </div>
+            </section>
+            
+      <div class="footnote">注：“整体”为6个主人群按样本量加权后的 Important 占比；显著性提示优先参考原始 p 值，当前没有关键词通过 BH 校正后显著。</div>
+    </section>
+  </div>
+
+  <script type="application/json" id="report-data">{&quot;groups&quot;: [&quot;全权掌控个人空间的温度&quot;, &quot;空间有限、安装便捷的实用方案&quot;, &quot;守护家人的睡眠舒适度&quot;, &quot;无需全屋制冷，快速冷却独立小房间&quot;, &quot;兼顾小户型的舒适、静音、体积与成本&quot;, &quot;应对紧急情况/极端高温的可靠备用选择&quot;], &quot;weights&quot;: {&quot;全权掌控个人空间的温度&quot;: 89.0, &quot;空间有限、安装便捷的实用方案&quot;: 86.0, &quot;守护家人的睡眠舒适度&quot;: 64.0, &quot;无需全屋制冷，快速冷却独立小房间&quot;: 51.0, &quot;兼顾小户型的舒适、静音、体积与成本&quot;: 51.0, &quot;应对紧急情况/极端高温的可靠备用选择&quot;: 39.0}, &quot;conceptOrder&quot;: [1, 2, 6]}</script>
+  <script>
+    const buttons = Array.from(document.querySelectorAll('.switch-btn'));
+    const panels = Array.from(document.querySelectorAll('.concept-panel'));
+
+    function activateConcept(conceptNo) {
+      buttons.forEach((btn) => {
+        btn.classList.toggle('is-active', btn.dataset.concept === String(conceptNo));
+      });
+      panels.forEach((panel) => {
+        panel.classList.toggle('is-active', panel.dataset.conceptPanel === String(conceptNo));
+      });
+    }
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => activateConcept(btn.dataset.concept));
+    });
+  </script>
+</body>
+</html>

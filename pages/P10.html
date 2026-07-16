@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BTU 人群环境分析简报 V2</title>
+  <style>
+    :root{--bg:#f4f6f9;--card:#ffffff;--line:#d8e1ec;--text:#0f172a;--sub:#475569;--blue:#2563eb;--blue-soft:#eaf2ff;--teal:#0f766e;--teal-soft:#ecfeff;--amber:#b45309;--amber-soft:#fff7ed;--red:#b91c1c;--red-soft:#fef2f2;--shadow:0 16px 40px rgba(15,23,42,.08);--radius:22px;}
+    *{box-sizing:border-box} body{margin:0;font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);}
+    .wrap{max-width:1480px;margin:0 auto;padding:28px;display:grid;gap:22px;}
+    .panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:30px 34px;display:grid;gap:18px;}
+    .kicker{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#64748b;font-weight:800;}
+    h1,h2,h3,p{margin:0} h1{font-size:38px;line-height:1.18;letter-spacing:-.02em;} h2{font-size:26px;line-height:1.25;} h3{font-size:21px;line-height:1.3;}
+    .subtitle{color:var(--sub);font-size:18px;line-height:1.8;max-width:1180px;}
+    .insight{background:linear-gradient(135deg,#eef6ff 0%,#f8fbff 100%);border:1px solid #cfe0ff;border-left:6px solid #3b82f6;border-radius:16px;padding:16px 18px;font-size:17px;line-height:1.8;color:#1e3a8a;}
+    .warning{background:linear-gradient(135deg,#fff8ef 0%,#fffdf8 100%);border:1px solid #f3d2a2;border-left:6px solid #d97706;border-radius:16px;padding:16px 18px;font-size:16px;line-height:1.8;color:#9a3412;}
+    .grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;} .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
+    .metric{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;} .metric span{display:block;font-size:12px;color:#64748b;margin-bottom:6px;font-weight:700;} .metric strong{font-size:24px;color:#1d4ed8;line-height:1.2;} .metric small{display:block;margin-top:6px;color:var(--sub);line-height:1.6;font-size:13px;}
+    .lane-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;} .lane-card{border:1px solid var(--line);border-radius:20px;padding:22px;background:#fcfdff;display:grid;gap:12px;} .lane-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+    .badge{display:inline-flex;padding:7px 11px;border-radius:999px;font-size:12px;font-weight:800;} .badge.high{background:var(--teal-soft);color:var(--teal);} .badge.mid{background:var(--blue-soft);color:var(--blue);} .badge.warn{background:var(--amber-soft);color:var(--amber);}
+    .persona-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;} .persona-card{border:1px solid var(--line);border-radius:20px;padding:22px;background:#fcfdff;display:grid;gap:14px;}
+    .tag{display:inline-flex;width:max-content;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--blue);background:var(--blue-soft);}
+    .desc{color:var(--sub);font-size:16px;line-height:1.75;} .pill-row{display:flex;flex-wrap:wrap;gap:8px;} .pill{display:inline-flex;padding:6px 10px;border-radius:999px;background:#f8fafc;border:1px solid #dbe5f0;color:#475569;font-size:12px;font-weight:700;}
+    .bars{display:grid;gap:14px;} .bar-row{display:grid;gap:8px;} .bar-head{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--sub);font-weight:700;} .track{width:100%;height:16px;border-radius:999px;background:#edf2f7;overflow:hidden;} .fill{height:100%;border-radius:999px;} .fill.blue{background:#2563eb;} .fill.teal{background:#0f766e;} .fill.amber{background:#d97706;}
+    .note{color:var(--sub);font-size:15px;line-height:1.75;} .strong-note{color:#1e3a8a;font-weight:700;}
+    table{width:100%;border-collapse:collapse;font-size:15px;} th,td{text-align:left;vertical-align:top;padding:14px 12px;border-bottom:1px solid #e6edf5;line-height:1.65;} th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#64748b;background:#f8fafc;font-weight:800;}
+    ul{margin:0;padding-left:20px;color:var(--sub);line-height:1.85;font-size:16px;}
+    .section-head{display:grid;gap:8px;}
+    
+    .section-note{color:var(--sub);font-size:16px;line-height:1.75;max-width:980px;}
+    .persona-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding-top:2px;}
+    .persona-filter{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;border:1px solid #d8e1ec;background:#f8fbff;color:#334155;font-size:13px;font-weight:700;cursor:pointer;transition:.18s ease;}
+    .persona-filter input{accent-color:#2563eb;margin:0;}
+    .persona-filter:hover{border-color:#93c5fd;background:#eff6ff;}
+    .persona-filter.is-active{border-color:#93c5fd;background:#eaf2ff;color:#1d4ed8;box-shadow:inset 0 0 0 1px rgba(37,99,235,.08);}
+    .persona-card.is-hidden{display:none;}
+    @media (max-width:1100px){.grid-4,.grid-2,.lane-wrap,.persona-grid{grid-template-columns:1fr} h1{font-size:32px} .lane-top{display:grid} .section-head{display:grid;}}
+  </style>
+
+<style id="visual-polish-v26">
+  :root {
+    --v26-bg: #f3f6f9;
+    --v26-paper: #ffffff;
+    --v26-paper-soft: #f8fafc;
+    --v26-ink: #17283b;
+    --v26-ink-soft: #4f6476;
+    --v26-muted: #6d7f8f;
+    --v26-line: #d8e1ea;
+    --v26-line-strong: #bccbd8;
+    --v26-brand: #2f6f9f;
+    --v26-brand-dark: #1f4f73;
+    --v26-brand-soft: #eaf3fa;
+    --v26-accent: #6f8f9f;
+    --v26-highlight: #b7791f;
+    --v26-shadow: 0 10px 26px rgba(23, 40, 59, .075);
+  }
+  html, body {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    color: var(--v26-ink) !important;
+    background: var(--v26-bg) !important;
+    text-rendering: geometricPrecision;
+  }
+  body { font-size: 15px; line-height: 1.6; }
+  h1, h2, h3, h4, .title, .section-title {
+    color: var(--v26-brand-dark) !important;
+    letter-spacing: 0 !important;
+  }
+  h1 {
+    font-size: clamp(30px, 3.2vw, 38px) !important;
+    line-height: 1.16 !important;
+    font-weight: 800 !important;
+  }
+  h2 {
+    font-size: clamp(22px, 2.2vw, 28px) !important;
+    line-height: 1.22 !important;
+    font-weight: 800 !important;
+  }
+  h3 {
+    font-size: 18px !important;
+    line-height: 1.28 !important;
+    font-weight: 800 !important;
+  }
+  h4 { font-size: 15px !important; line-height: 1.35 !important; font-weight: 800 !important; }
+  p, li, td, .subtitle, .desc, .note, .small, .muted, .cluster-desc, .cluster-diff, .body-copy {
+    color: var(--v26-ink-soft);
+    letter-spacing: 0 !important;
+  }
+  .wrap {
+    padding: 28px 24px 42px !important;
+  }
+  .panel, .hero, .card, .table-card, .chartPanel, .chart-panel, .chart-card,
+  .field-card, .cluster-card, .metric, .mini-card, .detail, .insight-card,
+  .overview-card, .persona-card, .concept-card, .price-card, .recommend-card {
+    border-radius: 8px !important;
+    border-color: var(--v26-line) !important;
+    box-shadow: var(--v26-shadow) !important;
+  }
+  .panel, .hero {
+    background: var(--v26-paper) !important;
+  }
+  .card, .table-card, .chartPanel, .chart-panel, .chart-card, .field-card,
+  .metric, .mini-card, .detail, .insight-card, .overview-card, .persona-card,
+  .concept-card, .price-card, .recommend-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%) !important;
+  }
+  .kicker, .eyebrow, .tag, .pill, .badge, .sku-pill, .chip, .mini-title,
+  .control-title, .card-headline, .meta {
+    letter-spacing: .04em !important;
+    font-weight: 800 !important;
+  }
+  .kicker, .eyebrow, .mini-title, .control-title {
+    color: var(--v26-muted) !important;
+    text-transform: uppercase;
+  }
+  .subtitle, .lead {
+    color: var(--v26-ink-soft) !important;
+    font-size: 16px !important;
+    line-height: 1.72 !important;
+  }
+  strong, b {
+    color: #20384e !important;
+    font-weight: 800 !important;
+  }
+  .takeaway, .insight, .field-insight, .recommendation, .opportunity,
+  .summary, .callout, .conclusion, .note-card {
+    border-radius: 8px !important;
+    border-color: #bfd3e4 !important;
+    background: #f3f8fc !important;
+    box-shadow: 0 8px 18px rgba(47, 111, 159, .07) !important;
+  }
+  .field-insight summary,
+  .takeaway strong,
+  .insight strong,
+  .recommendation strong,
+  .opportunity strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100%;
+  }
+  th {
+    background: #f3f7fb !important;
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  td, th {
+    border-color: #dbe4ed !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  tr:nth-child(even) td {
+    background-color: rgba(248, 250, 252, .62);
+  }
+  button, select, input {
+    font-family: inherit !important;
+  }
+  button, .tab, .toggle, .filter, .chip, .pill, select {
+    border-radius: 6px !important;
+  }
+  button:hover, .chip:hover, .pill:hover {
+    border-color: #9fb8cc !important;
+  }
+  .barwrap, .bar-wrap, .bar-track, .track {
+    background: #edf2f7 !important;
+  }
+  .value, .num, .big-number, .big-price, .score, .metric strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  .legend, .legend span, .axis, .tick, .label, .name {
+    color: #52687a !important;
+    font-size: 12px !important;
+    line-height: 1.42 !important;
+  }
+  svg text {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    fill: #52687a;
+  }
+  .grid, .grid-2, .grid-3, .charts, .overview-grid {
+    gap: 16px !important;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--v26-line);
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 14px 32px !important; }
+    h1 { font-size: 29px !important; }
+    h2 { font-size: 22px !important; }
+  }
+</style>
+
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel">
+      <div class="insight">最值得直接拿去做产品定义的是 <strong>151–250 sq. ft. × 10,000–11,999 BTU</strong> 这一带；最需要谨慎的是 <strong>251–350 sq. ft.</strong>，它并不支持被一句话压成单一 BTU。</div>
+      <div class="grid-4"><div class="metric"><span>现有用户口径</span><strong>n=200</strong><small>BTU 与适配判断主体样本</small></div><div class="metric"><span>核心人群样本</span><strong>n=194</strong><small>6 个主要原因人群的有效分析底盘</small></div><div class="metric"><span>最核心面积带</span><strong>151–250 sq. ft.</strong><small>也是最值得优先定义主销规格的尺寸带</small></div><div class="metric"><span>最清晰规格信号</span><strong>10,000–11,999 BTU</strong><small>在 151–250 sq. ft. 上呈现出更强适配度</small></div></div>
+    </section>
+
+    <section class="panel">
+      <div class="kicker">Executive Recommendation</div>
+      <h2>从面积出发，建议BTU</h2>
+      <div class="lane-wrap">
+    <article class="lane-card">
+      <div class="lane-top">
+        <h3>规格带 A：轻量单房补冷</h3>
+        <span class="badge mid">中等把握</span>
+      </div>
+      <p><strong>面积带：</strong>Under 150 sq. ft. / 101–150 sq. ft.</p>
+      <p><strong>建议 BTU：</strong>&lt;8,000 BTU 到 8,000–9,999 BTU</p>
+      <p class="desc">适合作为小房间、书房、次卧或轻量主卧方案；101–150 sq. ft. 该面积带不建议仅推荐&lt;8,000 BTU。可把8,000–9,999 BTU 作为主流推荐，8,000 BTU 作为轻量分支。</p>
+      <p class="note">更相关人群：空间自主掌控型、局部速冷控温型</p>
+    </article>
+    
+    <article class="lane-card">
+      <div class="lane-top">
+        <h3>规格带 B：核心主销带</h3>
+        <span class="badge high">高把握</span>
+      </div>
+      <p><strong>面积带：</strong>151–250 sq. ft.</p>
+      <p><strong>建议 BTU：</strong>10,000–11,999 BTU</p>
+      <p class="desc">当前市场使用主流仍偏 8,000–9,999 BTU，但适配反馈显示 10,000–11,999 BTU 更像真正的“舒服带”，非常适合卧室主场景。</p>
+      <p class="note">更相关人群：便捷安居实用型、家庭健康守护型、部分有限空间平衡型</p>
+    </article>
+    
+    <article class="lane-card">
+      <div class="lane-top">
+        <h3>规格带 C：双方案验证带</h3>
+        <span class="badge warn">需进一步验证</span>
+      </div>
+      <p><strong>面积带：</strong>251–350 sq. ft.</p>
+      <p><strong>建议 BTU：</strong>8,000–9,999 BTU 与 10,000–11,999 BTU 都需保留</p>
+      <p class="desc">当前用户实际购买更多集中在 10,000–11,999 BTU，但从满意度看 8,000–9,999 BTU 也并不弱，建议按卧室/客厅或应急/长期使用再做二次验证。</p>
+      <p class="note">更相关人群：家庭健康守护型、理性应急准备型</p>
+    </article>
+    
+    <article class="lane-card">
+      <div class="lane-top">
+        <h3>规格带 D：大房间探索带</h3>
+        <span class="badge mid">低到中等把握</span>
+      </div>
+      <p><strong>面积带：</strong>351–450 sq. ft.</p>
+      <p><strong>建议 BTU：</strong>12,000–13,999 BTU（谨慎）</p>
+      <p class="desc">样本不大，不建议直接当成第一主销规格。更适合放在“大房间/高温备用”的次级机会里。</p>
+      <p class="note">更相关人群：理性应急准备型、部分家庭健康守护型</p>
+    </article>
+    </div>
+      <div class="warning">面积带251–350 sq. ft.出现了明显的需求分层。从人群和使用动机看，其中的8,000–9,999 BTU存在需求主要来自两个原因：1/该空间内本身已有中央空调或其他制冷设备，或该空间的温度已经满足同空间其他家人的要求，移动空调只是进一步优化其中单个个体的体验（自身或家人）；2/仅作为停电后的应急设备准备，因此未购买“顶格”参数。</div>
+    </section>
+
+    <section class="panel">
+      <div class="kicker">Persona Narrative</div>
+      <div class="section-head">
+        <h2>从人群出发，建议BTU</h2>
+        <p class="section-note">&#x9ED8;&#x8BA4;&#x5148;&#x5C55;&#x793A;&#x6700;&#x63A8;&#x8350;&#x4F18;&#x5148;&#x8BB2;&#x7684; 3 &#x7C7B;&#x4EBA;&#x7FA4;&#xFF1A;&#x7A7A;&#x95F4;&#x81EA;&#x4E3B;&#x638C;&#x63A7;&#x578B;&#x3001;&#x4FBF;&#x6377;&#x5B89;&#x5C45;&#x5B9E;&#x7528;&#x578B;&#x3001;&#x5BB6;&#x5EAD;&#x5065;&#x5EB7;&#x5B88;&#x62A4;&#x578B;&#x3002;&#x4EA7;&#x54C1;&#x7ECF;&#x7406;&#x4E5F;&#x53EF;&#x4EE5;&#x5728;&#x9876;&#x90E8;&#x81EA;&#x7531;&#x52FE;&#x9009;&#xFF0C;&#x5207;&#x6362;&#x60F3;&#x4E00;&#x8D77;&#x5448;&#x73B0;&#x7684;&#x4EBA;&#x7FA4;&#x7EC4;&#x5408;&#x3002;</p>
+      </div>
+      <div class="persona-toolbar" id="personaFilters">
+          <label class="persona-filter is-active"><input type="checkbox" data-persona-toggle="便捷安居实用型" checked />便捷安居实用型</label>
+          <label class="persona-filter is-active"><input type="checkbox" data-persona-toggle="空间自主掌控型" checked />空间自主掌控型</label>
+          <label class="persona-filter is-active"><input type="checkbox" data-persona-toggle="家庭健康守护型" checked />家庭健康守护型</label>
+          <label class="persona-filter"><input type="checkbox" data-persona-toggle="理性应急准备型" />理性应急准备型</label>
+          <label class="persona-filter"><input type="checkbox" data-persona-toggle="局部速冷控温型" />局部速冷控温型</label>
+          <label class="persona-filter"><input type="checkbox" data-persona-toggle="有限空间平衡型" />有限空间平衡型</label>
+      </div>
+      <div class="persona-grid" id="personaGrid">
+        <article class="persona-card" data-persona="便捷安居实用型">
+              <div class="tag">便捷安居实用型</div>
+              <h3>空间有限、安装便捷的实用方案</h3>
+              <p class="desc">不是单一房型用户，更像“多个可用空间都想快速补冷”的务实人群。主锚点在主卧与 151–250 sq. ft.，但场景分散，突出便捷安装、可移动、跨房间补冷。</p>
+              <div class="pill-row">
+                <span class="pill">样本 n=58</span>
+                <span class="pill">Top房间：主卧</span>
+                <span class="pill">Top面积：151–250 sq. ft.</span>
+                <span class="pill">Top BTU：10,000–11,999 BTU</span>
+              </div>
+              <div class="bars">
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 刚好</span><strong>58.6%</strong></div><div class="track"><div class="fill blue" style="width:58.6%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏小</span><strong>27.6%</strong></div><div class="track"><div class="fill amber" style="width:27.6%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏大</span><strong>13.8%</strong></div><div class="track"><div class="fill teal" style="width:13.8%"></div></div></div>
+              </div>
+              <p class="note">主场景候选：Main bedroom | 251–350 sq. ft.；第二候选：Another Bedroom (Child, Guest, or Other family member) | 151–250 sq. ft.。</p>
+              <p class="note strong-note">可定义成“多房间补位能力”，不绑定一个固定房型。</p>
+            </article>
+
+        <article class="persona-card" data-persona="空间自主掌控型">
+              <div class="tag">空间自主掌控型</div>
+              <h3>全权掌控个人空间的温度</h3>
+              <p class="desc">更像“我只想把自己的空间调到舒服”的单人掌控诉求。主锚点是主卧 151–250 sq. ft. 与 8,000–9,999 BTU，但偏小反馈最高，值得保留更高一档动力选项。</p>
+              <div class="pill-row">
+                <span class="pill">样本 n=44</span>
+                <span class="pill">Top房间：主卧</span>
+                <span class="pill">Top面积：151–250 sq. ft.</span>
+                <span class="pill">Top BTU：8,000–9,999 BTU</span>
+              </div>
+              <div class="bars">
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 刚好</span><strong>47.7%</strong></div><div class="track"><div class="fill blue" style="width:47.7%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏小</span><strong>34.1%</strong></div><div class="track"><div class="fill amber" style="width:34.1%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏大</span><strong>18.2%</strong></div><div class="track"><div class="fill teal" style="width:18.2%"></div></div></div>
+              </div>
+              <p class="note">主场景候选：Main bedroom | 101-150 sq. ft.；第二候选：Living room | 151–250 sq. ft.。</p>
+              <p class="note strong-note">保留轻量规格，同时准备更强一档以承接“感觉偏小”的用户。</p>
+            </article>
+
+        <article class="persona-card" data-persona="家庭健康守护型">
+              <div class="tag">家庭健康守护型</div>
+              <h3>守护家人的睡眠舒适度</h3>
+              <p class="desc">是最适合讲“卧室睡眠舒适”故事的人群之一。主锚点在主卧/次卧与 251–350 sq. ft.，对 10,000–11,999 BTU 接受度高。</p>
+              <div class="pill-row">
+                <span class="pill">样本 n=28</span>
+                <span class="pill">Top房间：主卧</span>
+                <span class="pill">Top面积：251–350 sq. ft.</span>
+                <span class="pill">Top BTU：10,000–11,999 BTU</span>
+              </div>
+              <div class="bars">
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 刚好</span><strong>67.9%</strong></div><div class="track"><div class="fill blue" style="width:67.9%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏小</span><strong>28.6%</strong></div><div class="track"><div class="fill amber" style="width:28.6%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏大</span><strong>3.6%</strong></div><div class="track"><div class="fill teal" style="width:3.6%"></div></div></div>
+              </div>
+              <p class="note">主场景候选：Another Bedroom (Child, Guest, or Other family member) | 251–350 sq. ft.；第二候选：Main bedroom | 251–350 sq. ft.。</p>
+              <p class="note strong-note">优先绑定卧室、睡眠、持续舒适，规格可更聚焦 10,000–11,999 BTU。</p>
+            </article>
+
+        <article class="persona-card is-hidden" data-persona="理性应急准备型">
+              <div class="tag">理性应急准备型</div>
+              <h3>应对紧急情况/极端高温的可靠备用选择</h3>
+              <p class="desc">不该被硬压成单一规格，它天然存在两个次级场景。既有主卧 151–250 sq. ft. 的应急补冷，也有主卧/客厅 251–350 sq. ft. 的高温备用场景。</p>
+              <div class="pill-row">
+                <span class="pill">样本 n=28</span>
+                <span class="pill">Top房间：主卧</span>
+                <span class="pill">Top面积：251–350 sq. ft.</span>
+                <span class="pill">Top BTU：8,000–9,999 BTU</span>
+              </div>
+              <div class="bars">
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 刚好</span><strong>64.3%</strong></div><div class="track"><div class="fill blue" style="width:64.3%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏小</span><strong>28.6%</strong></div><div class="track"><div class="fill amber" style="width:28.6%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏大</span><strong>7.1%</strong></div><div class="track"><div class="fill teal" style="width:7.1%"></div></div></div>
+              </div>
+              <p class="note">主场景候选：Main bedroom | 151–250 sq. ft.；第二候选：Main bedroom | 251–350 sq. ft.。</p>
+              <p class="note strong-note">可拆成“卧室备用”和“客厅/大房间应急”两个二级场景。</p>
+            </article>
+
+        <article class="persona-card is-hidden" data-persona="局部速冷控温型">
+              <div class="tag">局部速冷控温型</div>
+              <h3>无需全屋制冷，快速冷却独立小房间</h3>
+              <p class="desc">更强调“尽快把一个小房间降到最舒服”，主锚点在主卧 151–250 sq. ft. 和次卧 101–150 sq. ft.。适合讲快速见效、单房直冷，而不是全屋覆盖。</p>
+              <div class="pill-row">
+                <span class="pill">样本 n=21</span>
+                <span class="pill">Top房间：主卧</span>
+                <span class="pill">Top面积：151–250 sq. ft.</span>
+                <span class="pill">Top BTU：8,000–9,999 BTU</span>
+              </div>
+              <div class="bars">
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 刚好</span><strong>57.1%</strong></div><div class="track"><div class="fill blue" style="width:57.1%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏小</span><strong>28.6%</strong></div><div class="track"><div class="fill amber" style="width:28.6%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏大</span><strong>14.3%</strong></div><div class="track"><div class="fill teal" style="width:14.3%"></div></div></div>
+              </div>
+              <p class="note">主场景候选：Main bedroom | 151–250 sq. ft.；第二候选：Another Bedroom (Child, Guest, or Other family member) | 101-150 sq. ft.。</p>
+              <p class="note strong-note">突出快速降温和单房体感，不必承担过大的公共空间心智。</p>
+            </article>
+
+        <article class="persona-card is-hidden" data-persona="有限空间平衡型">
+              <div class="tag">有限空间平衡型</div>
+              <h3>兼顾小户型的舒适、静音、体积与成本</h3>
+              <p class="desc">是 6 群里最值得和公寓/紧凑居住环境绑定的人群。虽然主场景仍是主卧 151–250 sq. ft.，但住宅类型明显更偏公寓，适合讲体积、静音、适配小空间。</p>
+              <div class="pill-row">
+                <span class="pill">样本 n=15</span>
+                <span class="pill">Top房间：主卧</span>
+                <span class="pill">Top面积：151–250 sq. ft.</span>
+                <span class="pill">Top BTU：10,000–11,999 BTU</span>
+              </div>
+              <div class="bars">
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 刚好</span><strong>73.3%</strong></div><div class="track"><div class="fill blue" style="width:73.3%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏小</span><strong>20.0%</strong></div><div class="track"><div class="fill amber" style="width:20.0%"></div></div></div>
+                <div class="bar-row"><div class="bar-head"><span>当前 BTU 偏大</span><strong>6.7%</strong></div><div class="track"><div class="fill teal" style="width:6.7%"></div></div></div>
+              </div>
+              <p class="note">主场景候选：Main bedroom | 251–350 sq. ft.；第二候选：Living room | 151–250 sq. ft.。</p>
+              <p class="note strong-note">更适合做公寓/小户型友好型方案，而不是泛泛的全人群款。</p>
+            </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="kicker">Reference Table</div>
+      <h2>面积带与当前主流 / 更适配 BTU 对照</h2>
+      <table>
+        <thead><tr><th>面积带</th><th>样本 n</th><th>当前主流 BTU</th><th>更适配 BTU</th><th>备注</th></tr></thead>
+        <tbody><tr><td>Under 100 sq. ft.</td><td>9</td><td>Less than 8,000 BTU</td><td>Less than 8,000 BTU（谨慎）</td><td>样本偏少，仅作方向参考</td></tr><tr><td>101-150 sq. ft.</td><td>35</td><td>8,000–9,999 BTU</td><td>Less than 8,000 BTU</td><td>可作为重点决策带</td></tr><tr><td>151–250 sq. ft.</td><td>56</td><td>8,000–9,999 BTU</td><td>10,000–11,999 BTU</td><td>可作为重点决策带</td></tr><tr><td>251–350 sq. ft.</td><td>46</td><td>10,000–11,999 BTU</td><td>8,000–9,999 BTU</td><td>可作为重点决策带</td></tr><tr><td>351–450 sq. ft.</td><td>17</td><td>10,000–11,999 BTU</td><td>12,000–13,999 BTU（谨慎）</td><td>可参考，但需谨慎</td></tr><tr><td>451–600 sq. ft.</td><td>12</td><td>10,000–11,999 BTU</td><td>10,000–11,999 BTU（谨慎）</td><td>可参考，但需谨慎</td></tr><tr><td>Over 600 sq. ft.</td><td>6</td><td>12,000–13,999 BTU</td><td>样本不足</td><td>样本偏少，仅作方向参考</td></tr><tr><td>开放式共享空间</td><td>2</td><td>12,000–13,999 BTU</td><td>样本不足</td><td>样本偏少，仅作方向参考</td></tr><tr><td>Not sure</td><td>17</td><td>Less than 8,000 BTU</td><td>Less than 8,000 BTU（谨慎）</td><td>可参考，但需谨慎</td></tr></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      const toggles = Array.from(document.querySelectorAll('[data-persona-toggle]'));
+      const cards = Array.from(document.querySelectorAll('[data-persona]'));
+      function sync() {
+        const selected = new Set(toggles.filter(item => item.checked).map(item => item.getAttribute('data-persona-toggle')));
+        toggles.forEach(item => {
+          const label = item.closest('.persona-filter');
+          if (label) label.classList.toggle('is-active', item.checked);
+        });
+        cards.forEach(card => {
+          const show = selected.has(card.getAttribute('data-persona'));
+          card.classList.toggle('is-hidden', !show);
+        });
+      }
+      toggles.forEach(item => item.addEventListener('change', sync));
+      sync();
+    }());
+  </script>
+</body>
+</html>

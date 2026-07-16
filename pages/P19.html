@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>04.0_非人群分类对比：结论与产品含义</title>
+  <style>
+:root {
+      --bg: #edf2f7;
+      --panel: #ffffff;
+      --panel-soft: #f8fbff;
+      --line: #d8e2ec;
+      --line-strong: #bfd0e1;
+      --text: #17283b;
+      --muted: #536b82;
+      --brand: #2f6fa3;
+      --brand-dark: #224f77;
+      --brand-soft: #e8f2fb;
+      --shadow: 0 16px 44px rgba(23, 40, 59, 0.10);
+      --sidebar: 284px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    button, input { font: inherit; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: var(--sidebar) 1fr; }
+    .sidebar { position: sticky; top: 0; height: 100vh; overflow: auto; padding: 22px 14px; background: #162233; border-right: 1px solid #26384d; }
+    .brandbox { padding: 18px 15px; margin-bottom: 14px; border: 1px solid #2d4056; border-radius: 8px; background: #1d2d42; box-shadow: 0 14px 32px rgba(0, 0, 0, .18); }
+    .kicker { margin-bottom: 10px; font-size: 12px; color: #7b93aa; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .brandbox h1 { margin: 0 0 10px; font-size: 24px; line-height: 1.18; color: #f4f8fc; letter-spacing: 0; }
+    .brandbox p { margin: 0; color: #bac9d6; font-size: 13px; line-height: 1.62; }
+    .toc { display: grid; gap: 10px; }
+    .toc-group { padding: 8px; border: 1px solid #2b3f55; border-radius: 8px; background: #1b2a3d; }
+    .toc-title { padding: 7px 8px 8px; color: #b8c8d7; font-size: 12px; line-height: 1.35; font-weight: 700; }
+    .toc-list { display: grid; gap: 5px; }
+    .toc-btn { width: 100%; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #e4edf6; text-align: left; cursor: pointer; padding: 8px 9px; font-size: 13px; line-height: 1.38; }
+    .toc-btn:hover { background: #22354b; border-color: #38516c; }
+    .toc-btn.active { background: #2b5b86; border-color: #4b7fab; color: #ffffff; }
+    .toc-btn .meta { display: block; margin-bottom: 2px; font-size: 11px; color: #91a8ba; font-weight: 800; }
+    .toc-btn.active .meta { color: #d6e9fb; }
+    .main { min-width: 0; padding: 24px 26px 22px; }
+    .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 16px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow); }
+    .title-wrap small { display: block; margin-bottom: 6px; color: #738ba0; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .title-wrap h2 { margin: 0; color: var(--brand-dark); font-size: 28px; line-height: 1.22; letter-spacing: 0; }
+    .pagerbox { min-width: 226px; display: grid; justify-items: end; gap: 10px; }
+    .page-indicator { color: #547086; font-weight: 700; }
+    .page-indicator strong { color: var(--brand-dark); font-size: 22px; }
+    .nav-actions { display: flex; gap: 10px; }
+    .nav-actions button { border: 1px solid var(--line-strong); background: var(--panel-soft); color: var(--brand-dark); border-radius: 6px; padding: 9px 13px; cursor: pointer; font-weight: 800; }
+    .nav-actions button:hover { background: #edf5fc; }
+    .nav-actions button:disabled { opacity: .42; cursor: not-allowed; }
+    .content-shell { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow); }
+    .iframe-wrap { width: 100%; height: calc(100vh - 154px); min-height: 760px; background: #f7fbff; }
+    iframe { display: block; width: 100%; height: 100%; border: 0; background: #f7fbff; }
+    .inline-wrap { min-height: calc(100vh - 154px); padding: 30px; background: linear-gradient(180deg, #f8fbff 0%, #eef3f8 100%); }
+    .slide { max-width: 1180px; margin: 0 auto; padding: 34px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow); }
+    .slide h1 { margin: 0 0 12px; color: var(--brand-dark); font-size: 38px; line-height: 1.18; letter-spacing: 0; }
+    .lead { max-width: 980px; margin: 0 0 24px; color: #4f687d; font-size: 17px; line-height: 1.76; }
+    .grid { display: grid; gap: 16px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card, .jump-card, .sku-card { padding: 20px; border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(180deg, #fff 0%, #f8fbff 100%); box-shadow: 0 10px 24px rgba(23, 40, 59, .06); }
+    .card h3, .sku-card h3 { margin: 0 0 12px; color: var(--brand-dark); font-size: 22px; }
+    .card ul { margin: 0; padding-left: 20px; color: #4f687d; font-size: 15px; line-height: 1.75; }
+    .card.emphasis { background: #f5f9fd; border-color: #cbdced; }
+    .jump-card { color: inherit; text-align: left; cursor: pointer; transition: .18s ease; }
+    .jump-card:hover { transform: translateY(-2px); border-color: #b9d2e8; background: #f3f8fd; }
+    .jump-card span { display: block; margin-bottom: 9px; color: #71879c; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .jump-card strong { display: block; margin-bottom: 8px; color: var(--brand-dark); font-size: 21px; line-height: 1.35; }
+    .jump-card small { display: block; color: #5c7389; font-size: 14px; line-height: 1.6; }
+    .cover-slide { background: radial-gradient(circle at top right, rgba(47,111,163,.10), transparent 26%), linear-gradient(135deg, #ffffff 0%, #f8fbff 62%, #eef4f9 100%); }
+    .cover-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 22px; }
+    .cover-badge { min-width: 140px; padding: 17px 14px; border: 1px solid #cbdceb; border-radius: 8px; background: #f0f7fd; text-align: center; color: var(--brand-dark); }
+    .cover-badge strong { display: block; margin-bottom: 7px; font-size: 32px; line-height: 1; }
+    .cover-badge span { color: #5b7288; font-size: 14px; font-weight: 800; }
+    .cover-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .quick-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .home-footer-note { margin-top: 12px; padding: 8px 0 0; border-top: 1px solid var(--line); color: #8a9aaa; font-size: 12px; line-height: 1.45; display: flex; justify-content: flex-end; text-align: right; }
+    .sku-kicker { display: inline-flex; margin-bottom: 14px; padding: 7px 11px; border: 1px solid #d5e3f0; border-radius: 999px; background: #edf5fc; color: #4b6985; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .sku-placeholder { min-height: 240px; padding: 20px; display: grid; align-content: center; gap: 10px; border: 1.5px dashed #c5d7e7; border-radius: 8px; background: #fbfdff; color: #60788d; font-size: 15px; line-height: 1.75; }
+    .sku-placeholder p { margin: 0; }
+    .footerbar { display: flex; justify-content: space-between; gap: 14px; margin-top: 14px; padding: 0 4px; color: #627c91; font-size: 13px; }
+    @media (max-width: 1380px) {
+      :root { --sidebar: 260px; }
+      .grid.three, .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .cover-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; }
+      .main { padding-top: 0; }
+      .topbar, .cover-top, .footerbar { flex-direction: column; align-items: flex-start; }
+      .pagerbox { justify-items: start; min-width: 0; }
+      .grid.two, .grid.three, .quick-grid { grid-template-columns: 1fr; }
+      .iframe-wrap { height: 78vh; min-height: 680px; }
+    }
+  
+    /* v26 Visual Polish: executive report baseline */
+    :root {
+      --bg: #f2f5f8;
+      --panel: #ffffff;
+      --panel-soft: #f7f9fc;
+      --line: #d8e1ea;
+      --line-strong: #bccbd8;
+      --text: #17283b;
+      --muted: #53687a;
+      --brand: #2f6f9f;
+      --brand-dark: #1f4f73;
+      --brand-soft: #eaf3fa;
+      --accent: #6f8f9f;
+      --highlight: #b7791f;
+      --shadow: 0 12px 30px rgba(23, 40, 59, 0.08);
+    }
+    html, body {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      text-rendering: geometricPrecision;
+    }
+    .sidebar { background: #172638; border-right-color: #26384a; }
+    .brandbox { border-radius: 8px; background: #1d2d40; border-color: #31465d; box-shadow: 0 12px 28px rgba(0,0,0,.16); }
+    .brandbox h1 { font-size: 23px; letter-spacing: 0; }
+    .kicker {
+      color: #6f879b;
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .topbar {
+      padding: 16px 20px;
+      border-radius: 8px;
+      box-shadow: 0 10px 24px rgba(23, 40, 59, .07);
+    }
+    .title-wrap h2 { font-size: 27px; color: var(--brand-dark); letter-spacing: 0; }
+    .page-indicator, .footerbar { color: #5d7284; }
+    .toc-group { border-radius: 8px; background: #1c2b3d; border-color: #2e4358; }
+    .toc-title { color: #b9c9d7; letter-spacing: 0; }
+    .toc-btn { border-radius: 6px; font-size: 13px; line-height: 1.42; }
+    .toc-btn.active { background: #2c648f; border-color: #4f84ad; }
+    .content-shell, .slide, .card, .jump-card, .sku-card, .cover-badge {
+      border-radius: 8px;
+    }
+    .content-shell { border-color: var(--line); box-shadow: var(--shadow); }
+    .inline-wrap { padding: 28px; background: linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%); }
+    .slide {
+      max-width: 1180px;
+      padding: 32px 34px;
+      border-color: var(--line);
+      box-shadow: 0 12px 30px rgba(23, 40, 59, .08);
+    }
+    .slide h1 {
+      margin-bottom: 12px;
+      color: var(--brand-dark);
+      font-size: 36px;
+      line-height: 1.16;
+      letter-spacing: 0;
+      font-weight: 800;
+    }
+    .lead {
+      max-width: 1000px;
+      color: #4f6476;
+      font-size: 16px;
+      line-height: 1.72;
+    }
+    .grid { gap: 16px; }
+    .card, .jump-card, .sku-card {
+      padding: 20px;
+      border-color: var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%);
+      box-shadow: 0 8px 18px rgba(23, 40, 59, .055);
+    }
+    .card.emphasis {
+      background: #f3f8fc;
+      border-color: #bfd3e4;
+      box-shadow: 0 8px 20px rgba(47, 111, 159, .08);
+    }
+    .card h3, .sku-card h3 {
+      color: var(--brand-dark);
+      font-size: 20px;
+      line-height: 1.25;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+    .card ul, .sku-card p, .card p {
+      color: #4f6476;
+      font-size: 14.5px;
+      line-height: 1.72;
+    }
+    .card li + li { margin-top: 3px; }
+    strong { color: #20384e; font-weight: 800; }
+    table {
+      border-collapse: collapse;
+      border-spacing: 0;
+    }
+    th {
+      background: #f3f7fb;
+      color: var(--brand-dark) !important;
+      font-weight: 800;
+    }
+    td, th {
+      border-color: #dbe4ed !important;
+      line-height: 1.55;
+    }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef3f8 100%);
+    }
+    body {
+      padding: 30px;
+    }
+    @media (max-width: 760px) {
+      body { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+        <section class="slide">
+          <div class="kicker">04 / CROSS-CUT ANALYSIS</div>
+          <h1>非人群分类对比：结论与产品含义</h1>
+          <p class="lead">同一台移动空调，在不同市场和空间任务里，到底承担什么角色？</p>
+
+          <div class="card emphasis" style="margin-bottom:16px;">
+            <h3>总判断</h3>
+            <ul>
+              <li><strong>现有用户烦的是“用了很累”，潜在用户怕的是“买了不值”。</strong>前者需要长期使用负担被解决，后者需要购买前风险被降低。</li>
+              <li><strong>大户型是在和空间本身对抗，小户型是在和使用代价做权衡。</strong>前者关注性能边界、覆盖稳定和能耗，后者关注噪音、体积、安装和成本是否值得。</li>
+              <li><strong>房间类型决定产品任务。</strong>主卧守住睡眠和恢复，客厅守住共享空间，次卧承担弹性补位。</li>
+              <li><strong>产品表达不能一套话术打全部。</strong>同样是“降温”，在不同维度下分别是实用工具、生活品质升级、家庭舒适管理或个人空间权衡。</li>
+            </ul>
+          </div>
+
+          <div class="grid three" style="margin-bottom:16px;">
+            <div class="card">
+              <h3>现有用户 vs 潜在用户</h3>
+              <ul>
+                <li><strong>现有用户</strong>已经把移动空调接受为现实可用的补位工具，更在意好装、可靠、能解决具体空间问题，并减少长期使用负担。</li>
+                <li><strong>潜在用户</strong>更像关键场景想象者，先被可感知结果打动：小空间快速舒服、睡眠改善、家人宠物舒适，以及体积/噪音/成本可接受。</li>
+                <li>潜在用户对“综合平衡”的需求更强（18.9% vs 7.5%），但对应急备用的直接认同更低（5.8% vs 14.0%）。</li>
+                <li><strong>产品体现：</strong>存量市场讲实用、可靠、好维护；增量市场讲睡眠、热浪、家庭照护和低负担体验。</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>大户型 vs 小户型</h3>
+              <ul>
+                <li><strong>大户型</strong>更偏“系统补位 + 家庭照护 + 局部升级”，核心矛盾是大空间持续把机器推向性能边界。</li>
+                <li><strong>小户型</strong>更偏“个人控温工具 + 生活权衡方案”，任何副作用都会被放大：噪音、体积、安装、改造和成本。</li>
+                <li>两边都追求舒适，但大户型讲家庭和空间管理，小户型讲个人空间与生活代价的平衡。</li>
+                <li><strong>产品体现：</strong>大户型强调补足盲区、持续制冷和家庭舒适；小户型强调小空间友好、静音、易安装和“值这个钱”。</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>主卧 vs 客厅 vs 次卧</h3>
+              <ul>
+                <li><strong>主卧</strong>是睡眠和私人恢复场景，最需要安静、夜间舒适、快速调到舒服状态。</li>
+                <li><strong>客厅</strong>是共享空间，重点是高温白天补位、长时间停留舒适，以及不引入过多噪音和体积负担。</li>
+                <li><strong>次卧</strong>是弹性补位空间，服务客人、家庭成员或某个临时过热房间，强调快速部署和小空间降温。</li>
+                <li><strong>产品体现：</strong>主卧讲睡眠守护；客厅讲共享舒适和实用价值；次卧讲灵活、快速、备用但不低频无感。</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="grid two" style="margin-bottom:16px;">
+            <div class="card">
+              <h3>痛点如何转成产品优先级</h3>
+              <ul>
+                <li><strong>潜在用户：</strong>降低预期风险。要证明某个房间真的能降下来、安装没那么麻烦、噪音和占地不会打扰生活。</li>
+                <li><strong>现有用户：</strong>降低长期使用负担。重点是更稳的制冷、更好的能效、更少排水维护、更少关键场景打断。</li>
+                <li><strong>大户型：</strong>优先解决性能边界、持续运行、覆盖稳定和能耗压力。</li>
+                <li><strong>小户型：</strong>优先解决噪音、安装适配、体积存在感和低负担使用。</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>建议的产品叙事</h3>
+              <ul>
+                <li><strong>不要只讲“备用”。</strong>应急备用只能打动一部分理性防灾用户，更大的机会是把它转译成多场景高频补位。</li>
+                <li><strong>不要只讲“冷”。</strong>要按任务讲：睡眠恢复、共享空间舒适、小空间快速降温、家庭成员照护、局部空间补位。</li>
+                <li><strong>不要只讲参数。</strong>参数要服务体验承诺：降得下来、装得上、不吵、不占地、长期用不累。</li>
+                <li><strong>一页话术：</strong>现有市场讲现实可用，潜在市场讲关键场景值得买；大户型讲补位与照护，小户型讲低负担与平衡。</li>
+              </ul>
+            </div>
+          </div>
+
+          
+        </section>
+  <script>
+    document.querySelectorAll('[data-target]').forEach(function (el) {
+      el.addEventListener('click', function (event) {
+        var target = el.getAttribute('data-target');
+        if (!target) return;
+        event.preventDefault();
+        if (window.parent && window.parent !== window) {
+          window.parent.location.hash = encodeURIComponent(target);
+        } else {
+          window.location.hash = encodeURIComponent(target);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

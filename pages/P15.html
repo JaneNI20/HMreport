@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>概念评估V2</title>
+  <style>
+    body{margin:0;font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6f9;color:#1f2937;}
+    .wrap{max-width:1500px;margin:0 auto;padding:24px;display:grid;gap:22px;}
+    .panel{background:#fff;border-radius:22px;box-shadow:0 14px 36px rgba(15,23,42,.08);padding:32px 36px;display:grid;gap:18px;}
+    .kicker{font-size:14px;color:#64748b;text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+    h1,h2,h3,p{margin:0;}
+    h1{font-size:36px;line-height:1.2;}
+    .subtitle{font-size:17px;line-height:1.7;color:#475569;max-width:1000px;}
+    .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
+    .cards .concept-card h2{font-size:20px;line-height:1.25;}
+    .cards .concept-card p{font-size:13px;line-height:1.55;}
+    .cards .metric-grid span{font-size:11px;}
+    .cards .metric-grid strong{font-size:18px;}
+    .concept-card,.group-card{border:1px solid #dbe3ee;border-radius:20px;padding:18px;background:#fcfdff;display:grid;gap:14px;}
+    .head,.group-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;}
+    .eyebrow{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px;}
+    .pill{padding:9px 12px;border-radius:999px;background:#eef4ff;color:#1d4ed8;font-size:12px;font-weight:800;white-space:nowrap;}
+    .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+    .metric-grid div{border:1px solid #dbe3ee;border-radius:16px;background:#fff;padding:12px 14px;}
+    .metric-grid span{display:block;font-size:12px;color:#64748b;margin-bottom:6px;}
+    .metric-grid strong{font-size:22px;color:#1d4ed8;}
+    table{width:100%;border-collapse:collapse;font-size:14px;}
+    th,td{padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top;}
+    th{font-size:12px;color:#64748b;background:#f8fafc;text-transform:uppercase;letter-spacing:.06em;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+    .insight{background:#eef6ff;border-left:5px solid #3b82f6;border-radius:14px;padding:14px 16px;line-height:1.7;}
+    @media (max-width:1100px){.cards,.grid,.metric-grid{grid-template-columns:1fr;}}
+  </style>
+
+<style id="visual-polish-v26">
+  :root {
+    --v26-bg: #f3f6f9;
+    --v26-paper: #ffffff;
+    --v26-paper-soft: #f8fafc;
+    --v26-ink: #17283b;
+    --v26-ink-soft: #4f6476;
+    --v26-muted: #6d7f8f;
+    --v26-line: #d8e1ea;
+    --v26-line-strong: #bccbd8;
+    --v26-brand: #2f6f9f;
+    --v26-brand-dark: #1f4f73;
+    --v26-brand-soft: #eaf3fa;
+    --v26-accent: #6f8f9f;
+    --v26-highlight: #b7791f;
+    --v26-shadow: 0 10px 26px rgba(23, 40, 59, .075);
+  }
+  html, body {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    color: var(--v26-ink) !important;
+    background: var(--v26-bg) !important;
+    text-rendering: geometricPrecision;
+  }
+  body { font-size: 15px; line-height: 1.6; }
+  h1, h2, h3, h4, .title, .section-title {
+    color: var(--v26-brand-dark) !important;
+    letter-spacing: 0 !important;
+  }
+  h1 {
+    font-size: clamp(30px, 3.2vw, 38px) !important;
+    line-height: 1.16 !important;
+    font-weight: 800 !important;
+  }
+  h2 {
+    font-size: clamp(22px, 2.2vw, 28px) !important;
+    line-height: 1.22 !important;
+    font-weight: 800 !important;
+  }
+  h3 {
+    font-size: 18px !important;
+    line-height: 1.28 !important;
+    font-weight: 800 !important;
+  }
+  h4 { font-size: 15px !important; line-height: 1.35 !important; font-weight: 800 !important; }
+  p, li, td, .subtitle, .desc, .note, .small, .muted, .cluster-desc, .cluster-diff, .body-copy {
+    color: var(--v26-ink-soft);
+    letter-spacing: 0 !important;
+  }
+  .wrap {
+    padding: 28px 24px 42px !important;
+  }
+  .panel, .hero, .card, .table-card, .chartPanel, .chart-panel, .chart-card,
+  .field-card, .cluster-card, .metric, .mini-card, .detail, .insight-card,
+  .overview-card, .persona-card, .concept-card, .price-card, .recommend-card {
+    border-radius: 8px !important;
+    border-color: var(--v26-line) !important;
+    box-shadow: var(--v26-shadow) !important;
+  }
+  .panel, .hero {
+    background: var(--v26-paper) !important;
+  }
+  .card, .table-card, .chartPanel, .chart-panel, .chart-card, .field-card,
+  .metric, .mini-card, .detail, .insight-card, .overview-card, .persona-card,
+  .concept-card, .price-card, .recommend-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%) !important;
+  }
+  .kicker, .eyebrow, .tag, .pill, .badge, .sku-pill, .chip, .mini-title,
+  .control-title, .card-headline, .meta {
+    letter-spacing: .04em !important;
+    font-weight: 800 !important;
+  }
+  .kicker, .eyebrow, .mini-title, .control-title {
+    color: var(--v26-muted) !important;
+    text-transform: uppercase;
+  }
+  .subtitle, .lead {
+    color: var(--v26-ink-soft) !important;
+    font-size: 16px !important;
+    line-height: 1.72 !important;
+  }
+  strong, b {
+    color: #20384e !important;
+    font-weight: 800 !important;
+  }
+  .takeaway, .insight, .field-insight, .recommendation, .opportunity,
+  .summary, .callout, .conclusion, .note-card {
+    border-radius: 8px !important;
+    border-color: #bfd3e4 !important;
+    background: #f3f8fc !important;
+    box-shadow: 0 8px 18px rgba(47, 111, 159, .07) !important;
+  }
+  .field-insight summary,
+  .takeaway strong,
+  .insight strong,
+  .recommendation strong,
+  .opportunity strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100%;
+  }
+  th {
+    background: #f3f7fb !important;
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  td, th {
+    border-color: #dbe4ed !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  tr:nth-child(even) td {
+    background-color: rgba(248, 250, 252, .62);
+  }
+  button, select, input {
+    font-family: inherit !important;
+  }
+  button, .tab, .toggle, .filter, .chip, .pill, select {
+    border-radius: 6px !important;
+  }
+  button:hover, .chip:hover, .pill:hover {
+    border-color: #9fb8cc !important;
+  }
+  .barwrap, .bar-wrap, .bar-track, .track {
+    background: #edf2f7 !important;
+  }
+  .value, .num, .big-number, .big-price, .score, .metric strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  .legend, .legend span, .axis, .tick, .label, .name {
+    color: #52687a !important;
+    font-size: 12px !important;
+    line-height: 1.42 !important;
+  }
+  svg text {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    fill: #52687a;
+  }
+  .grid, .grid-2, .grid-3, .charts, .overview-grid {
+    gap: 16px !important;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--v26-line);
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 14px 32px !important; }
+    h1 { font-size: 29px !important; }
+    h2 { font-size: 22px !important; }
+  }
+</style>
+
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel">
+      <div class="kicker">Concept Evaluation</div>
+      <h1>概念评估</h1>
+      <div class="subtitle">IC值：综合评估用户对于概念的理解程度、可行性认同、独特性认同、购买意愿及溢价意愿</div>
+      <div class="insight">整体看，IC 排名前两位是 <strong>变频概念</strong> 和 <strong>46/43dB静音概念</strong>。其中变频概念的 IC 最高，46/43dB 静音概念紧随其后；而 3way 控制的 IC 和溢价表现都相对更弱，更像“锦上添花”而不是单独拉高售价的核心卖点。</div>
+    </section>
+    <section class="panel">
+      <h2>整体概念强弱</h2>
+      <div class="cards">
+        <section class="concept-card">
+          <div class="head">
+            <div>
+              <div class="eyebrow">Concept</div>
+              <h2>变频概念</h2>
+              <p>整体 IC 均值 40.2，有溢价意愿占比 18%，有溢价人群的平均溢价幅度 30.6% 。</p>
+            </div>
+            <div class="pill">IC 排名 #1</div>
+          </div>
+          <div class="metric-grid">
+            <div><span>整体 IC 均值</span><strong>40.2</strong></div>
+            <div><span>有溢价意愿占比</span><strong>18%</strong></div>
+            <div><span>平均溢价幅度</span><strong>30.6%</strong></div>
+            <div><span>主要溢价来源价位段</span><strong>$251 – $350（28%）</strong></div>
+          </div>
+        </section>
+        
+        <section class="concept-card">
+          <div class="head">
+            <div>
+              <div class="eyebrow">Concept</div>
+              <h2>46/43dB静音概念</h2>
+              <p>整体 IC 均值 38.3，有溢价意愿占比 17%，有溢价人群的平均溢价幅度 29.6% 。</p>
+            </div>
+            <div class="pill">IC 排名 #2</div>
+          </div>
+          <div class="metric-grid">
+            <div><span>整体 IC 均值</span><strong>38.3</strong></div>
+            <div><span>有溢价意愿占比</span><strong>17%</strong></div>
+            <div><span>平均溢价幅度</span><strong>29.6%</strong></div>
+            <div><span>主要溢价来源价位段</span><strong>$251 – $350（31%）</strong></div>
+          </div>
+        </section>
+        
+        <section class="concept-card">
+          <div class="head">
+            <div>
+              <div class="eyebrow">Concept</div>
+              <h2>3分钟安装概念</h2>
+              <p>整体 IC 均值 36.9，有溢价意愿占比 11%，有溢价人群的平均溢价幅度 23.8% 。</p>
+            </div>
+            <div class="pill">IC 排名 #3</div>
+          </div>
+          <div class="metric-grid">
+            <div><span>整体 IC 均值</span><strong>36.9</strong></div>
+            <div><span>有溢价意愿占比</span><strong>11%</strong></div>
+            <div><span>平均溢价幅度</span><strong>23.8%</strong></div>
+            <div><span>主要溢价来源价位段</span><strong>$251 – $350（31%）</strong></div>
+          </div>
+        </section>
+        
+        <section class="concept-card">
+          <div class="head">
+            <div>
+              <div class="eyebrow">Concept</div>
+              <h2>72h免排水概念</h2>
+              <p>整体 IC 均值 35.9，有溢价意愿占比 16%，有溢价人群的平均溢价幅度 26.2% 。</p>
+            </div>
+            <div class="pill">IC 排名 #4</div>
+          </div>
+          <div class="metric-grid">
+            <div><span>整体 IC 均值</span><strong>35.9</strong></div>
+            <div><span>有溢价意愿占比</span><strong>16%</strong></div>
+            <div><span>平均溢价幅度</span><strong>26.2%</strong></div>
+            <div><span>主要溢价来源价位段</span><strong>$151 – $250（24%）</strong></div>
+          </div>
+        </section>
+        
+        <section class="concept-card">
+          <div class="head">
+            <div>
+              <div class="eyebrow">Concept</div>
+              <h2>3way控制概念</h2>
+              <p>整体 IC 均值 31.2，有溢价意愿占比 13%，有溢价人群的平均溢价幅度 23.0% 。</p>
+            </div>
+            <div class="pill">IC 排名 #5</div>
+          </div>
+          <div class="metric-grid">
+            <div><span>整体 IC 均值</span><strong>31.2</strong></div>
+            <div><span>有溢价意愿占比</span><strong>13%</strong></div>
+            <div><span>平均溢价幅度</span><strong>23.0%</strong></div>
+            <div><span>主要溢价来源价位段</span><strong>$351 – $450（31%）</strong></div>
+          </div>
+        </section>
+        </div>
+    </section>
+    <section class="panel">
+      <h2>6 个人群的概念差异</h2>
+      <p class="subtitle">按 IC 排序，看此人群最买账的概念，以及他们愿意为哪些概念多付钱，多来自什么原有价位段。</p>
+      <div class="grid">
+        <section class="group-card">
+          <div class="group-head">
+            <h3>空间自主掌控型</h3>
+          </div>
+          <table>
+            <thead><tr><th>概念</th><th>IC均值</th><th>有溢价意愿</th><th>平均溢价幅度</th><th>主要来源价位段</th></tr></thead>
+            <tbody><tr><td>72h免排水概念</td><td>37.4</td><td>12%</td><td>25.0%</td><td>$151 – $250 / 36%</td></tr><tr><td>变频概念</td><td>37.3</td><td>17%</td><td>25.8%</td><td>$251 – $350 / 27%</td></tr><tr><td>46/43dB静音概念</td><td>37.0</td><td>13%</td><td>30.2%</td><td>$151 – $250 / 33%</td></tr><tr><td>3分钟安装概念</td><td>35.4</td><td>12%</td><td>31.0%</td><td>$151 – $250 / 27%</td></tr><tr><td>3way控制概念</td><td>31.1</td><td>17%</td><td>25.8%</td><td>$351 – $450 / 27%</td></tr></tbody>
+          </table>
+        </section>
+        
+        <section class="group-card">
+          <div class="group-head">
+            <h3>便捷安居实用型</h3>
+          </div>
+          <table>
+            <thead><tr><th>概念</th><th>IC均值</th><th>有溢价意愿</th><th>平均溢价幅度</th><th>主要来源价位段</th></tr></thead>
+            <tbody><tr><td>变频概念</td><td>43.1</td><td>19%</td><td>31.7%</td><td>Under $150 / 31%</td></tr><tr><td>46/43dB静音概念</td><td>42.1</td><td>24%</td><td>36.5%</td><td>$151 – $250 / 40%</td></tr><tr><td>72h免排水概念</td><td>40.5</td><td>27%</td><td>23.1%</td><td>$151 – $250 / 26%</td></tr><tr><td>3分钟安装概念</td><td>38.0</td><td>15%</td><td>24.1%</td><td>$151 – $250 / 31%</td></tr><tr><td>3way控制概念</td><td>30.8</td><td>15%</td><td>18.8%</td><td>$351 – $450 / 46%</td></tr></tbody>
+          </table>
+        </section>
+        
+        <section class="group-card">
+          <div class="group-head">
+            <h3>家庭健康守护型</h3>
+          </div>
+          <table>
+            <thead><tr><th>概念</th><th>IC均值</th><th>有溢价意愿</th><th>平均溢价幅度</th><th>主要来源价位段</th></tr></thead>
+            <tbody><tr><td>46/43dB静音概念</td><td>38.6</td><td>14%</td><td>20.0%</td><td>$251 – $350 / 44%</td></tr><tr><td>变频概念</td><td>36.6</td><td>17%</td><td>23.8%</td><td>$251 – $350 / 27%</td></tr><tr><td>72h免排水概念</td><td>35.4</td><td>16%</td><td>27.8%</td><td>$251 – $350 / 30%</td></tr><tr><td>3分钟安装概念</td><td>32.8</td><td>5%</td><td>10.4%</td><td>$251 – $350 / 67%</td></tr><tr><td>3way控制概念</td><td>24.7</td><td>5%</td><td>14.3%</td><td>$151 – $250 / 67%</td></tr></tbody>
+          </table>
+        </section>
+        
+        <section class="group-card">
+          <div class="group-head">
+            <h3>局部速冷控温型</h3>
+          </div>
+          <table>
+            <thead><tr><th>概念</th><th>IC均值</th><th>有溢价意愿</th><th>平均溢价幅度</th><th>主要来源价位段</th></tr></thead>
+            <tbody><tr><td>46/43dB静音概念</td><td>42.2</td><td>12%</td><td>31.0%</td><td>$251 – $350 / 33%</td></tr><tr><td>变频概念</td><td>39.6</td><td>14%</td><td>35.4%</td><td>$251 – $350 / 43%</td></tr><tr><td>3分钟安装概念</td><td>38.9</td><td>12%</td><td>25.0%</td><td>$151 – $250 / 33%</td></tr><tr><td>3way控制概念</td><td>35.4</td><td>18%</td><td>29.2%</td><td>$151 – $250 / 22%</td></tr><tr><td>72h免排水概念</td><td>30.6</td><td>6%</td><td>33.3%</td><td>$751 – $850 / 67%</td></tr></tbody>
+          </table>
+        </section>
+        
+        <section class="group-card">
+          <div class="group-head">
+            <h3>有限空间平衡型</h3>
+          </div>
+          <table>
+            <thead><tr><th>概念</th><th>IC均值</th><th>有溢价意愿</th><th>平均溢价幅度</th><th>主要来源价位段</th></tr></thead>
+            <tbody><tr><td>变频概念</td><td>41.8</td><td>12%</td><td>50.0%</td><td>$151 – $250 / 33%</td></tr><tr><td>3分钟安装概念</td><td>40.4</td><td>12%</td><td>36.1%</td><td>$251 – $350 / 33%</td></tr><tr><td>3way控制概念</td><td>31.9</td><td>10%</td><td>33.3%</td><td>$251 – $350 / 40%</td></tr><tr><td>46/43dB静音概念</td><td>31.4</td><td>10%</td><td>36.1%</td><td>$251 – $350 / 40%</td></tr><tr><td>72h免排水概念</td><td>28.8</td><td>12%</td><td>38.1%</td><td>$351 – $450 / 33%</td></tr></tbody>
+          </table>
+        </section>
+        
+        <section class="group-card">
+          <div class="group-head">
+            <h3>理性应急准备型</h3>
+          </div>
+          <table>
+            <thead><tr><th>概念</th><th>IC均值</th><th>有溢价意愿</th><th>平均溢价幅度</th><th>主要来源价位段</th></tr></thead>
+            <tbody><tr><td>变频概念</td><td>48.0</td><td>33%</td><td>31.2%</td><td>$251 – $350 / 46%</td></tr><tr><td>72h免排水概念</td><td>39.0</td><td>15%</td><td>25.8%</td><td>$251 – $350 / 67%</td></tr><tr><td>46/43dB静音概念</td><td>37.6</td><td>31%</td><td>25.6%</td><td>$251 – $350 / 67%</td></tr><tr><td>3分钟安装概念</td><td>37.0</td><td>8%</td><td>11.9%</td><td>$251 – $350 / 33%</td></tr><tr><td>3way控制概念</td><td>34.5</td><td>10%</td><td>19.0%</td><td>$351 – $450 / 50%</td></tr></tbody>
+          </table>
+        </section>
+        </div>
+    </section>
+  </div>
+</body>
+</html>

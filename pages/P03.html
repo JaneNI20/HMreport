@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>01.1_概念测试结论：PAC018、PAC021</title>
+  <style>
+:root {
+      --bg: #edf2f7;
+      --panel: #ffffff;
+      --panel-soft: #f8fbff;
+      --line: #d8e2ec;
+      --line-strong: #bfd0e1;
+      --text: #17283b;
+      --muted: #536b82;
+      --brand: #2f6fa3;
+      --brand-dark: #224f77;
+      --brand-soft: #e8f2fb;
+      --shadow: 0 16px 44px rgba(23, 40, 59, 0.10);
+      --sidebar: 284px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    button, input { font: inherit; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: var(--sidebar) 1fr; }
+    .sidebar { position: sticky; top: 0; height: 100vh; overflow: auto; padding: 22px 14px; background: #162233; border-right: 1px solid #26384d; }
+    .brandbox { padding: 18px 15px; margin-bottom: 14px; border: 1px solid #2d4056; border-radius: 8px; background: #1d2d42; box-shadow: 0 14px 32px rgba(0, 0, 0, .18); }
+    .kicker { margin-bottom: 10px; font-size: 12px; color: #7b93aa; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .brandbox h1 { margin: 0 0 10px; font-size: 24px; line-height: 1.18; color: #f4f8fc; letter-spacing: 0; }
+    .brandbox p { margin: 0; color: #bac9d6; font-size: 13px; line-height: 1.62; }
+    .toc { display: grid; gap: 10px; }
+    .toc-group { padding: 8px; border: 1px solid #2b3f55; border-radius: 8px; background: #1b2a3d; }
+    .toc-title { padding: 7px 8px 8px; color: #b8c8d7; font-size: 12px; line-height: 1.35; font-weight: 700; }
+    .toc-list { display: grid; gap: 5px; }
+    .toc-btn { width: 100%; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #e4edf6; text-align: left; cursor: pointer; padding: 8px 9px; font-size: 13px; line-height: 1.38; }
+    .toc-btn:hover { background: #22354b; border-color: #38516c; }
+    .toc-btn.active { background: #2b5b86; border-color: #4b7fab; color: #ffffff; }
+    .toc-btn .meta { display: block; margin-bottom: 2px; font-size: 11px; color: #91a8ba; font-weight: 800; }
+    .toc-btn.active .meta { color: #d6e9fb; }
+    .main { min-width: 0; padding: 24px 26px 22px; }
+    .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 16px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow); }
+    .title-wrap small { display: block; margin-bottom: 6px; color: #738ba0; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .title-wrap h2 { margin: 0; color: var(--brand-dark); font-size: 28px; line-height: 1.22; letter-spacing: 0; }
+    .pagerbox { min-width: 226px; display: grid; justify-items: end; gap: 10px; }
+    .page-indicator { color: #547086; font-weight: 700; }
+    .page-indicator strong { color: var(--brand-dark); font-size: 22px; }
+    .nav-actions { display: flex; gap: 10px; }
+    .nav-actions button { border: 1px solid var(--line-strong); background: var(--panel-soft); color: var(--brand-dark); border-radius: 6px; padding: 9px 13px; cursor: pointer; font-weight: 800; }
+    .nav-actions button:hover { background: #edf5fc; }
+    .nav-actions button:disabled { opacity: .42; cursor: not-allowed; }
+    .content-shell { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow); }
+    .iframe-wrap { width: 100%; height: calc(100vh - 154px); min-height: 760px; background: #f7fbff; }
+    iframe { display: block; width: 100%; height: 100%; border: 0; background: #f7fbff; }
+    .inline-wrap { min-height: calc(100vh - 154px); padding: 30px; background: linear-gradient(180deg, #f8fbff 0%, #eef3f8 100%); }
+    .slide { max-width: 1180px; margin: 0 auto; padding: 34px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow); }
+    .slide h1 { margin: 0 0 12px; color: var(--brand-dark); font-size: 38px; line-height: 1.18; letter-spacing: 0; }
+    .lead { max-width: 980px; margin: 0 0 24px; color: #4f687d; font-size: 17px; line-height: 1.76; }
+    .grid { display: grid; gap: 16px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card, .jump-card, .sku-card { padding: 20px; border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(180deg, #fff 0%, #f8fbff 100%); box-shadow: 0 10px 24px rgba(23, 40, 59, .06); }
+    .card h3, .sku-card h3 { margin: 0 0 12px; color: var(--brand-dark); font-size: 22px; }
+    .card ul { margin: 0; padding-left: 20px; color: #4f687d; font-size: 15px; line-height: 1.75; }
+    .card.emphasis { background: #f5f9fd; border-color: #cbdced; }
+    .jump-card { color: inherit; text-align: left; cursor: pointer; transition: .18s ease; }
+    .jump-card:hover { transform: translateY(-2px); border-color: #b9d2e8; background: #f3f8fd; }
+    .jump-card span { display: block; margin-bottom: 9px; color: #71879c; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .jump-card strong { display: block; margin-bottom: 8px; color: var(--brand-dark); font-size: 21px; line-height: 1.35; }
+    .jump-card small { display: block; color: #5c7389; font-size: 14px; line-height: 1.6; }
+    .cover-slide { background: radial-gradient(circle at top right, rgba(47,111,163,.10), transparent 26%), linear-gradient(135deg, #ffffff 0%, #f8fbff 62%, #eef4f9 100%); }
+    .cover-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 22px; }
+    .cover-badge { min-width: 140px; padding: 17px 14px; border: 1px solid #cbdceb; border-radius: 8px; background: #f0f7fd; text-align: center; color: var(--brand-dark); }
+    .cover-badge strong { display: block; margin-bottom: 7px; font-size: 32px; line-height: 1; }
+    .cover-badge span { color: #5b7288; font-size: 14px; font-weight: 800; }
+    .cover-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .quick-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .home-footer-note { margin-top: 12px; padding: 8px 0 0; border-top: 1px solid var(--line); color: #8a9aaa; font-size: 12px; line-height: 1.45; display: flex; justify-content: flex-end; text-align: right; }
+    .sku-kicker { display: inline-flex; margin-bottom: 14px; padding: 7px 11px; border: 1px solid #d5e3f0; border-radius: 999px; background: #edf5fc; color: #4b6985; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .sku-placeholder { min-height: 240px; padding: 20px; display: grid; align-content: center; gap: 10px; border: 1.5px dashed #c5d7e7; border-radius: 8px; background: #fbfdff; color: #60788d; font-size: 15px; line-height: 1.75; }
+    .sku-placeholder p { margin: 0; }
+    .footerbar { display: flex; justify-content: space-between; gap: 14px; margin-top: 14px; padding: 0 4px; color: #627c91; font-size: 13px; }
+    @media (max-width: 1380px) {
+      :root { --sidebar: 260px; }
+      .grid.three, .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .cover-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; }
+      .main { padding-top: 0; }
+      .topbar, .cover-top, .footerbar { flex-direction: column; align-items: flex-start; }
+      .pagerbox { justify-items: start; min-width: 0; }
+      .grid.two, .grid.three, .quick-grid { grid-template-columns: 1fr; }
+      .iframe-wrap { height: 78vh; min-height: 680px; }
+    }
+  
+    /* v26 Visual Polish: executive report baseline */
+    :root {
+      --bg: #f2f5f8;
+      --panel: #ffffff;
+      --panel-soft: #f7f9fc;
+      --line: #d8e1ea;
+      --line-strong: #bccbd8;
+      --text: #17283b;
+      --muted: #53687a;
+      --brand: #2f6f9f;
+      --brand-dark: #1f4f73;
+      --brand-soft: #eaf3fa;
+      --accent: #6f8f9f;
+      --highlight: #b7791f;
+      --shadow: 0 12px 30px rgba(23, 40, 59, 0.08);
+    }
+    html, body {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      text-rendering: geometricPrecision;
+    }
+    .sidebar { background: #172638; border-right-color: #26384a; }
+    .brandbox { border-radius: 8px; background: #1d2d40; border-color: #31465d; box-shadow: 0 12px 28px rgba(0,0,0,.16); }
+    .brandbox h1 { font-size: 23px; letter-spacing: 0; }
+    .kicker {
+      color: #6f879b;
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .topbar {
+      padding: 16px 20px;
+      border-radius: 8px;
+      box-shadow: 0 10px 24px rgba(23, 40, 59, .07);
+    }
+    .title-wrap h2 { font-size: 27px; color: var(--brand-dark); letter-spacing: 0; }
+    .page-indicator, .footerbar { color: #5d7284; }
+    .toc-group { border-radius: 8px; background: #1c2b3d; border-color: #2e4358; }
+    .toc-title { color: #b9c9d7; letter-spacing: 0; }
+    .toc-btn { border-radius: 6px; font-size: 13px; line-height: 1.42; }
+    .toc-btn.active { background: #2c648f; border-color: #4f84ad; }
+    .content-shell, .slide, .card, .jump-card, .sku-card, .cover-badge {
+      border-radius: 8px;
+    }
+    .content-shell { border-color: var(--line); box-shadow: var(--shadow); }
+    .inline-wrap { padding: 28px; background: linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%); }
+    .slide {
+      max-width: 1180px;
+      padding: 32px 34px;
+      border-color: var(--line);
+      box-shadow: 0 12px 30px rgba(23, 40, 59, .08);
+    }
+    .slide h1 {
+      margin-bottom: 12px;
+      color: var(--brand-dark);
+      font-size: 36px;
+      line-height: 1.16;
+      letter-spacing: 0;
+      font-weight: 800;
+    }
+    .lead {
+      max-width: 1000px;
+      color: #4f6476;
+      font-size: 16px;
+      line-height: 1.72;
+    }
+    .grid { gap: 16px; }
+    .card, .jump-card, .sku-card {
+      padding: 20px;
+      border-color: var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%);
+      box-shadow: 0 8px 18px rgba(23, 40, 59, .055);
+    }
+    .card.emphasis {
+      background: #f3f8fc;
+      border-color: #bfd3e4;
+      box-shadow: 0 8px 20px rgba(47, 111, 159, .08);
+    }
+    .card h3, .sku-card h3 {
+      color: var(--brand-dark);
+      font-size: 20px;
+      line-height: 1.25;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+    .card ul, .sku-card p, .card p {
+      color: #4f6476;
+      font-size: 14.5px;
+      line-height: 1.72;
+    }
+    .card li + li { margin-top: 3px; }
+    strong { color: #20384e; font-weight: 800; }
+    table {
+      border-collapse: collapse;
+      border-spacing: 0;
+    }
+    th {
+      background: #f3f7fb;
+      color: var(--brand-dark) !important;
+      font-weight: 800;
+    }
+    td, th {
+      border-color: #dbe4ed !important;
+      line-height: 1.55;
+    }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef3f8 100%);
+    }
+    body {
+      padding: 30px;
+    }
+    @media (max-width: 760px) {
+      body { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+        <section class="slide">
+          <div class="kicker">01.1 / SKU CONCLUSION</div>
+          <h1>概念测试结论：PAC018、PAC021</h1>
+          <p class="lead">两款产品都成立，但承担的是不同任务。PAC018 更偏“更省心、更容易被接受的移动空调”，重点解决静音、安装、排水和控制便利性带来的进入门槛；PAC021 更偏“更完整、更稳定、更高性能的体感方案”，重点解决更高 BTU 场景下的舒适、稳温与节能价值。</p>
+          <div class="grid two">
+            <div class="sku-card">
+              <div class="sku-kicker">PAC018</div>
+              <h3>更省心、更容易接受的入门到中端方案</h3>
+              <p>对应概念组合：46/43dB 静音、72h 免排水、3 分钟安装、3-way control。</p>
+              <p><strong>目标用户：</strong>优先建议覆盖便捷安居实用型、有限空间平衡型、空间自主掌控型；次级覆盖家庭健康守护型。</p>
+              <p><strong>典型使用画像：</strong>更常对应主卧、次卧和中小空间补位场景，常见活动是睡眠、日常居家、局部降温；用户更在意“不要太吵、不要太麻烦、不要总维护”。</p>
+              <p><strong>核心卖点：</strong>静音不打扰、安装更轻松、排水维护负担更低、控制更方便。</p>
+              <p><strong>概念价值判断：</strong>PAC018 的价值不在技术旗舰感，而在于把移动空调的典型顾虑系统性压下去，更容易被理解成“更省心的移动空调”。</p>
+              <p><strong>价格评价：</strong>5000BTU = $249.99、6000BTU = $279.99，这组价格整体顺。两档之间只差 $30，阶梯自然，利于把一部分用户从 5000BTU 推向 6000BTU。</p>
+              <ul>
+                <li>$249.99 可以成立，但前提是页面必须把“静音 + 易安装 + 少打扰维护”讲具体，否则容易被当成普通小 BTU 机型偏贵。</li>
+                <li>$279.99 对 6000BTU 基本合理，能够承接一部分想要更完整体验、但还没进入高性能价带的用户。</li>
+              </ul>
+              <p><strong>风险提醒：</strong>72h 建议统一写成 <em>up to 72h</em>，3 分钟安装也建议带条件说明；3-way control 更适合做加分项，不适合单独做主 headline。</p>
+            </div>
+            <div class="sku-card">
+              <div class="sku-kicker">PAC021</div>
+              <h3>更完整、更稳定、更高性能的舒适方案</h3>
+              <p>对应概念组合：46/43dB 静音、72h 免排水、3 分钟安装、3-way control、inverter。</p>
+              <p><strong>目标用户：</strong>优先建议覆盖家庭健康守护型、局部速冷控温型、空间自主掌控型；次级覆盖有限空间平衡型和部分理性应急准备型。</p>
+              <p><strong>典型使用画像：</strong>更常对应主卧，以及部分对持续制冷、温度稳定性和舒适体感更敏感的场景；常见活动是长时间居家、睡眠、持续降温和高温天气下的稳定使用。</p>
+              <p><strong>核心卖点：</strong>更高性能制冷、更稳温、更安静、更节能。</p>
+              <p><strong>概念价值判断：</strong>PAC021 的价值更依赖整体叙事，尤其要把 inverter 讲成“更稳温 + 更少忽冷忽热 + 更低噪音打扰 + 长期开更省”，而不是抽象技术词。</p>
+              <p><strong>价格评价：</strong>8000BTU = $459.99、10000BTU = $499.99。10000BTU 结合调研中 151–250 sq. ft. 更偏舒服带的结果，相对更容易站住；真正需要重点评估的是 8000BTU 与 10000BTU 之间仅差 $40，可能产生内部替代。</p>
+              <ul>
+                <li>$499.99 对 10000BTU 可以成立，只要把“更稳温、更安静、更节能”的综合收益讲透。</li>
+                <li>$459.99 的 8000BTU 风险不在绝对过高，而在于和 10000BTU 太近，用户容易产生“再加一点就上更大 BTU”的心理。</li>
+              </ul>
+              <p><strong>风险提醒：</strong>PAC021 最大风险不是“贵”，而是“贵得不够好懂”。如果只罗列 inverter、quiet、drain-free、install，用户会知道都是好词，但未必知道为什么值这个价差。</p>
+            </div>
+          </div>
+          <div class="grid two">
+            <div class="card emphasis">
+              <h3>卖点组织建议</h3>
+              <ul>
+                <li>PAC018 更适合讲“买起来不难、用起来不烦”。</li>
+                <li>PAC021 更适合讲“更完整的舒适体验”，尤其是稳温、静音和长期能耗收益。</li>
+                <li>静音、少排水、易安装是用户最容易直接理解的概念；inverter 最适合支撑更高价值和更高价格。</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>页面结论一句话</h3>
+              <ul>
+                <li>PAC018 是更省心、更容易被接受的方案，价格带整体顺，适合承接中小空间与补位制冷需求。</li>
+                <li>PAC021 是更完整、更高性能的方案，10000BTU 价格更容易成立，但 8000BTU 与 10000BTU 的价差偏窄，建议重点评估是否会被内部替代。</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+        
+  <script>
+    document.querySelectorAll('[data-target]').forEach(function (el) {
+      el.addEventListener('click', function (event) {
+        var target = el.getAttribute('data-target');
+        if (!target) return;
+        event.preventDefault();
+        if (window.parent && window.parent !== window) {
+          window.parent.location.hash = encodeURIComponent(target);
+        } else {
+          window.location.hash = encodeURIComponent(target);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

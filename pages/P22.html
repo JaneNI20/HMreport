@@ -1,0 +1,1565 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>codex 潜在用户未购买原因与切入方向 v5</title>
+<style>
+:root {
+  --bg:#f4f6f9;
+  --paper:#ffffff;
+  --ink:#0f2e47;
+  --muted:#486074;
+  --line:#d7e1eb;
+  --blue:#2f6fed;
+  --navy:#184e8a;
+  --teal:#198899;
+  --soft:#eef4ff;
+  --shadow:0 18px 48px rgba(27,47,76,.10);
+}
+* { box-sizing:border-box; }
+html,body {
+  margin:0; padding:0;
+  background:
+    radial-gradient(circle at top left, rgba(47,111,237,.10), transparent 28%),
+    radial-gradient(circle at top right, rgba(25,136,153,.08), transparent 22%),
+    linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%);
+  color:var(--ink);
+  font-family:"Aptos","Segoe UI","Microsoft YaHei UI","Microsoft YaHei",sans-serif;
+}
+body { padding:18px; }
+.shell { max-width:1380px; margin:0 auto; display:grid; gap:18px; }
+.page {
+  background:rgba(255,255,255,.94);
+  border:1px solid rgba(215,225,235,.95);
+  border-radius:28px;
+  box-shadow:var(--shadow);
+  padding:24px;
+}
+.hero {
+  padding:34px;
+  background:linear-gradient(135deg,#ffffff 0%,#f8fbff 56%,#edf4ff 100%);
+  position:relative;
+  overflow:hidden;
+}
+.hero:before,.hero:after {
+  content:""; position:absolute; border-radius:999px;
+}
+.hero:before {
+  width:280px;height:280px;right:-84px;top:-120px;
+  background:radial-gradient(circle,rgba(47,111,237,.16),transparent 68%);
+}
+.hero:after {
+  width:220px;height:220px;left:-40px;bottom:-100px;
+  background:radial-gradient(circle,rgba(25,136,153,.12),transparent 70%);
+}
+.kicker,.mini-kicker {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:7px 12px; border-radius:999px;
+  background:#eef4ff; border:1px solid #d6e3ff; color:var(--blue);
+  font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+}
+.mini-kicker { font-size:11px; padding:6px 10px; }
+h1,h2,h3,h4,p { margin:0; }
+h1 {
+  margin-top:18px; font-size:clamp(38px,4vw,54px); line-height:1.04; letter-spacing:-.04em; max-width:980px;
+}
+.hero p {
+  margin-top:14px; font-size:18px; line-height:1.78; color:#355066; max-width:980px;
+}
+.hero-meta,.metric-row,.tag-row,.score-tab-row,.device-tab-row {
+  display:flex; flex-wrap:wrap; gap:10px;
+}
+.hero-meta,.metric-row,.tag-row { margin-top:18px; }
+.chip,.sample-pill,.tag {
+  display:inline-flex; align-items:center; padding:9px 12px; border-radius:999px;
+  border:1px solid var(--line); background:#fff; color:#355066; font-size:13px; font-weight:700;
+}
+.sample-pill {
+  background:var(--soft); border-color:#d6e3ff; color:var(--blue); font-weight:800;
+}
+.tag {
+  background:#edf5ff; border-color:#d2e3ff; color:#215fd9; font-size:12px; font-weight:800;
+}
+.section-head {
+  display:flex; justify-content:space-between; gap:16px; align-items:flex-end; margin-bottom:18px;
+}
+.section-head h2 { font-size:30px; line-height:1.1; letter-spacing:-.02em; }
+.section-head p { margin-top:10px; max-width:920px; color:var(--muted); font-size:15px; line-height:1.75; }
+.metric-grid,.two-grid,.three-grid,.chart-grid,.insight-grid,.callout-grid,.quote-grid {
+  display:grid; gap:18px;
+}
+.metric-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.two-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.three-grid,.chart-grid,.insight-grid,.callout-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.quote-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.card,.chart-card,.callout-card,.quote-card,.insight-card {
+  border:1px solid var(--line); border-radius:24px; background:linear-gradient(180deg,#ffffff 0%,#f9fbff 100%); padding:18px;
+}
+.card h3,.chart-card h4,.callout-card h3,.quote-card h4,.insight-card h4 { font-size:21px; line-height:1.2; }
+.metric-value { font-size:38px; line-height:1; font-weight:900; color:var(--blue); }
+.metric-label { margin-top:10px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#6a8093; font-weight:800; }
+.metric-desc,.card p,.callout-card p,.quote-card p,.insight-card p,.chart-note {
+  margin-top:10px; color:#435b70; font-size:15px; line-height:1.72;
+}
+.chart-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-end; margin-bottom:12px; }
+.bar-stack { display:grid; gap:14px; }
+.bar-row { display:grid; gap:7px; }
+.bar-meta { display:flex; justify-content:space-between; gap:12px; align-items:flex-end; }
+.bar-name { font-size:14px; line-height:1.55; color:#173a54; }
+.bar-value { font-size:14px; font-weight:900; color:#153f6b; white-space:nowrap; }
+.bar-sub { color:#587084; font-size:13px; line-height:1.55; }
+.track { width:100%; height:12px; border-radius:999px; overflow:hidden; background:#ebf1f6; }
+.fill { height:100%; border-radius:999px; }
+.fill.blue { background:linear-gradient(90deg,#5b8ff9 0%,#2f6fed 100%); }
+.fill.teal { background:linear-gradient(90deg,#4fb3be 0%,#198899 100%); }
+.fill.navy { background:linear-gradient(90deg,#4d7fbe 0%,#184e8a 100%); }
+.device-tab {
+  appearance:none; border:1px solid var(--line); background:#fff; color:#355066; border-radius:16px;
+  padding:12px 14px; font-size:14px; font-weight:800; cursor:pointer;
+}
+.device-tab span { color:#6a8093; font-weight:700; }
+.device-tab.active { background:#eef4ff; border-color:#cfe0ff; color:var(--blue); }
+.device-panel { display:none; }
+.device-panel.active { display:block; }
+.score-tab {
+  appearance:none; border:1px solid var(--line); background:#fff; color:#355066; border-radius:16px;
+  padding:12px 14px; font-size:14px; font-weight:800; cursor:pointer;
+}
+.score-tab span { color:#6a8093; font-weight:700; }
+.score-tab.active { background:#eef4ff; border-color:#cfe0ff; color:var(--blue); }
+.detail-panel { display:none; }
+.detail-panel.active { display:block; }
+.panel-hero {
+  display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:18px;
+}
+.data-table {
+  width:100%; border-collapse:separate; border-spacing:0;
+}
+.data-table th,.data-table td {
+  border:1px solid #e5edf4; padding:12px 10px; text-align:left; vertical-align:top; font-size:14px;
+}
+.data-table thead th {
+  background:#f8fbff; color:#3c566b; font-weight:800;
+}
+.bullet-list {
+  margin:10px 0 0; padding-left:18px; display:grid; gap:8px;
+}
+.bullet-list li { color:#1f415b; font-size:14px; line-height:1.66; }
+.quote-card {
+  background:#fbfdff;
+}
+.quote-card blockquote {
+  margin:10px 0 0; padding-left:14px; border-left:3px solid #cfe0ff; color:#385268; font-size:14px; line-height:1.7;
+}
+.to-top { color:var(--blue); text-decoration:none; font-weight:800; }
+
+.profile-controls {
+  display:grid;
+  grid-template-columns: 180px minmax(240px,1fr) minmax(240px,1fr);
+  gap:14px;
+  margin-bottom:18px;
+}
+.select-control {
+  display:grid;
+  gap:7px;
+}
+.select-control label {
+  color:#5c7286;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.select-control select {
+  width:100%;
+  appearance:none;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff;
+  color:#173a54;
+  padding:11px 12px;
+  font-size:14px;
+  font-weight:800;
+  line-height:1.25;
+}
+.profile-empty {
+  border:1px dashed #cbd9e6;
+  border-radius:18px;
+  background:#f8fbff;
+  color:#5b7185;
+  padding:18px;
+  font-size:14px;
+  line-height:1.7;
+}
+.score-checks { display:flex; flex-wrap:wrap; gap:8px; }
+.score-check-option { display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:999px; background:#fff; padding:9px 11px; color:#173a54; font-size:13px; font-weight:800; }
+.profile-subchart-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+.profile-subchart { border:1px solid #e0e9f2; border-radius:18px; background:#fbfdff; padding:14px; }
+.profile-subchart h5 { margin:0 0 10px; color:#173a54; font-size:17px; line-height:1.25; }
+@media (max-width:820px) {
+  .profile-controls { grid-template-columns:1fr; }
+}
+
+@media (max-width:1200px) {
+  .metric-grid,.three-grid,.chart-grid,.insight-grid,.callout-grid,.quote-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:820px) {
+  body { padding:12px; }
+  .page { padding:18px; }
+  .hero { padding:24px; }
+  .metric-grid,.two-grid,.three-grid,.chart-grid,.insight-grid,.callout-grid,.quote-grid { grid-template-columns:1fr; }
+  .section-head,.panel-hero,.bar-meta { display:grid; }
+}
+</style>
+
+<style id="visual-polish-v26">
+  :root {
+    --v26-bg: #f3f6f9;
+    --v26-paper: #ffffff;
+    --v26-paper-soft: #f8fafc;
+    --v26-ink: #17283b;
+    --v26-ink-soft: #4f6476;
+    --v26-muted: #6d7f8f;
+    --v26-line: #d8e1ea;
+    --v26-line-strong: #bccbd8;
+    --v26-brand: #2f6f9f;
+    --v26-brand-dark: #1f4f73;
+    --v26-brand-soft: #eaf3fa;
+    --v26-accent: #6f8f9f;
+    --v26-highlight: #b7791f;
+    --v26-shadow: 0 10px 26px rgba(23, 40, 59, .075);
+  }
+  html, body {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    color: var(--v26-ink) !important;
+    background: var(--v26-bg) !important;
+    text-rendering: geometricPrecision;
+  }
+  body { font-size: 15px; line-height: 1.6; }
+  h1, h2, h3, h4, .title, .section-title {
+    color: var(--v26-brand-dark) !important;
+    letter-spacing: 0 !important;
+  }
+  h1 {
+    font-size: clamp(30px, 3.2vw, 38px) !important;
+    line-height: 1.16 !important;
+    font-weight: 800 !important;
+  }
+  h2 {
+    font-size: clamp(22px, 2.2vw, 28px) !important;
+    line-height: 1.22 !important;
+    font-weight: 800 !important;
+  }
+  h3 {
+    font-size: 18px !important;
+    line-height: 1.28 !important;
+    font-weight: 800 !important;
+  }
+  h4 { font-size: 15px !important; line-height: 1.35 !important; font-weight: 800 !important; }
+  p, li, td, .subtitle, .desc, .note, .small, .muted, .cluster-desc, .cluster-diff, .body-copy {
+    color: var(--v26-ink-soft);
+    letter-spacing: 0 !important;
+  }
+  .wrap {
+    padding: 28px 24px 42px !important;
+  }
+  .panel, .hero, .card, .table-card, .chartPanel, .chart-panel, .chart-card,
+  .field-card, .cluster-card, .metric, .mini-card, .detail, .insight-card,
+  .overview-card, .persona-card, .concept-card, .price-card, .recommend-card {
+    border-radius: 8px !important;
+    border-color: var(--v26-line) !important;
+    box-shadow: var(--v26-shadow) !important;
+  }
+  .panel, .hero {
+    background: var(--v26-paper) !important;
+  }
+  .card, .table-card, .chartPanel, .chart-panel, .chart-card, .field-card,
+  .metric, .mini-card, .detail, .insight-card, .overview-card, .persona-card,
+  .concept-card, .price-card, .recommend-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%) !important;
+  }
+  .kicker, .eyebrow, .tag, .pill, .badge, .sku-pill, .chip, .mini-title,
+  .control-title, .card-headline, .meta {
+    letter-spacing: .04em !important;
+    font-weight: 800 !important;
+  }
+  .kicker, .eyebrow, .mini-title, .control-title {
+    color: var(--v26-muted) !important;
+    text-transform: uppercase;
+  }
+  .subtitle, .lead {
+    color: var(--v26-ink-soft) !important;
+    font-size: 16px !important;
+    line-height: 1.72 !important;
+  }
+  strong, b {
+    color: #20384e !important;
+    font-weight: 800 !important;
+  }
+  .takeaway, .insight, .field-insight, .recommendation, .opportunity,
+  .summary, .callout, .conclusion, .note-card {
+    border-radius: 8px !important;
+    border-color: #bfd3e4 !important;
+    background: #f3f8fc !important;
+    box-shadow: 0 8px 18px rgba(47, 111, 159, .07) !important;
+  }
+  .field-insight summary,
+  .takeaway strong,
+  .insight strong,
+  .recommendation strong,
+  .opportunity strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100%;
+  }
+  th {
+    background: #f3f7fb !important;
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  td, th {
+    border-color: #dbe4ed !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  tr:nth-child(even) td {
+    background-color: rgba(248, 250, 252, .62);
+  }
+  button, select, input {
+    font-family: inherit !important;
+  }
+  button, .tab, .toggle, .filter, .chip, .pill, select {
+    border-radius: 6px !important;
+  }
+  button:hover, .chip:hover, .pill:hover {
+    border-color: #9fb8cc !important;
+  }
+  .barwrap, .bar-wrap, .bar-track, .track {
+    background: #edf2f7 !important;
+  }
+  .value, .num, .big-number, .big-price, .score, .metric strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  .legend, .legend span, .axis, .tick, .label, .name {
+    color: #52687a !important;
+    font-size: 12px !important;
+    line-height: 1.42 !important;
+  }
+  svg text {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    fill: #52687a;
+  }
+  .grid, .grid-2, .grid-3, .charts, .overview-grid {
+    gap: 16px !important;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--v26-line);
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 14px 32px !important; }
+    h1 { font-size: 29px !important; }
+    h2 { font-size: 22px !important; }
+  }
+</style>
+
+</head>
+<body>
+<div class="shell" id="top">
+  <section class="page hero">
+    <div class="kicker">Potential User Report</div>
+    <h1>潜在用户未购买原因与切入方向</h1>
+    <p>先回答潜在用户为什么现在还没买移动空调；再回答对“当前家庭制冷方案未完全满足需求且愿意尝试/升级/替换”的 5 / 6 / 7 分用户，动机、主原因和使用场景分别有什么差异，我们最适合从哪里切入。</p>
+    <div class="hero-meta">
+      <span class="chip">潜在用户样本 n=191</span>
+      <span class="chip">未购买开放题样本 n=191</span>
+      <span class="chip">极端高温 / 热浪是三档人群共同的最强场景触发</span>
+      <span class="chip">价格是总体第一障碍，但 7分用户开始出现更多非价格阻碍</span>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section-head">
+      <div>
+        <h2>主要结论</h2>
+        <p>💡潜在用户没买最主要还是价格/预算；<br>💡越接近升级的人，原因越不只是价格；<br>💡最值得切入的场景，不是泛泛的“降温”，而是热浪、睡眠和某个房间长期过热。</p>
+      </div>
+    </div>
+    <div class="metric-grid">
+      <article class="card">
+        <div class="metric-value">76.4%</div>
+        <div class="metric-label">总体第一障碍</div>
+        <p class="metric-desc">潜在用户开放题里，首要未购买原因是价格/预算压力。</p>
+      </article>
+      <article class="card">
+        <div class="metric-value">61.2%</div>
+        <div class="metric-label">7分用户仍提价格</div>
+        <p class="metric-desc">但 7分用户的价格占比已经明显低于 5分/6分，说明这群人不只是“贵”，而是更复杂。</p>
+      </article>
+      <article class="card">
+        <div class="metric-value">72.5%</div>
+        <div class="metric-label">共同最高场景</div>
+        <p class="metric-desc">5/6/7 三档平均下来，极端高温/热浪是最强共同触发场景。</p>
+      </article>
+      <article class="card">
+        <div class="metric-value">53.9%</div>
+        <div class="metric-label">共同最高动机</div>
+        <p class="metric-desc">平均最强动机是改善炎热环境下的睡眠，其次是现有空调无法把某些房间真正降下来。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section-head">
+      <div>
+        <h2>潜在用户为什么还没买</h2>
+        <p>对开放题回答进行编码，寻找购买障碍和辅助性的犹豫点。</p>
+      </div>
+    </div>
+    <div class="two-grid">
+      <div class="chart-card">
+        <div class="chart-head"><h4>整体主原因分布</h4></div>
+        <div class="bar-stack">
+          
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">价格/预算压力</div>
+                <div class="bar-value">76.4%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:89.9%"></div></div>
+              <div class="bar-sub">约 146 人</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">其他零散原因</div>
+                <div class="bar-value">9.9%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:11.7%"></div></div>
+              <div class="bar-sub">约 19 人</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">还需要研究，不知道怎么选/怕选错</div>
+                <div class="bar-value">4.7%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:5.5%"></div></div>
+              <div class="bar-sub">约 9 人</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">近期可能搬家/未来空间不确定</div>
+                <div class="bar-value">2.6%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:3.1%"></div></div>
+              <div class="bar-sub">约 5 人</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">没时间精力处理，优先级靠后</div>
+                <div class="bar-value">2.6%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:3.1%"></div></div>
+              <div class="bar-sub">约 5 人</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">还在等更热的季节/更合适时机</div>
+                <div class="bar-value">1.6%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:1.8%"></div></div>
+              <div class="bar-sub">约 3 人</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">没有明显障碍/暂无原因</div>
+                <div class="bar-value">1.0%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:1.2%"></div></div>
+              <div class="bar-sub">约 2 人</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">租房/政策/房屋条件限制</div>
+                <div class="bar-value">0.5%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:0.6%"></div></div>
+              <div class="bar-sub">约 1 人</div>
+            </div>
+            
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head"><h4>整体主题补充</h4></div>
+        <div class="bar-stack">
+          
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">价格/预算压力</div>
+                <div class="bar-value">76.4%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:89.9%"></div></div>
+              <div class="bar-sub">命中 146 条文本</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">研究决策困难/怕买错</div>
+                <div class="bar-value">12.0%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:14.2%"></div></div>
+              <div class="bar-sub">命中 23 条文本</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">其他零散原因</div>
+                <div class="bar-value">9.9%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:11.7%"></div></div>
+              <div class="bar-sub">命中 19 条文本</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">对性能/可靠性/能耗还有顾虑</div>
+                <div class="bar-value">5.2%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:6.2%"></div></div>
+              <div class="bar-sub">命中 10 条文本</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">没时间精力处理</div>
+                <div class="bar-value">4.7%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:5.5%"></div></div>
+              <div class="bar-sub">命中 9 条文本</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">等待更合适时机/季节</div>
+                <div class="bar-value">4.2%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:4.9%"></div></div>
+              <div class="bar-sub">命中 8 条文本</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">搬家或未来空间不确定</div>
+                <div class="bar-value">3.7%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:4.3%"></div></div>
+              <div class="bar-sub">命中 7 条文本</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">当前方案还能用</div>
+                <div class="bar-value">2.1%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:2.5%"></div></div>
+              <div class="bar-sub">命中 4 条文本</div>
+            </div>
+            
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section-head">
+      <div>
+        <h2>哪些小群体值得单独讲</h2>
+        <p>可尝试通过三个小群体方向的拆分进行理解。</p>
+      </div>
+    </div>
+    <div class="callout-grid">
+      
+      <article class="callout-card">
+        <div class="mini-kicker">Callout</div>
+        <h3>小户型里有一群“快搬家、怕买错”的潜在用户</h3>
+        <p>在 small 户型潜在用户里，价格当然仍是第一障碍，但“还要再研究”和“未来空间不确定”明显比大户型更常出现。尤其是 Score 7 的 small 用户里，搬家/未来不确定性达到 18.8%，已经不是纯价格问题。</p>
+        <p class="chart-note">方向上更适合强调适配范围宽、搬家后也不浪费、决策门槛低。</p>
+      </article>
+      
+      <article class="callout-card">
+        <div class="mini-kicker">Callout</div>
+        <h3>主卧用户更像“纯价格卡点”，客厅用户更像“价格+不确定性并存”</h3>
+        <p>Main bedroom 的未购买原因非常集中，82.4% 都落在价格/预算；而 Living room 虽然价格仍然最高，但研究决策、搬家不确定、等待时机这些非价格因素更明显。</p>
+        <p class="chart-note">如果是主卧场景，价格/价值比表达要更直接；如果是客厅场景，除了价格，还要补足“适不适合我家这个空间”的说服。</p>
+      </article>
+      
+      <article class="callout-card">
+        <div class="mini-kicker">Callout</div>
+        <h3>Score 7 不是“比别人更穷”，而是“比别人更复杂”</h3>
+        <p>Score 5 和 6 的开放题几乎都被价格主导，但 Score 7 的价格占比降到 61.2%，同时抬升了搬家不确定、研究难、等待时机、性能顾虑等多种原因。</p>
+        <p class="chart-note">这群人已经更愿意升级，但更需要被证明‘值得买、适合我、现在买也不后悔’。</p>
+      </article>
+      
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section-head">
+      <div>
+        <h2>按大小户型、房间、分值看差异</h2>
+        <p>不同群体虽然都提价格，但后面的“第二原因”并不一样。</p>
+      </div>
+    </div>
+    <div class="three-grid">
+      <article class="chart-card">
+        <div class="chart-head"><h4>大户型 vs 小户型</h4></div>
+        <p class="chart-note">big 更像纯价格卡点；small 除了价格，还更常提研究决策困难和未来空间不确定。</p>
+        <table class="data-table">
+          <thead><tr><th>群体</th><th>样本</th><th>Top1</th><th>Top2</th><th>Top3</th></tr></thead>
+          <tbody>
+            <tr><td>big</td><td>141</td><td>价格/预算压力 77.3%</td><td>其他零散原因 11.3%</td><td>还需要研究，不知道怎么选/怕选错 3.5%</td></tr>
+            <tr><td>small</td><td>50</td><td>价格/预算压力 74.0%</td><td>还需要研究，不知道怎么选/怕选错 8.0%</td><td>近期可能搬家/未来空间不确定 6.0%</td></tr>
+          </tbody>
+        </table>
+      </article>
+      <article class="chart-card">
+        <div class="chart-head"><h4>主房间 Top3 对比</h4></div>
+        <p class="chart-note">主卧用户更像“价格先卡住”；客厅用户更容易同时出现研究、搬家不确定和等待时机。</p>
+        <table class="data-table">
+          <thead><tr><th>房间</th><th>样本</th><th>Top1</th><th>Top2</th></tr></thead>
+          <tbody>
+            <tr><td>Main bedroom</td><td>68</td><td>价格/预算压力 82.4%</td><td>其他零散原因 5.9%</td></tr><tr><td>Living room</td><td>66</td><td>价格/预算压力 71.2%</td><td>其他零散原因 13.6%</td></tr><tr><td>Another Bedroom (Child, Guest, or Other family member)</td><td>31</td><td>价格/预算压力 77.4%</td><td>其他零散原因 16.1%</td></tr>
+          </tbody>
+        </table>
+      </article>
+      <article class="chart-card">
+        <div class="chart-head"><h4>5 / 6 / 7 分未购买原因</h4></div>
+        <p class="chart-note">5分和6分几乎都被价格主导；7分开始出现“不是不想买，而是更难决定现在怎么买”的结构。</p>
+        <table class="data-table">
+          <thead><tr><th>分值</th><th>样本</th><th>Top1</th><th>Top2</th><th>Top3</th></tr></thead>
+          <tbody>
+            <tr><td>Score 5</td><td>84</td><td>价格/预算压力 81.0%</td><td>其他零散原因 9.5%</td><td>还需要研究，不知道怎么选/怕选错 3.6%</td></tr><tr><td>Score 6</td><td>58</td><td>价格/预算压力 82.8%</td><td>其他零散原因 12.1%</td><td>还需要研究，不知道怎么选/怕选错 3.4%</td></tr><tr><td>Score 7</td><td>49</td><td>价格/预算压力 61.2%</td><td>近期可能搬家/未来空间不确定 8.2%</td><td>其他零散原因 8.2%</td></tr>
+          </tbody>
+        </table>
+      </article>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section-head">
+      <div>
+        <h2>开放题原声</h2>
+        <p>潜在用户不是简单“不想买”，而是卡在价格、时机和决策确定性上。</p>
+      </div>
+    </div>
+    <div class="quote-grid">
+      <article class="quote-card">
+        <div class="mini-kicker">价格/预算压力</div>
+        <blockquote>my current cooling system, while old and somewhat inefficient still functions well enough. it is difficult to justify the expense of replacement maybe will consider if they was a swapping deal.</blockquote>
+      </article>
+      <article class="quote-card">
+        <div class="mini-kicker">搬家或未来空间不确定</div>
+        <blockquote>We might be moving in the next 4 months so I don&#x27;t know if a unit purchased for my current home would be compatible with my new home.</blockquote>
+      </article>
+      <article class="quote-card">
+        <div class="mini-kicker">研究决策困难/怕买错</div>
+        <blockquote>I havent done enopugh research to know what would be the best upgrade from the current window units i now have</blockquote>
+      </article>
+      <article class="quote-card">
+        <div class="mini-kicker">等待更合适时机/季节</div>
+        <blockquote>I&#x27;m waiting for the summer to progress further as it hasn&#x27;t been as hot as it could be yet.</blockquote>
+      </article>
+    </div>
+  </section>
+  <section class="page">
+    <div class="section-head">
+      <div>
+        <h2>当前制冷 / 空调设备结构</h2>
+        <p>多选题，同一个人可能同时拥有 Central AC、Window AC 等多种方案。这里增加了“潜在用户（5/6/7合计）/ 现有用户”的切换，方便直接对比两类人群目前已经在用什么设备。</p>
+      </div>
+    </div>
+    <div class="device-tab-row" style="margin-bottom:18px;">
+      <button class="device-tab active" type="button" data-device-segment="potential">潜在用户 <span>5 / 6 / 7 合计</span></button><button class="device-tab" type="button" data-device-segment="existing">现有用户 <span>当前设备结构</span></button>
+    </div>
+    <div class="two-grid">
+      <article class="chart-card">
+        <section class="device-panel active" data-device-panel="potential">
+          <div class="chart-head"><h4>潜在用户（5 / 6 / 7 合计）：当前设备结构</h4></div>
+          <div class="bar-stack">
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">窗机 Window AC</div><div class="bar-value">57.3%</div></div><div class="track"><div class="fill blue" style="width:57.3%"></div></div><div class="bar-sub">94 / 164</div></div>
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">中央空调 Central AC</div><div class="bar-value">54.3%</div></div><div class="track"><div class="fill blue" style="width:54.3%"></div></div><div class="bar-sub">89 / 164</div></div>
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">挂壁 / 分体式 AC</div><div class="bar-value">17.7%</div></div><div class="track"><div class="fill blue" style="width:17.7%"></div></div><div class="bar-sub">29 / 164</div></div>
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">蒸发式冷风机</div><div class="bar-value">7.3%</div></div><div class="track"><div class="fill blue" style="width:7.3%"></div></div><div class="bar-sub">12 / 164</div></div>
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">户外空调 / Outdoor AC</div><div class="bar-value">3.7%</div></div><div class="track"><div class="fill blue" style="width:3.7%"></div></div><div class="bar-sub">6 / 164</div></div>
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">以上都没有</div><div class="bar-value">0.6%</div></div><div class="track"><div class="fill blue" style="width:0.6%"></div></div><div class="bar-sub">1 / 164</div></div>
+          </div>
+        </section>
+        <section class="device-panel" data-device-panel="existing">
+          <div class="chart-head"><h4>现有用户：当前设备结构</h4></div>
+          <div class="bar-stack">
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">中央空调 Central AC</div><div class="bar-value">59.0%</div></div><div class="track"><div class="fill blue" style="width:59.0%"></div></div><div class="bar-sub">118 / 200</div></div>
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">窗机 Window AC</div><div class="bar-value">54.0%</div></div><div class="track"><div class="fill blue" style="width:54.0%"></div></div><div class="bar-sub">108 / 200</div></div>
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">挂壁 / 分体式 AC</div><div class="bar-value">25.0%</div></div><div class="track"><div class="fill blue" style="width:25.0%"></div></div><div class="bar-sub">50 / 200</div></div>
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">蒸发式冷风机</div><div class="bar-value">13.5%</div></div><div class="track"><div class="fill blue" style="width:13.5%"></div></div><div class="bar-sub">27 / 200</div></div>
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">户外空调 / Outdoor AC</div><div class="bar-value">12.5%</div></div><div class="track"><div class="fill blue" style="width:12.5%"></div></div><div class="bar-sub">25 / 200</div></div>
+            <div class="bar-row"><div class="bar-meta"><div class="bar-name">以上都没有</div><div class="bar-value">0.0%</div></div><div class="track"><div class="fill blue" style="width:0%"></div></div><div class="bar-sub">0 / 200</div></div>
+          </div>
+        </section>
+      </article>
+      <article class="insight-card">
+        <section class="device-panel active" data-device-panel="potential">
+          <div class="mini-kicker">Device Read</div>
+          <h4>潜在用户设备结构说明什么</h4>
+          <ul class="bullet-list">
+            <li>潜在用户并不是“家里没有空调”，而是已经有 Central AC、Window AC 等方案，但仍有房间、时段或极端高温场景没被满足。</li>
+            <li>从结构看，Window AC 和 Central AC 几乎并列，说明很多潜在用户已经在尝试“全屋 + 房间补位”的混合制冷方式。</li>
+            <li>这也解释了为什么他们的诉求更像“再补一个更合适的方案”，而不是从 0 到 1 第一次购买空调。</li>
+          </ul>
+        </section>
+        <section class="device-panel" data-device-panel="existing">
+          <div class="mini-kicker">Device Read</div>
+          <h4>现有用户设备结构说明什么</h4>
+          <ul class="bullet-list">
+            <li>现有用户中，除了 Portable AC 本身，Central AC 和 Window AC 仍然都很高，说明移动空调常常不是唯一制冷方案，而是和其他方案并存使用。</li>
+            <li>59.0% 的现有用户同时拥有 Central AC，54.0% 同时拥有 Window AC，意味着他们购买移动空调很多时候是为了补位，而不是替代原有设备。</li>
+            <li>这组对比也反过来支持潜在用户转化逻辑：真正的机会点不是“卖一个空调”，而是“解决其他设备没解决好的那一段体验缺口”。</li>
+          </ul>
+        </section>
+      </article>
+    </div>
+    <div class="three-grid" style="margin-top:18px;">
+      <article class="chart-card">
+        <div class="chart-head"><h4>5分：轻决策实用型</h4></div>
+        <div class="bar-stack">
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">中央空调 Central AC</div><div class="bar-value">61.6%</div></div><div class="track"><div class="fill teal" style="width:61.6%"></div></div><div class="bar-sub">45 / 73</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">窗机 Window AC</div><div class="bar-value">47.9%</div></div><div class="track"><div class="fill teal" style="width:47.9%"></div></div><div class="bar-sub">35 / 73</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">挂壁 / 分体式 AC</div><div class="bar-value">17.8%</div></div><div class="track"><div class="fill teal" style="width:17.8%"></div></div><div class="bar-sub">13 / 73</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">蒸发式冷风机</div><div class="bar-value">11.0%</div></div><div class="track"><div class="fill teal" style="width:11.0%"></div></div><div class="bar-sub">8 / 73</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">户外空调 / Outdoor AC</div><div class="bar-value">5.5%</div></div><div class="track"><div class="fill teal" style="width:5.5%"></div></div><div class="bar-sub">4 / 73</div></div>
+        </div>
+      </article>
+      <article class="chart-card">
+        <div class="chart-head"><h4>6分：房间补位升级型</h4></div>
+        <div class="bar-stack">
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">中央空调 Central AC</div><div class="bar-value">62.0%</div></div><div class="track"><div class="fill navy" style="width:62.0%"></div></div><div class="bar-sub">31 / 50</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">窗机 Window AC</div><div class="bar-value">56.0%</div></div><div class="track"><div class="fill navy" style="width:56.0%"></div></div><div class="bar-sub">28 / 50</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">挂壁 / 分体式 AC</div><div class="bar-value">22.0%</div></div><div class="track"><div class="fill navy" style="width:22.0%"></div></div><div class="bar-sub">11 / 50</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">蒸发式冷风机</div><div class="bar-value">6.0%</div></div><div class="track"><div class="fill navy" style="width:6.0%"></div></div><div class="bar-sub">3 / 50</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">户外空调 / Outdoor AC</div><div class="bar-value">2.0%</div></div><div class="track"><div class="fill navy" style="width:2.0%"></div></div><div class="bar-sub">1 / 50</div></div>
+        </div>
+      </article>
+      <article class="chart-card">
+        <div class="chart-head"><h4>7分：高热家庭守护型</h4></div>
+        <div class="bar-stack">
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">窗机 Window AC</div><div class="bar-value">75.6%</div></div><div class="track"><div class="fill blue" style="width:75.6%"></div></div><div class="bar-sub">31 / 41</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">中央空调 Central AC</div><div class="bar-value">31.7%</div></div><div class="track"><div class="fill blue" style="width:31.7%"></div></div><div class="bar-sub">13 / 41</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">挂壁 / 分体式 AC</div><div class="bar-value">12.2%</div></div><div class="track"><div class="fill blue" style="width:12.2%"></div></div><div class="bar-sub">5 / 41</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">以上都没有</div><div class="bar-value">2.4%</div></div><div class="track"><div class="fill blue" style="width:2.4%"></div></div><div class="bar-sub">1 / 41</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">蒸发式冷风机</div><div class="bar-value">2.4%</div></div><div class="track"><div class="fill blue" style="width:2.4%"></div></div><div class="bar-sub">1 / 41</div></div>
+          <div class="bar-row"><div class="bar-meta"><div class="bar-name">户外空调 / Outdoor AC</div><div class="bar-value">2.4%</div></div><div class="track"><div class="fill blue" style="width:2.4%"></div></div><div class="bar-sub">1 / 41</div></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="page" id="score-module">
+    <div class="section-head">
+      <div>
+        <h2>5 / 6 / 7 分：动机、主原因、使用场景差异</h2>
+        <p>把“当前家庭制冷方案未完全满足需求且愿意尝试/升级/替换”的同意度拆成 5 / 6 / 7 三档。</p>
+      </div>
+    </div>
+    <div class="score-tab-row">
+      <button class="score-tab active" type="button" data-score="5">5分 <span>轻决策实用型</span></button><button class="score-tab" type="button" data-score="6">6分 <span>房间补位升级型</span></button><button class="score-tab" type="button" data-score="7">7分 <span>高热家庭守护型</span></button>
+    </div>
+    
+        <section class="detail-panel active" data-score-panel="5">
+          <div class="panel-hero">
+            <div>
+              <h3>5分：轻决策实用型</h3>
+              <p>愿意尝试，但还处在“值不值得我现在就动手”的阶段。动机已经出现，但更偏实用、灵活和低门槛，不会为了一个房间投入太高决策成本。</p>
+            </div>
+            <div class="sample-pill">n=84</div>
+          </div>
+
+          <div class="insight-grid">
+            <article class="insight-card">
+              <div class="mini-kicker">Entry</div>
+              <h4>更适合怎么切入</h4>
+              <p>先用低负担的“单房间补冷 + 好移动/好收纳 + 不折腾安装”切入，让它成为一个容易开始的小升级。</p>
+            </article>
+            <article class="insight-card">
+              <div class="mini-kicker">Triggers</div>
+              <h4>更容易被什么触发</h4>
+              <ul class="bullet-list">
+                <li>睡不好</li><li>家里某个房间一直偏热</li><li>希望灵活在不同空间用</li><li>不想大动干戈改现有空调</li>
+              </ul>
+            </article>
+            <article class="insight-card">
+              <div class="mini-kicker">Execution</div>
+              <h4>更建议怎么实现</h4>
+              <ul class="bullet-list">
+                <li>传播上强调：不改全屋、先把最热的那个房间救回来。</li><li>产品上强调：轻量、易安装、可移动、易收纳。</li><li>转化上适合用入门价位、限时优惠、热浪来临前的轻决策提醒。</li>
+              </ul>
+            </article>
+          </div>
+
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="chart-head"><h4>Top 动机原因</h4></div>
+              
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">改善炎热环境下的睡眠</div>
+                <div class="bar-value">52.4%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:80.6%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">现有空调无法把某些房间真正降下来</div>
+                <div class="bar-value">47.6%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:73.3%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">想更自主地控制单个房间温度</div>
+                <div class="bar-value">45.2%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:69.6%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">强日晒让某些房间过热</div>
+                <div class="bar-value">40.5%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:62.3%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">不想在家里闷热出汗、不舒服</div>
+                <div class="bar-value">39.3%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:60.4%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            </div>
+            <div class="chart-card">
+              <div class="chart-head"><h4>Top 使用场景</h4></div>
+              
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">极端高温/热浪时使用</div>
+                <div class="bar-value">67.9%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:75.4%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">夜间睡眠/休息时使用</div>
+                <div class="bar-value">64.3%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:71.4%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">日常在家生活时使用</div>
+                <div class="bar-value">39.3%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:43.7%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">居家工作/学习时使用</div>
+                <div class="bar-value">29.8%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:33.1%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">照顾孩子/家人/宠物时使用</div>
+                <div class="bar-value">22.6%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:25.1%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            </div>
+            <div class="chart-card">
+              <div class="chart-head"><h4>主原因单选</h4></div>
+              
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">在小户型里平衡舒适、噪音、体积和成本</div>
+                <div class="bar-value">23.8%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:79.4%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">更自主地掌控自己所在空间的温度</div>
+                <div class="bar-value">22.6%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:75.4%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">空间受限下更实用、安装更省事</div>
+                <div class="bar-value">15.5%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:51.6%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">不开全屋也能快速冷却单个小空间</div>
+                <div class="bar-value">14.3%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:47.6%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">优先保障家人的睡眠舒适</div>
+                <div class="bar-value">13.1%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:43.7%"></div></div>
+              <div class="bar-sub">样本 84</div>
+            </div>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="detail-panel" data-score-panel="6">
+          <div class="panel-hero">
+            <div>
+              <h3>6分：房间补位升级型</h3>
+              <p>已经比较明确地感受到现有制冷方案不够用，尤其是某些房间降不下来，日常生活里也持续感受到不舒服，开始认真寻找补位方案。</p>
+            </div>
+            <div class="sample-pill">n=58</div>
+          </div>
+
+          <div class="insight-grid">
+            <article class="insight-card">
+              <div class="mini-kicker">Entry</div>
+              <h4>更适合怎么切入</h4>
+              <p>用“现有空调覆盖不到的热房间补位”切入最有效，把移动空调讲成一个房间级升级，而不是泛泛的备用方案。</p>
+            </article>
+            <article class="insight-card">
+              <div class="mini-kicker">Triggers</div>
+              <h4>更容易被什么触发</h4>
+              <ul class="bullet-list">
+                <li>某些房间一直热</li><li>家里日常活动空间不舒服</li><li>想更精准控温</li><li>需要兼顾家人/宠物舒适</li>
+              </ul>
+            </article>
+            <article class="insight-card">
+              <div class="mini-kicker">Execution</div>
+              <h4>更建议怎么实现</h4>
+              <ul class="bullet-list">
+                <li>传播上强调：精准解决某一个热房间，而不是让全屋一起降温。</li><li>产品上强调：针对房间面积/日晒/场景的匹配建议与静音舒适。</li><li>转化上适合用房间诊断、面积-BTU 指引、热房间测试清单来推动决策。</li>
+              </ul>
+            </article>
+          </div>
+
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="chart-head"><h4>Top 动机原因</h4></div>
+              
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">现有空调无法把某些房间真正降下来</div>
+                <div class="bar-value">51.7%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:79.6%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">改善炎热环境下的睡眠</div>
+                <div class="bar-value">50.0%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:76.9%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">想更自主地控制单个房间温度</div>
+                <div class="bar-value">48.3%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:74.3%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">让家人/宠物更舒适安全</div>
+                <div class="bar-value">46.6%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:71.6%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">强日晒让某些房间过热</div>
+                <div class="bar-value">39.7%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:61.0%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            </div>
+            <div class="chart-card">
+              <div class="chart-head"><h4>Top 使用场景</h4></div>
+              
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">极端高温/热浪时使用</div>
+                <div class="bar-value">63.8%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:70.9%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">日常在家生活时使用</div>
+                <div class="bar-value">55.2%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:61.3%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">夜间睡眠/休息时使用</div>
+                <div class="bar-value">51.7%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:57.5%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">居家工作/学习时使用</div>
+                <div class="bar-value">25.9%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:28.7%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">放松、打游戏、看电视时使用</div>
+                <div class="bar-value">22.4%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:24.9%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            </div>
+            <div class="chart-card">
+              <div class="chart-head"><h4>主原因单选</h4></div>
+              
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">更自主地掌控自己所在空间的温度</div>
+                <div class="bar-value">27.6%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:92.0%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">优先保障家人的睡眠舒适</div>
+                <div class="bar-value">20.7%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:69.0%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">不开全屋也能快速冷却单个小空间</div>
+                <div class="bar-value">17.2%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:57.5%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">在小户型里平衡舒适、噪音、体积和成本</div>
+                <div class="bar-value">17.2%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:57.5%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">空间受限下更实用、安装更省事</div>
+                <div class="bar-value">13.8%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:46.0%"></div></div>
+              <div class="bar-sub">样本 58</div>
+            </div>
+            
+            </div>
+          </div>
+        </section>
+        
+        <section class="detail-panel" data-score-panel="7">
+          <div class="panel-hero">
+            <div>
+              <h3>7分：高热家庭守护型</h3>
+              <p>未满足感最强，已经把问题看成睡眠、家人舒适与极端高温风险。价格仍重要，但不再是唯一问题，场景痛点和使用可靠性更关键。</p>
+            </div>
+            <div class="sample-pill">n=49</div>
+          </div>
+
+          <div class="insight-grid">
+            <article class="insight-card">
+              <div class="mini-kicker">Entry</div>
+              <h4>更适合怎么切入</h4>
+              <p>最适合从“热浪/强日晒/夜间睡不好/家人宠物受不了”切入，讲的是高温场景下的家庭守护，而不是单纯买一台机器。</p>
+            </article>
+            <article class="insight-card">
+              <div class="mini-kicker">Triggers</div>
+              <h4>更容易被什么触发</h4>
+              <ul class="bullet-list">
+                <li>热浪来袭</li><li>卧室或儿童房/老人房过热</li><li>强日晒房间晚上也散不掉热</li><li>家人/宠物在高温下不舒服</li>
+              </ul>
+            </article>
+            <article class="insight-card">
+              <div class="mini-kicker">Execution</div>
+              <h4>更建议怎么实现</h4>
+              <ul class="bullet-list">
+                <li>传播上强调：高温夜晚能不能睡好、家人能不能被照顾到。</li><li>产品上强调：在极端高温下的稳定制冷、卧室可用、家庭场景可靠。</li><li>转化上适合用热浪节点、家庭照护内容、卧室/儿童房场景页来触发。</li>
+              </ul>
+            </article>
+          </div>
+
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="chart-head"><h4>Top 动机原因</h4></div>
+              
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">改善炎热环境下的睡眠</div>
+                <div class="bar-value">59.2%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:91.0%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">强日晒让某些房间过热</div>
+                <div class="bar-value">55.1%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:84.8%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">让家人/宠物更舒适安全</div>
+                <div class="bar-value">51.0%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:78.5%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">现有空调无法把某些房间真正降下来</div>
+                <div class="bar-value">49.0%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:75.4%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">不想在家里闷热出汗、不舒服</div>
+                <div class="bar-value">46.9%</div>
+              </div>
+              <div class="track"><div class="fill blue" style="width:72.2%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            </div>
+            <div class="chart-card">
+              <div class="chart-head"><h4>Top 使用场景</h4></div>
+              
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">极端高温/热浪时使用</div>
+                <div class="bar-value">85.7%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:95.2%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">夜间睡眠/休息时使用</div>
+                <div class="bar-value">67.3%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:74.8%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">日常在家生活时使用</div>
+                <div class="bar-value">59.2%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:65.8%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">照顾孩子/家人/宠物时使用</div>
+                <div class="bar-value">40.8%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:45.4%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">放松、打游戏、看电视时使用</div>
+                <div class="bar-value">30.6%</div>
+              </div>
+              <div class="track"><div class="fill teal" style="width:34.0%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            </div>
+            <div class="chart-card">
+              <div class="chart-head"><h4>主原因单选</h4></div>
+              
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">优先保障家人的睡眠舒适</div>
+                <div class="bar-value">26.5%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:88.4%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">更自主地掌控自己所在空间的温度</div>
+                <div class="bar-value">20.4%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:68.0%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">不开全屋也能快速冷却单个小空间</div>
+                <div class="bar-value">14.3%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:47.6%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">空间受限下更实用、安装更省事</div>
+                <div class="bar-value">14.3%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:47.6%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            <div class="bar-row">
+              <div class="bar-meta">
+                <div class="bar-name">在小户型里平衡舒适、噪音、体积和成本</div>
+                <div class="bar-value">12.2%</div>
+              </div>
+              <div class="track"><div class="fill navy" style="width:40.8%"></div></div>
+              <div class="bar-sub">样本 49</div>
+            </div>
+            
+            </div>
+          </div>
+        </section>
+        
+  </section>
+
+  <section class="page" id="potential-profile-module">
+    <div class="section-head">
+      <div>
+        <h2>潜在用户预期使用场景细节与人口学</h2>
+        <p>按 5 / 6 / 7 分或全部潜在用户切换，分别查看一个预期使用场景字段和一个人口学字段的结构分布。</p>
+      </div>
+    </div>
+    <div class="profile-controls">
+      <div class="select-control">
+        <label>用户类型</label>
+        <div class="score-checks" id="profile-score-checks"></div>
+      </div>
+      <div class="select-control">
+        <label for="usage-field-select">预期使用场景</label>
+        <select id="usage-field-select"></select>
+      </div>
+      <div class="select-control">
+        <label for="demo-field-select">人口学</label>
+        <select id="demo-field-select"></select>
+      </div>
+    </div>
+    <div class="two-grid">
+      <article class="chart-card">
+        <div class="chart-head">
+          <div>
+            <h4 id="usage-chart-title">预期使用场景</h4>
+            <p class="chart-note" id="usage-chart-note"></p>
+          </div>
+          <span class="sample-pill" id="usage-chart-sample"></span>
+        </div>
+        <div class="bar-stack" id="usage-profile-chart"></div>
+      </article>
+      <article class="chart-card">
+        <div class="chart-head">
+          <div>
+            <h4 id="demo-chart-title">人口学</h4>
+            <p class="chart-note" id="demo-chart-note"></p>
+          </div>
+          <span class="sample-pill" id="demo-chart-sample"></span>
+        </div>
+        <div class="bar-stack" id="demo-profile-chart"></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section-head">
+      <div>
+        <h2>跨分值最大的差异点</h2>
+        <p>如果要解释“为什么 5 / 6 / 7 值得拆开讲”，最有说服力的不是单个 Top1，而是下面这些跨分值差异最大的项目。</p>
+      </div>
+    </div>
+    <div class="three-grid">
+      <article class="chart-card">
+        <div class="chart-head"><h4>动机原因差异最大项</h4></div>
+        <table class="data-table">
+          <thead><tr><th>项目</th><th>5分</th><th>6分</th><th>7分</th><th>最大差异</th></tr></thead>
+          <tbody>
+            <tr><td>需要便携、可移动、好收纳</td><td>29.8%</td><td>8.6%</td><td>26.5%</td><td>+21.1pp</td></tr><tr><td>家里现有空调不可用/坏了</td><td>25.0%</td><td>32.8%</td><td>42.9%</td><td>+17.9pp</td></tr><tr><td>希望在不同空间灵活补冷</td><td>35.7%</td><td>19.0%</td><td>30.6%</td><td>+16.7pp</td></tr><tr><td>强日晒让某些房间过热</td><td>40.5%</td><td>39.7%</td><td>55.1%</td><td>+15.4pp</td></tr><tr><td>让家人/宠物更舒适安全</td><td>38.1%</td><td>46.6%</td><td>51.0%</td><td>+12.9pp</td></tr><tr><td>某些楼层/房间比其他区域更热</td><td>30.9%</td><td>29.3%</td><td>40.8%</td><td>+11.5pp</td></tr><tr><td>不想在家里闷热出汗、不舒服</td><td>39.3%</td><td>36.2%</td><td>46.9%</td><td>+10.7pp</td></tr><tr><td>改善炎热环境下的睡眠</td><td>52.4%</td><td>50.0%</td><td>59.2%</td><td>+9.2pp</td></tr>
+          </tbody>
+        </table>
+      </article>
+      <article class="chart-card">
+        <div class="chart-head"><h4>使用场景差异最大项</h4></div>
+        <table class="data-table">
+          <thead><tr><th>项目</th><th>5分</th><th>6分</th><th>7分</th><th>最大差异</th></tr></thead>
+          <tbody>
+            <tr><td>极端高温/热浪时使用</td><td>67.9%</td><td>63.8%</td><td>85.7%</td><td>+21.9pp</td></tr><tr><td>照顾孩子/家人/宠物时使用</td><td>22.6%</td><td>19.0%</td><td>40.8%</td><td>+21.8pp</td></tr><tr><td>日常在家生活时使用</td><td>39.3%</td><td>55.2%</td><td>59.2%</td><td>+19.9pp</td></tr><tr><td>夜间睡眠/休息时使用</td><td>64.3%</td><td>51.7%</td><td>67.3%</td><td>+15.6pp</td></tr><tr><td>放松、打游戏、看电视时使用</td><td>19.1%</td><td>22.4%</td><td>30.6%</td><td>+11.6pp</td></tr><tr><td>空调故障/停电等应急时使用</td><td>21.4%</td><td>12.1%</td><td>18.4%</td><td>+9.4pp</td></tr><tr><td>居家工作/学习时使用</td><td>29.8%</td><td>25.9%</td><td>26.5%</td><td>+3.9pp</td></tr>
+          </tbody>
+        </table>
+      </article>
+      <article class="chart-card">
+        <div class="chart-head"><h4>主原因单选差异最大项</h4></div>
+        <table class="data-table">
+          <thead><tr><th>项目</th><th>5分</th><th>6分</th><th>7分</th><th>最大差异</th></tr></thead>
+          <tbody>
+            <tr><td>优先保障家人的睡眠舒适</td><td>13.1%</td><td>20.7%</td><td>26.5%</td><td>+13.4pp</td></tr><tr><td>在小户型里平衡舒适、噪音、体积和成本</td><td>23.8%</td><td>17.2%</td><td>12.2%</td><td>+11.6pp</td></tr><tr><td>更自主地掌控自己所在空间的温度</td><td>22.6%</td><td>27.6%</td><td>20.4%</td><td>+7.2pp</td></tr><tr><td>给极端高温/应急场景留一个可靠备选</td><td>8.3%</td><td>1.7%</td><td>6.1%</td><td>+6.6pp</td></tr><tr><td>不开全屋也能快速冷却单个小空间</td><td>14.3%</td><td>17.2%</td><td>14.3%</td><td>+2.9pp</td></tr><tr><td>都不是</td><td>2.4%</td><td>1.7%</td><td>4.1%</td><td>+2.4pp</td></tr><tr><td>空间受限下更实用、安装更省事</td><td>15.5%</td><td>13.8%</td><td>14.3%</td><td>+1.7pp</td></tr>
+          </tbody>
+        </table>
+      </article>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section-head">
+      <div>
+        <h2>最值得先入手的方向</h2>
+        <p></p>
+      </div>
+      <a class="to-top" href="#top">返回顶部</a>
+    </div>
+    <div class="three-grid">
+      <article class="insight-card">
+        <div class="mini-kicker">Direction 1</div>
+        <h4>总切入口：热浪 + 睡眠 + 热房间</h4>
+        <p>这是 5/6/7 三档共同最强的交集。比起泛泛讲“夏天很热”，更应该讲：极端高温时，卧室或某个特定房间晚上睡不好，现有空调又救不到。</p>
+      </article>
+      <article class="insight-card">
+        <div class="mini-kicker">Direction 2</div>
+        <h4>先讲房间级升级，再讲全屋替代</h4>
+        <p>无论是控温、更好睡眠，还是家人舒适，本质上都指向“某个房间的未满足”。产品传播更适合定义成对单房间问题的精准补位，而不是笼统的空调替代。</p>
+      </article>
+      <article class="insight-card">
+        <div class="mini-kicker">Direction 3</div>
+        <h4>按分值分层说服</h4>
+        <p>5分更需要低门槛与便携好收纳，6分更需要证明能解决特定热房间，7分更需要在热浪和家庭守护场景里被说服“现在就值得升级”。</p>
+      </article>
+    </div>
+  </section>
+</div>
+
+<script>
+
+const potentialProfileData = {"scores": [{"key": "all", "label": "全部"}, {"key": "5", "label": "5分"}, {"key": "6", "label": "6分"}, {"key": "7", "label": "7分"}], "usageFields": [{"key": "primary_room", "label": "主要房间"}, {"key": "primary_room_size", "label": "主要房间面积"}, {"key": "bigORsmall", "label": "户型大小"}, {"key": "residence_type", "label": "居住类型"}, {"key": "bighome_style", "label": "大户型房屋风格"}, {"key": "smallhome_style", "label": "小户型结构"}, {"key": "housing_situation", "label": "住房权属"}], "demoFields": [{"key": "age", "label": "年龄"}, {"key": "gender", "label": "性别"}, {"key": "household_income", "label": "家庭收入"}, {"key": "household_size", "label": "家庭人口"}, {"key": "Education", "label": "教育程度"}, {"key": "Occupation Field", "label": "职业领域"}, {"key": "Race", "label": "种族"}, {"key": "state", "label": "所在州"}], "distributions": {"primary_room": {"all": {"totalN": 191, "validN": 188, "blankN": 0, "hiddenN": 3, "items": [{"label": "Main bedroom", "count": 68, "pct": 36.2}, {"label": "Living room", "count": 66, "pct": 35.1}, {"label": "Another Bedroom (Child, Guest, or Other family member)", "count": 31, "pct": 16.5}, {"label": "Kitchen", "count": 10, "pct": 5.3}, {"label": "Home office/study room", "count": 5, "pct": 2.7}, {"label": "Garage", "count": 3, "pct": 1.6}, {"label": "Dining room", "count": 2, "pct": 1.1}, {"label": "Camper / RV", "count": 2, "pct": 1.1}, {"label": "Den", "count": 1, "pct": 0.5}]}, "5": {"totalN": 84, "validN": 83, "blankN": 0, "hiddenN": 1, "items": [{"label": "Main bedroom", "count": 32, "pct": 38.6}, {"label": "Living room", "count": 22, "pct": 26.5}, {"label": "Another Bedroom (Child, Guest, or Other family member)", "count": 18, "pct": 21.7}, {"label": "Home office/study room", "count": 4, "pct": 4.8}, {"label": "Kitchen", "count": 3, "pct": 3.6}, {"label": "Garage", "count": 2, "pct": 2.4}, {"label": "Den", "count": 1, "pct": 1.2}, {"label": "Camper / RV", "count": 1, "pct": 1.2}]}, "6": {"totalN": 58, "validN": 58, "blankN": 0, "hiddenN": 0, "items": [{"label": "Living room", "count": 26, "pct": 44.8}, {"label": "Main bedroom", "count": 19, "pct": 32.8}, {"label": "Another Bedroom (Child, Guest, or Other family member)", "count": 9, "pct": 15.5}, {"label": "Kitchen", "count": 3, "pct": 5.2}, {"label": "Garage", "count": 1, "pct": 1.7}]}, "7": {"totalN": 49, "validN": 47, "blankN": 0, "hiddenN": 2, "items": [{"label": "Living room", "count": 18, "pct": 38.3}, {"label": "Main bedroom", "count": 17, "pct": 36.2}, {"label": "Kitchen", "count": 4, "pct": 8.5}, {"label": "Another Bedroom (Child, Guest, or Other family member)", "count": 4, "pct": 8.5}, {"label": "Dining room", "count": 2, "pct": 4.3}, {"label": "Camper / RV", "count": 1, "pct": 2.1}, {"label": "Home office/study room", "count": 1, "pct": 2.1}]}}, "primary_room_size": {"all": {"totalN": 191, "validN": 179, "blankN": 0, "hiddenN": 12, "items": [{"label": "Under 100 sq. ft.", "count": 8, "pct": 4.5}, {"label": "101-150 sq. ft.", "count": 29, "pct": 16.2}, {"label": "151–250 sq. ft.", "count": 57, "pct": 31.8}, {"label": "251–350 sq. ft.", "count": 35, "pct": 19.6}, {"label": "351–450 sq. ft.", "count": 32, "pct": 17.9}, {"label": "451–600 sq. ft.", "count": 11, "pct": 6.1}, {"label": "Over 600 sq. ft.", "count": 4, "pct": 2.2}, {"label": "Open-concept / shared space (Please specify how large)", "count": 3, "pct": 1.7}]}, "5": {"totalN": 84, "validN": 81, "blankN": 0, "hiddenN": 3, "items": [{"label": "Under 100 sq. ft.", "count": 1, "pct": 1.2}, {"label": "101-150 sq. ft.", "count": 19, "pct": 23.5}, {"label": "151–250 sq. ft.", "count": 25, "pct": 30.9}, {"label": "251–350 sq. ft.", "count": 14, "pct": 17.3}, {"label": "351–450 sq. ft.", "count": 13, "pct": 16.0}, {"label": "451–600 sq. ft.", "count": 5, "pct": 6.2}, {"label": "Over 600 sq. ft.", "count": 2, "pct": 2.5}, {"label": "Open-concept / shared space (Please specify how large)", "count": 2, "pct": 2.5}]}, "6": {"totalN": 58, "validN": 53, "blankN": 0, "hiddenN": 5, "items": [{"label": "Under 100 sq. ft.", "count": 1, "pct": 1.9}, {"label": "101-150 sq. ft.", "count": 4, "pct": 7.5}, {"label": "151–250 sq. ft.", "count": 19, "pct": 35.8}, {"label": "251–350 sq. ft.", "count": 11, "pct": 20.8}, {"label": "351–450 sq. ft.", "count": 13, "pct": 24.5}, {"label": "451–600 sq. ft.", "count": 4, "pct": 7.5}, {"label": "Open-concept / shared space (Please specify how large)", "count": 1, "pct": 1.9}]}, "7": {"totalN": 49, "validN": 45, "blankN": 0, "hiddenN": 4, "items": [{"label": "Under 100 sq. ft.", "count": 6, "pct": 13.3}, {"label": "101-150 sq. ft.", "count": 6, "pct": 13.3}, {"label": "151–250 sq. ft.", "count": 13, "pct": 28.9}, {"label": "251–350 sq. ft.", "count": 10, "pct": 22.2}, {"label": "351–450 sq. ft.", "count": 6, "pct": 13.3}, {"label": "451–600 sq. ft.", "count": 2, "pct": 4.4}, {"label": "Over 600 sq. ft.", "count": 2, "pct": 4.4}]}}, "bigORsmall": {"all": {"totalN": 191, "validN": 191, "blankN": 0, "hiddenN": 0, "items": [{"label": "大户型 big", "count": 141, "pct": 73.8}, {"label": "小户型 small", "count": 50, "pct": 26.2}]}, "5": {"totalN": 84, "validN": 84, "blankN": 0, "hiddenN": 0, "items": [{"label": "大户型 big", "count": 60, "pct": 71.4}, {"label": "小户型 small", "count": 24, "pct": 28.6}]}, "6": {"totalN": 58, "validN": 58, "blankN": 0, "hiddenN": 0, "items": [{"label": "大户型 big", "count": 48, "pct": 82.8}, {"label": "小户型 small", "count": 10, "pct": 17.2}]}, "7": {"totalN": 49, "validN": 49, "blankN": 0, "hiddenN": 0, "items": [{"label": "大户型 big", "count": 33, "pct": 67.3}, {"label": "小户型 small", "count": 16, "pct": 32.7}]}}, "residence_type": {"all": {"totalN": 191, "validN": 191, "blankN": 0, "hiddenN": 0, "items": [{"label": "Detached single-family home", "count": 107, "pct": 56.0}, {"label": "Apartment (in a multi-unit building)", "count": 32, "pct": 16.8}, {"label": "Townhouse / Row house", "count": 20, "pct": 10.5}, {"label": "Duplex / Triplex", "count": 14, "pct": 7.3}, {"label": "Mobile home / Manufactured home", "count": 9, "pct": 4.7}, {"label": "Condominium (condo)", "count": 7, "pct": 3.7}, {"label": "Other (Guest house (studio size))", "count": 1, "pct": 0.5}, {"label": "RV / Camper", "count": 1, "pct": 0.5}]}, "5": {"totalN": 84, "validN": 84, "blankN": 0, "hiddenN": 0, "items": [{"label": "Detached single-family home", "count": 48, "pct": 57.1}, {"label": "Apartment (in a multi-unit building)", "count": 14, "pct": 16.7}, {"label": "Townhouse / Row house", "count": 7, "pct": 8.3}, {"label": "Duplex / Triplex", "count": 5, "pct": 6.0}, {"label": "Condominium (condo)", "count": 4, "pct": 4.8}, {"label": "Mobile home / Manufactured home", "count": 4, "pct": 4.8}, {"label": "Other (Guest house (studio size))", "count": 1, "pct": 1.2}, {"label": "RV / Camper", "count": 1, "pct": 1.2}]}, "6": {"totalN": 58, "validN": 58, "blankN": 0, "hiddenN": 0, "items": [{"label": "Detached single-family home", "count": 39, "pct": 67.2}, {"label": "Apartment (in a multi-unit building)", "count": 9, "pct": 15.5}, {"label": "Townhouse / Row house", "count": 6, "pct": 10.3}, {"label": "Duplex / Triplex", "count": 3, "pct": 5.2}, {"label": "Condominium (condo)", "count": 1, "pct": 1.7}]}, "7": {"totalN": 49, "validN": 49, "blankN": 0, "hiddenN": 0, "items": [{"label": "Detached single-family home", "count": 20, "pct": 40.8}, {"label": "Apartment (in a multi-unit building)", "count": 9, "pct": 18.4}, {"label": "Townhouse / Row house", "count": 7, "pct": 14.3}, {"label": "Duplex / Triplex", "count": 6, "pct": 12.2}, {"label": "Mobile home / Manufactured home", "count": 5, "pct": 10.2}, {"label": "Condominium (condo)", "count": 2, "pct": 4.1}]}}, "bighome_style": {"all": {"totalN": 191, "validN": 139, "blankN": 50, "hiddenN": 2, "items": [{"label": "Contemporary / Modern", "count": 33, "pct": 23.7}, {"label": "Ranch", "count": 29, "pct": 20.9}, {"label": "Split-level", "count": 21, "pct": 15.1}, {"label": "I’m not sure", "count": 18, "pct": 12.9}, {"label": "Craftsman / Bungalow", "count": 11, "pct": 7.9}, {"label": "Farmhouse", "count": 9, "pct": 6.5}, {"label": "Cape Cod", "count": 7, "pct": 5.0}, {"label": "Colonial", "count": 6, "pct": 4.3}, {"label": "None of these", "count": 5, "pct": 3.6}]}, "5": {"totalN": 84, "validN": 58, "blankN": 24, "hiddenN": 2, "items": [{"label": "Ranch", "count": 14, "pct": 24.1}, {"label": "Contemporary / Modern", "count": 12, "pct": 20.7}, {"label": "Split-level", "count": 10, "pct": 17.2}, {"label": "I’m not sure", "count": 9, "pct": 15.5}, {"label": "Craftsman / Bungalow", "count": 4, "pct": 6.9}, {"label": "Colonial", "count": 3, "pct": 5.2}, {"label": "Farmhouse", "count": 3, "pct": 5.2}, {"label": "Cape Cod", "count": 2, "pct": 3.4}, {"label": "None of these", "count": 1, "pct": 1.7}]}, "6": {"totalN": 58, "validN": 48, "blankN": 10, "hiddenN": 0, "items": [{"label": "Contemporary / Modern", "count": 15, "pct": 31.2}, {"label": "Ranch", "count": 10, "pct": 20.8}, {"label": "Split-level", "count": 7, "pct": 14.6}, {"label": "I’m not sure", "count": 4, "pct": 8.3}, {"label": "Farmhouse", "count": 3, "pct": 6.2}, {"label": "Colonial", "count": 3, "pct": 6.2}, {"label": "Craftsman / Bungalow", "count": 3, "pct": 6.2}, {"label": "Cape Cod", "count": 2, "pct": 4.2}, {"label": "None of these", "count": 1, "pct": 2.1}]}, "7": {"totalN": 49, "validN": 33, "blankN": 16, "hiddenN": 0, "items": [{"label": "Contemporary / Modern", "count": 6, "pct": 18.2}, {"label": "I’m not sure", "count": 5, "pct": 15.2}, {"label": "Ranch", "count": 5, "pct": 15.2}, {"label": "Split-level", "count": 4, "pct": 12.1}, {"label": "Craftsman / Bungalow", "count": 4, "pct": 12.1}, {"label": "None of these", "count": 3, "pct": 9.1}, {"label": "Farmhouse", "count": 3, "pct": 9.1}, {"label": "Cape Cod", "count": 3, "pct": 9.1}]}}, "smallhome_style": {"all": {"totalN": 191, "validN": 39, "blankN": 152, "hiddenN": 0, "items": [{"label": "1 Bedroom", "count": 12, "pct": 30.8}, {"label": "2 Bedrooms", "count": 19, "pct": 48.7}, {"label": "3+ Bedrooms", "count": 6, "pct": 15.4}, {"label": "Studio", "count": 2, "pct": 5.1}]}, "5": {"totalN": 84, "validN": 18, "blankN": 66, "hiddenN": 0, "items": [{"label": "1 Bedroom", "count": 4, "pct": 22.2}, {"label": "2 Bedrooms", "count": 9, "pct": 50.0}, {"label": "3+ Bedrooms", "count": 5, "pct": 27.8}]}, "6": {"totalN": 58, "validN": 10, "blankN": 48, "hiddenN": 0, "items": [{"label": "1 Bedroom", "count": 6, "pct": 60.0}, {"label": "2 Bedrooms", "count": 4, "pct": 40.0}]}, "7": {"totalN": 49, "validN": 11, "blankN": 38, "hiddenN": 0, "items": [{"label": "1 Bedroom", "count": 2, "pct": 18.2}, {"label": "2 Bedrooms", "count": 6, "pct": 54.5}, {"label": "3+ Bedrooms", "count": 1, "pct": 9.1}, {"label": "Studio", "count": 2, "pct": 18.2}]}}, "housing_situation": {"all": {"totalN": 191, "validN": 189, "blankN": 0, "hiddenN": 2, "items": [{"label": "I own the home", "count": 105, "pct": 55.6}, {"label": "I rent the home", "count": 50, "pct": 26.5}, {"label": "I live in a home owned by my family (e.g., parents/partner/kids)", "count": 30, "pct": 15.9}, {"label": "I live with relatives or others without paying rent", "count": 4, "pct": 2.1}]}, "5": {"totalN": 84, "validN": 82, "blankN": 0, "hiddenN": 2, "items": [{"label": "I own the home", "count": 44, "pct": 53.7}, {"label": "I rent the home", "count": 20, "pct": 24.4}, {"label": "I live in a home owned by my family (e.g., parents/partner/kids)", "count": 15, "pct": 18.3}, {"label": "I live with relatives or others without paying rent", "count": 3, "pct": 3.7}]}, "6": {"totalN": 58, "validN": 58, "blankN": 0, "hiddenN": 0, "items": [{"label": "I own the home", "count": 31, "pct": 53.4}, {"label": "I rent the home", "count": 14, "pct": 24.1}, {"label": "I live in a home owned by my family (e.g., parents/partner/kids)", "count": 12, "pct": 20.7}, {"label": "I live with relatives or others without paying rent", "count": 1, "pct": 1.7}]}, "7": {"totalN": 49, "validN": 49, "blankN": 0, "hiddenN": 0, "items": [{"label": "I own the home", "count": 30, "pct": 61.2}, {"label": "I rent the home", "count": 16, "pct": 32.7}, {"label": "I live in a home owned by my family (e.g., parents/partner/kids)", "count": 3, "pct": 6.1}]}}, "age": {"all": {"totalN": 191, "validN": 191, "blankN": 0, "hiddenN": 0, "items": [{"label": "18 - 24", "count": 9, "pct": 4.7}, {"label": "25 - 34", "count": 34, "pct": 17.8}, {"label": "35 - 44", "count": 40, "pct": 20.9}, {"label": "45 - 54", "count": 41, "pct": 21.5}, {"label": "55 - 64", "count": 37, "pct": 19.4}, {"label": "> 64", "count": 30, "pct": 15.7}]}, "5": {"totalN": 84, "validN": 84, "blankN": 0, "hiddenN": 0, "items": [{"label": "18 - 24", "count": 4, "pct": 4.8}, {"label": "25 - 34", "count": 15, "pct": 17.9}, {"label": "35 - 44", "count": 15, "pct": 17.9}, {"label": "45 - 54", "count": 15, "pct": 17.9}, {"label": "55 - 64", "count": 22, "pct": 26.2}, {"label": "> 64", "count": 13, "pct": 15.5}]}, "6": {"totalN": 58, "validN": 58, "blankN": 0, "hiddenN": 0, "items": [{"label": "18 - 24", "count": 4, "pct": 6.9}, {"label": "25 - 34", "count": 12, "pct": 20.7}, {"label": "35 - 44", "count": 14, "pct": 24.1}, {"label": "45 - 54", "count": 9, "pct": 15.5}, {"label": "55 - 64", "count": 8, "pct": 13.8}, {"label": "> 64", "count": 11, "pct": 19.0}]}, "7": {"totalN": 49, "validN": 49, "blankN": 0, "hiddenN": 0, "items": [{"label": "18 - 24", "count": 1, "pct": 2.0}, {"label": "25 - 34", "count": 7, "pct": 14.3}, {"label": "35 - 44", "count": 11, "pct": 22.4}, {"label": "45 - 54", "count": 17, "pct": 34.7}, {"label": "55 - 64", "count": 7, "pct": 14.3}, {"label": "> 64", "count": 6, "pct": 12.2}]}}, "gender": {"all": {"totalN": 191, "validN": 191, "blankN": 0, "hiddenN": 0, "items": [{"label": "Female", "count": 114, "pct": 59.7}, {"label": "Male", "count": 77, "pct": 40.3}]}, "5": {"totalN": 84, "validN": 84, "blankN": 0, "hiddenN": 0, "items": [{"label": "Female", "count": 49, "pct": 58.3}, {"label": "Male", "count": 35, "pct": 41.7}]}, "6": {"totalN": 58, "validN": 58, "blankN": 0, "hiddenN": 0, "items": [{"label": "Female", "count": 34, "pct": 58.6}, {"label": "Male", "count": 24, "pct": 41.4}]}, "7": {"totalN": 49, "validN": 49, "blankN": 0, "hiddenN": 0, "items": [{"label": "Female", "count": 31, "pct": 63.3}, {"label": "Male", "count": 18, "pct": 36.7}]}}, "household_income": {"all": {"totalN": 191, "validN": 191, "blankN": 0, "hiddenN": 0, "items": [{"label": "< $25,000", "count": 28, "pct": 14.7}, {"label": "$25,000 - $49,999", "count": 40, "pct": 20.9}, {"label": "$50,000 - $74,999", "count": 34, "pct": 17.8}, {"label": "$75,000 - $99,999", "count": 44, "pct": 23.0}, {"label": "$100,000 - $149,999", "count": 24, "pct": 12.6}, {"label": "$150,000 - $199,999", "count": 8, "pct": 4.2}, {"label": "$200,000 - $249,999", "count": 4, "pct": 2.1}, {"label": "> $250,000", "count": 5, "pct": 2.6}, {"label": "Prefer not to say", "count": 4, "pct": 2.1}]}, "5": {"totalN": 84, "validN": 84, "blankN": 0, "hiddenN": 0, "items": [{"label": "< $25,000", "count": 13, "pct": 15.5}, {"label": "$25,000 - $49,999", "count": 16, "pct": 19.0}, {"label": "$50,000 - $74,999", "count": 14, "pct": 16.7}, {"label": "$75,000 - $99,999", "count": 23, "pct": 27.4}, {"label": "$100,000 - $149,999", "count": 11, "pct": 13.1}, {"label": "$150,000 - $199,999", "count": 4, "pct": 4.8}, {"label": "$200,000 - $249,999", "count": 1, "pct": 1.2}, {"label": "> $250,000", "count": 2, "pct": 2.4}]}, "6": {"totalN": 58, "validN": 58, "blankN": 0, "hiddenN": 0, "items": [{"label": "< $25,000", "count": 4, "pct": 6.9}, {"label": "$25,000 - $49,999", "count": 12, "pct": 20.7}, {"label": "$50,000 - $74,999", "count": 14, "pct": 24.1}, {"label": "$75,000 - $99,999", "count": 11, "pct": 19.0}, {"label": "$100,000 - $149,999", "count": 8, "pct": 13.8}, {"label": "$150,000 - $199,999", "count": 2, "pct": 3.4}, {"label": "$200,000 - $249,999", "count": 3, "pct": 5.2}, {"label": "> $250,000", "count": 3, "pct": 5.2}, {"label": "Prefer not to say", "count": 1, "pct": 1.7}]}, "7": {"totalN": 49, "validN": 49, "blankN": 0, "hiddenN": 0, "items": [{"label": "< $25,000", "count": 11, "pct": 22.4}, {"label": "$25,000 - $49,999", "count": 12, "pct": 24.5}, {"label": "$50,000 - $74,999", "count": 6, "pct": 12.2}, {"label": "$75,000 - $99,999", "count": 10, "pct": 20.4}, {"label": "$100,000 - $149,999", "count": 5, "pct": 10.2}, {"label": "$150,000 - $199,999", "count": 2, "pct": 4.1}, {"label": "Prefer not to say", "count": 3, "pct": 6.1}]}}, "household_size": {"all": {"totalN": 191, "validN": 191, "blankN": 0, "hiddenN": 0, "items": [{"label": "1 person (Living alone)", "count": 40, "pct": 20.9}, {"label": "2 people", "count": 57, "pct": 29.8}, {"label": "3-4 people", "count": 72, "pct": 37.7}, {"label": "5 or more people", "count": 22, "pct": 11.5}]}, "5": {"totalN": 84, "validN": 84, "blankN": 0, "hiddenN": 0, "items": [{"label": "1 person (Living alone)", "count": 16, "pct": 19.0}, {"label": "2 people", "count": 24, "pct": 28.6}, {"label": "3-4 people", "count": 33, "pct": 39.3}, {"label": "5 or more people", "count": 11, "pct": 13.1}]}, "6": {"totalN": 58, "validN": 58, "blankN": 0, "hiddenN": 0, "items": [{"label": "1 person (Living alone)", "count": 10, "pct": 17.2}, {"label": "2 people", "count": 18, "pct": 31.0}, {"label": "3-4 people", "count": 24, "pct": 41.4}, {"label": "5 or more people", "count": 6, "pct": 10.3}]}, "7": {"totalN": 49, "validN": 49, "blankN": 0, "hiddenN": 0, "items": [{"label": "1 person (Living alone)", "count": 14, "pct": 28.6}, {"label": "2 people", "count": 15, "pct": 30.6}, {"label": "3-4 people", "count": 15, "pct": 30.6}, {"label": "5 or more people", "count": 5, "pct": 10.2}]}}, "Education": {"all": {"totalN": 191, "validN": 128, "blankN": 63, "hiddenN": 0, "items": [{"label": "Bachelor's degree (for example: BA, AB, BS)", "count": 48, "pct": 37.5}, {"label": "Some college, but no degree", "count": 22, "pct": 17.2}, {"label": "Master's degree (for example: MA, MS, MEng, MEd, MSW, MBA)", "count": 22, "pct": 17.2}, {"label": "High school graduate - high school diploma or the equivalent (for example: GED)", "count": 16, "pct": 12.5}, {"label": "Associate degree (for example: AA, AS)", "count": 13, "pct": 10.2}, {"label": "Doctorate degree (for example: PhD, EdD)", "count": 4, "pct": 3.1}, {"label": "Professional degree (for example: MD, DDS, DVM, LLB, JD)", "count": 3, "pct": 2.3}]}, "5": {"totalN": 84, "validN": 55, "blankN": 29, "hiddenN": 0, "items": [{"label": "Bachelor's degree (for example: BA, AB, BS)", "count": 21, "pct": 38.2}, {"label": "Some college, but no degree", "count": 12, "pct": 21.8}, {"label": "Master's degree (for example: MA, MS, MEng, MEd, MSW, MBA)", "count": 9, "pct": 16.4}, {"label": "Associate degree (for example: AA, AS)", "count": 8, "pct": 14.5}, {"label": "High school graduate - high school diploma or the equivalent (for example: GED)", "count": 4, "pct": 7.3}, {"label": "Professional degree (for example: MD, DDS, DVM, LLB, JD)", "count": 1, "pct": 1.8}]}, "6": {"totalN": 58, "validN": 42, "blankN": 16, "hiddenN": 0, "items": [{"label": "Bachelor's degree (for example: BA, AB, BS)", "count": 17, "pct": 40.5}, {"label": "Master's degree (for example: MA, MS, MEng, MEd, MSW, MBA)", "count": 7, "pct": 16.7}, {"label": "High school graduate - high school diploma or the equivalent (for example: GED)", "count": 6, "pct": 14.3}, {"label": "Some college, but no degree", "count": 5, "pct": 11.9}, {"label": "Associate degree (for example: AA, AS)", "count": 3, "pct": 7.1}, {"label": "Doctorate degree (for example: PhD, EdD)", "count": 3, "pct": 7.1}, {"label": "Professional degree (for example: MD, DDS, DVM, LLB, JD)", "count": 1, "pct": 2.4}]}, "7": {"totalN": 49, "validN": 31, "blankN": 18, "hiddenN": 0, "items": [{"label": "Bachelor's degree (for example: BA, AB, BS)", "count": 10, "pct": 32.3}, {"label": "Master's degree (for example: MA, MS, MEng, MEd, MSW, MBA)", "count": 6, "pct": 19.4}, {"label": "High school graduate - high school diploma or the equivalent (for example: GED)", "count": 6, "pct": 19.4}, {"label": "Some college, but no degree", "count": 5, "pct": 16.1}, {"label": "Associate degree (for example: AA, AS)", "count": 2, "pct": 6.5}, {"label": "Professional degree (for example: MD, DDS, DVM, LLB, JD)", "count": 1, "pct": 3.2}, {"label": "Doctorate degree (for example: PhD, EdD)", "count": 1, "pct": 3.2}]}}, "Occupation Field": {"all": {"totalN": 191, "validN": 128, "blankN": 63, "hiddenN": 0, "items": [{"label": "Other", "count": 28, "pct": 21.9}, {"label": "Information Technology", "count": 12, "pct": 9.4}, {"label": "Education & Training", "count": 12, "pct": 9.4}, {"label": "无/未填写", "count": 10, "pct": 7.8}, {"label": "Retail", "count": 9, "pct": 7.0}, {"label": "Medicine", "count": 9, "pct": 7.0}, {"label": "Retired", "count": 9, "pct": 7.0}, {"label": "Science, Technology, Engineering & Mathematics", "count": 6, "pct": 4.7}, {"label": "Transportation, Distribution & Logistics", "count": 6, "pct": 4.7}, {"label": "Finance", "count": 6, "pct": 4.7}, {"label": "I'd Rather Not Say", "count": 4, "pct": 3.1}, {"label": "Arts", "count": 4, "pct": 3.1}, {"label": "Marketing and Sales", "count": 4, "pct": 3.1}, {"label": "Business Management & Administration", "count": 3, "pct": 2.3}, {"label": "Government & Public Administration", "count": 2, "pct": 1.6}, {"label": "Manufacturing", "count": 1, "pct": 0.8}, {"label": "Social Sciences", "count": 1, "pct": 0.8}, {"label": "Hospitality & Tourism", "count": 1, "pct": 0.8}, {"label": "Architecture and Construction", "count": 1, "pct": 0.8}]}, "5": {"totalN": 84, "validN": 55, "blankN": 29, "hiddenN": 0, "items": [{"label": "Other", "count": 13, "pct": 23.6}, {"label": "Retail", "count": 5, "pct": 9.1}, {"label": "Medicine", "count": 5, "pct": 9.1}, {"label": "Information Technology", "count": 5, "pct": 9.1}, {"label": "Science, Technology, Engineering & Mathematics", "count": 4, "pct": 7.3}, {"label": "Finance", "count": 3, "pct": 5.5}, {"label": "Education & Training", "count": 3, "pct": 5.5}, {"label": "Retired", "count": 3, "pct": 5.5}, {"label": "无/未填写", "count": 3, "pct": 5.5}, {"label": "Arts", "count": 2, "pct": 3.6}, {"label": "I'd Rather Not Say", "count": 2, "pct": 3.6}, {"label": "Business Management & Administration", "count": 2, "pct": 3.6}, {"label": "Marketing and Sales", "count": 2, "pct": 3.6}, {"label": "Transportation, Distribution & Logistics", "count": 1, "pct": 1.8}, {"label": "Government & Public Administration", "count": 1, "pct": 1.8}, {"label": "Hospitality & Tourism", "count": 1, "pct": 1.8}]}, "6": {"totalN": 58, "validN": 42, "blankN": 16, "hiddenN": 0, "items": [{"label": "Education & Training", "count": 7, "pct": 16.7}, {"label": "Transportation, Distribution & Logistics", "count": 4, "pct": 9.5}, {"label": "无/未填写", "count": 4, "pct": 9.5}, {"label": "Other", "count": 4, "pct": 9.5}, {"label": "Retired", "count": 4, "pct": 9.5}, {"label": "Information Technology", "count": 3, "pct": 7.1}, {"label": "Medicine", "count": 3, "pct": 7.1}, {"label": "Marketing and Sales", "count": 2, "pct": 4.8}, {"label": "Finance", "count": 2, "pct": 4.8}, {"label": "Retail", "count": 1, "pct": 2.4}, {"label": "Manufacturing", "count": 1, "pct": 2.4}, {"label": "Arts", "count": 1, "pct": 2.4}, {"label": "Social Sciences", "count": 1, "pct": 2.4}, {"label": "I'd Rather Not Say", "count": 1, "pct": 2.4}, {"label": "Business Management & Administration", "count": 1, "pct": 2.4}, {"label": "Government & Public Administration", "count": 1, "pct": 2.4}, {"label": "Architecture and Construction", "count": 1, "pct": 2.4}, {"label": "Science, Technology, Engineering & Mathematics", "count": 1, "pct": 2.4}]}, "7": {"totalN": 49, "validN": 31, "blankN": 18, "hiddenN": 0, "items": [{"label": "Other", "count": 11, "pct": 35.5}, {"label": "Information Technology", "count": 4, "pct": 12.9}, {"label": "Retail", "count": 3, "pct": 9.7}, {"label": "无/未填写", "count": 3, "pct": 9.7}, {"label": "Retired", "count": 2, "pct": 6.5}, {"label": "Education & Training", "count": 2, "pct": 6.5}, {"label": "I'd Rather Not Say", "count": 1, "pct": 3.2}, {"label": "Medicine", "count": 1, "pct": 3.2}, {"label": "Transportation, Distribution & Logistics", "count": 1, "pct": 3.2}, {"label": "Finance", "count": 1, "pct": 3.2}, {"label": "Science, Technology, Engineering & Mathematics", "count": 1, "pct": 3.2}, {"label": "Arts", "count": 1, "pct": 3.2}]}}, "Race": {"all": {"totalN": 191, "validN": 116, "blankN": 63, "hiddenN": 12, "items": [{"label": "White", "count": 90, "pct": 77.6}, {"label": "Black or African American", "count": 18, "pct": 15.5}, {"label": "An ethnicity not listed here", "count": 8, "pct": 6.9}]}, "5": {"totalN": 84, "validN": 50, "blankN": 29, "hiddenN": 5, "items": [{"label": "White", "count": 43, "pct": 86.0}, {"label": "Black or African American", "count": 5, "pct": 10.0}, {"label": "An ethnicity not listed here", "count": 2, "pct": 4.0}]}, "6": {"totalN": 58, "validN": 38, "blankN": 16, "hiddenN": 4, "items": [{"label": "White", "count": 28, "pct": 73.7}, {"label": "Black or African American", "count": 7, "pct": 18.4}, {"label": "An ethnicity not listed here", "count": 3, "pct": 7.9}]}, "7": {"totalN": 49, "validN": 28, "blankN": 18, "hiddenN": 3, "items": [{"label": "White", "count": 19, "pct": 67.9}, {"label": "Black or African American", "count": 6, "pct": 21.4}, {"label": "An ethnicity not listed here", "count": 3, "pct": 10.7}]}}, "state": {"all": {"totalN": 191, "validN": 191, "blankN": 0, "hiddenN": 0, "items": [{"label": "Texas", "count": 19, "pct": 9.9}, {"label": "California", "count": 14, "pct": 7.3}, {"label": "New York", "count": 13, "pct": 6.8}, {"label": "Pennsylvania", "count": 12, "pct": 6.3}, {"label": "Florida", "count": 12, "pct": 6.3}, {"label": "Indiana", "count": 8, "pct": 4.2}, {"label": "Georgia", "count": 8, "pct": 4.2}, {"label": "South Carolina", "count": 8, "pct": 4.2}, {"label": "Massachusetts", "count": 7, "pct": 3.7}, {"label": "Illinois", "count": 7, "pct": 3.7}]}, "5": {"totalN": 84, "validN": 84, "blankN": 0, "hiddenN": 0, "items": [{"label": "Texas", "count": 9, "pct": 10.7}, {"label": "Florida", "count": 7, "pct": 8.3}, {"label": "New York", "count": 6, "pct": 7.1}, {"label": "California", "count": 6, "pct": 7.1}, {"label": "Pennsylvania", "count": 5, "pct": 6.0}, {"label": "Arizona", "count": 5, "pct": 6.0}, {"label": "Massachusetts", "count": 4, "pct": 4.8}, {"label": "Virginia", "count": 4, "pct": 4.8}, {"label": "Illinois", "count": 3, "pct": 3.6}, {"label": "Colorado", "count": 3, "pct": 3.6}]}, "6": {"totalN": 58, "validN": 58, "blankN": 0, "hiddenN": 0, "items": [{"label": "California", "count": 5, "pct": 8.6}, {"label": "Georgia", "count": 5, "pct": 8.6}, {"label": "New York", "count": 4, "pct": 6.9}, {"label": "Indiana", "count": 4, "pct": 6.9}, {"label": "North Carolina", "count": 4, "pct": 6.9}, {"label": "Texas", "count": 3, "pct": 5.2}, {"label": "Ohio", "count": 3, "pct": 5.2}, {"label": "Illinois", "count": 3, "pct": 5.2}, {"label": "Florida", "count": 3, "pct": 5.2}, {"label": "Kansas", "count": 2, "pct": 3.4}]}, "7": {"totalN": 49, "validN": 49, "blankN": 0, "hiddenN": 0, "items": [{"label": "Texas", "count": 7, "pct": 14.3}, {"label": "Pennsylvania", "count": 5, "pct": 10.2}, {"label": "South Carolina", "count": 4, "pct": 8.2}, {"label": "California", "count": 3, "pct": 6.1}, {"label": "New York", "count": 3, "pct": 6.1}, {"label": "Georgia", "count": 2, "pct": 4.1}, {"label": "Wisconsin", "count": 2, "pct": 4.1}, {"label": "Massachusetts", "count": 2, "pct": 4.1}, {"label": "New Jersey", "count": 2, "pct": 4.1}, {"label": "Mississippi", "count": 2, "pct": 4.1}]}}}};
+function fillProfileSelect(selectId, options) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  select.innerHTML = '';
+  options.forEach((item) => {
+    const option = document.createElement('option');
+    option.value = item.key;
+    option.textContent = item.label;
+    select.appendChild(option);
+  });
+}
+function getProfileScoreLabel(scoreKey) {
+  const item = potentialProfileData.scores.find((entry) => entry.key === scoreKey);
+  return item ? item.label : scoreKey;
+}
+function getProfileFieldLabel(fieldKey) {
+  const allFields = potentialProfileData.usageFields.concat(potentialProfileData.demoFields);
+  const item = allFields.find((entry) => entry.key === fieldKey);
+  return item ? item.label : fieldKey;
+}
+function makeProfileBarRow(item, maxPct) {
+  const row = document.createElement('div');
+  row.className = 'bar-row';
+
+  const meta = document.createElement('div');
+  meta.className = 'bar-meta';
+  const name = document.createElement('div');
+  name.className = 'bar-name';
+  name.textContent = item.label;
+  const value = document.createElement('div');
+  value.className = 'bar-value';
+  value.textContent = item.pct.toFixed(1) + '%';
+  meta.appendChild(name);
+  meta.appendChild(value);
+
+  const track = document.createElement('div');
+  track.className = 'track';
+  const fill = document.createElement('div');
+  fill.className = 'fill blue';
+  fill.style.width = (maxPct > 0 ? Math.max(2, item.pct / maxPct * 100) : 0) + '%';
+  track.appendChild(fill);
+
+  const sub = document.createElement('div');
+  sub.className = 'bar-sub';
+  sub.textContent = item.count + ' / ' + item._validN;
+
+  row.appendChild(meta);
+  row.appendChild(track);
+  row.appendChild(sub);
+  return row;
+}
+function fillProfileScoreChecks() {
+  const wrap = document.getElementById('profile-score-checks');
+  wrap.innerHTML = potentialProfileData.scores.map((item, index) => `
+    <label class="score-check-option"><input type="checkbox" class="profile-score-check" value="${item.key}" ${index === 0 ? 'checked' : ''}><span>${item.label}</span></label>
+  `).join('');
+}
+function getSelectedProfileScores() {
+  const checked = Array.from(document.querySelectorAll('.profile-score-check')).filter(input => input.checked).map(input => input.value);
+  return potentialProfileData.scores.map(item => item.key).filter(key => checked.includes(key));
+}
+function makeProfileSubchart(scoreKey, fieldKey) {
+  const dist = potentialProfileData.distributions[fieldKey][scoreKey];
+  const panel = document.createElement('div');
+  panel.className = 'profile-subchart';
+  panel.innerHTML = `<h5>${getProfileScoreLabel(scoreKey)} n=${dist.totalN}</h5>`;
+  if (!dist.items.length) {
+    const empty = document.createElement('div'); empty.className = 'profile-empty'; empty.textContent = '暂无有效数据。'; panel.appendChild(empty); return panel;
+  }
+  const maxPct = Math.max(...dist.items.map((item) => item.pct));
+  dist.items.forEach((rawItem) => panel.appendChild(makeProfileBarRow(Object.assign({}, rawItem, { _validN: dist.validN }), maxPct)));
+  return panel;
+}
+function renderProfileChart(kind) {
+  const scoreKeys = getSelectedProfileScores();
+  const fieldKey = document.getElementById(kind + '-field-select').value;
+  const chart = document.getElementById(kind + '-profile-chart');
+  document.getElementById(kind + '-chart-title').textContent = getProfileFieldLabel(fieldKey);
+  document.getElementById(kind + '-chart-sample').textContent = scoreKeys.length ? scoreKeys.length + ' 个用户类型' : '未选择';
+  document.getElementById(kind + '-chart-note').textContent = scoreKeys.length ? '多选用户类型后，每个用户类型单独生成一张条形图，便于并排比较。' : '请至少选择一个用户类型。';
+  chart.innerHTML = '';
+  chart.className = 'profile-subchart-grid';
+  if (!scoreKeys.length) {
+    const empty = document.createElement('div'); empty.className = 'profile-empty'; empty.textContent = '请至少选择一个用户类型。'; chart.appendChild(empty); return;
+  }
+  scoreKeys.forEach((scoreKey) => chart.appendChild(makeProfileSubchart(scoreKey, fieldKey)));
+}
+function renderPotentialProfile() { renderProfileChart('usage'); renderProfileChart('demo'); }
+fillProfileScoreChecks();
+fillProfileSelect('usage-field-select', potentialProfileData.usageFields);
+fillProfileSelect('demo-field-select', potentialProfileData.demoFields);
+document.querySelectorAll('.profile-score-check').forEach((input) => input.addEventListener('change', renderPotentialProfile));
+['usage-field-select', 'demo-field-select'].forEach((id) => { const select = document.getElementById(id); if (select) select.addEventListener('change', renderPotentialProfile); });
+renderPotentialProfile();
+
+const scoreTabs = Array.from(document.querySelectorAll('.score-tab'));
+const scorePanels = Array.from(document.querySelectorAll('.detail-panel'));
+function activateScore(score) {
+  scoreTabs.forEach(tab => tab.classList.toggle('active', tab.dataset.score === String(score)));
+  scorePanels.forEach(panel => panel.classList.toggle('active', panel.dataset.scorePanel === String(score)));
+}
+scoreTabs.forEach(tab => {
+  tab.addEventListener('click', () => activateScore(tab.dataset.score));
+});
+const deviceTabs = Array.from(document.querySelectorAll('.device-tab'));
+const devicePanels = Array.from(document.querySelectorAll('.device-panel'));
+function activateDevice(segment) {
+  deviceTabs.forEach(tab => tab.classList.toggle('active', tab.dataset.deviceSegment === String(segment)));
+  devicePanels.forEach(panel => panel.classList.toggle('active', panel.dataset.devicePanel === String(segment)));
+}
+deviceTabs.forEach(tab => {
+  tab.addEventListener('click', () => activateDevice(tab.dataset.deviceSegment));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>排水分析简报 V3</title>
+  <style>
+    :root{
+      --bg:#f4f6f9;--card:#ffffff;--line:#d8e1ec;--text:#0f172a;--sub:#475569;
+      --blue:#2563eb;--blue-soft:#eaf2ff;--teal:#0f766e;--teal-soft:#ecfeff;
+      --amber:#b45309;--amber-soft:#fff7ed;--red:#b91c1c;--red-soft:#fef2f2;
+      --shadow:0 16px 40px rgba(15,23,42,.08);--radius:22px;
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);}
+    .wrap{max-width:1460px;margin:0 auto;padding:28px;display:grid;gap:22px;}
+    .panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:30px 34px;display:grid;gap:18px;}
+    .kicker{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#64748b;font-weight:800;}
+    h1,h2,h3,p{margin:0} h1{font-size:38px;line-height:1.18;letter-spacing:-.02em;} h2{font-size:26px;line-height:1.25;} h3{font-size:20px;line-height:1.3;}
+    .subtitle{color:var(--sub);font-size:18px;line-height:1.8;max-width:1160px;}
+    .insight{background:linear-gradient(135deg,#eef6ff 0%,#f8fbff 100%);border:1px solid #cfe0ff;border-left:6px solid #3b82f6;border-radius:16px;padding:16px 18px;font-size:17px;line-height:1.8;color:#1e3a8a;}
+    .warning{background:linear-gradient(135deg,#fff8ef 0%,#fffdf8 100%);border:1px solid #f3d2a2;border-left:6px solid #d97706;border-radius:16px;padding:16px 18px;font-size:16px;line-height:1.8;color:#9a3412;}
+    .grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;} .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;} .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
+    .metric{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;}
+    .metric span{display:block;font-size:12px;color:#64748b;margin-bottom:6px;font-weight:700;} .metric strong{font-size:24px;color:#1d4ed8;line-height:1.2;} .metric small{display:block;margin-top:6px;color:var(--sub);line-height:1.6;font-size:13px;}
+    .card{border:1px solid var(--line);border-radius:20px;padding:22px;background:#fcfdff;display:grid;gap:16px;box-shadow:0 10px 26px rgba(15,23,42,.06);}
+    .tag{display:inline-flex;width:max-content;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--blue);background:var(--blue-soft);box-shadow:0 6px 14px rgba(15,23,42,.06);}
+    .tag.teal{color:var(--teal);background:var(--teal-soft);}
+    .tag.warn,.tag.red,.tag.teal{box-shadow:0 6px 14px rgba(15,23,42,.06);}
+    .tag.warn{color:var(--amber);background:var(--amber-soft);}
+    .tag.red{color:var(--red);background:var(--red-soft);}
+    .desc,.note{color:var(--sub);font-size:16px;line-height:1.75;}
+    ul{margin:0;padding-left:20px;color:var(--sub);line-height:1.8;font-size:16px;}
+    table{width:100%;border-collapse:collapse;font-size:15px;} th,td{text-align:left;vertical-align:top;padding:14px 12px;border-bottom:1px solid #e6edf5;line-height:1.65;}
+    th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#64748b;background:#f8fafc;font-weight:800;}
+    .mono{font-family:inherit;}
+    @media (max-width:1100px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr} h1{font-size:32px}}
+  </style>
+
+<style id="visual-polish-v26">
+  :root {
+    --v26-bg: #f3f6f9;
+    --v26-paper: #ffffff;
+    --v26-paper-soft: #f8fafc;
+    --v26-ink: #17283b;
+    --v26-ink-soft: #4f6476;
+    --v26-muted: #6d7f8f;
+    --v26-line: #d8e1ea;
+    --v26-line-strong: #bccbd8;
+    --v26-brand: #2f6f9f;
+    --v26-brand-dark: #1f4f73;
+    --v26-brand-soft: #eaf3fa;
+    --v26-accent: #6f8f9f;
+    --v26-highlight: #b7791f;
+    --v26-shadow: 0 10px 26px rgba(23, 40, 59, .075);
+  }
+  html, body {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    color: var(--v26-ink) !important;
+    background: var(--v26-bg) !important;
+    text-rendering: geometricPrecision;
+  }
+  body { font-size: 15px; line-height: 1.6; }
+  h1, h2, h3, h4, .title, .section-title {
+    color: var(--v26-brand-dark) !important;
+    letter-spacing: 0 !important;
+  }
+  h1 {
+    font-size: clamp(30px, 3.2vw, 38px) !important;
+    line-height: 1.16 !important;
+    font-weight: 800 !important;
+  }
+  h2 {
+    font-size: clamp(22px, 2.2vw, 28px) !important;
+    line-height: 1.22 !important;
+    font-weight: 800 !important;
+  }
+  h3 {
+    font-size: 18px !important;
+    line-height: 1.28 !important;
+    font-weight: 800 !important;
+  }
+  h4 { font-size: 15px !important; line-height: 1.35 !important; font-weight: 800 !important; }
+  p, li, td, .subtitle, .desc, .note, .small, .muted, .cluster-desc, .cluster-diff, .body-copy {
+    color: var(--v26-ink-soft);
+    letter-spacing: 0 !important;
+  }
+  .wrap {
+    padding: 28px 24px 42px !important;
+  }
+  .panel, .hero, .card, .table-card, .chartPanel, .chart-panel, .chart-card,
+  .field-card, .cluster-card, .metric, .mini-card, .detail, .insight-card,
+  .overview-card, .persona-card, .concept-card, .price-card, .recommend-card {
+    border-radius: 8px !important;
+    border-color: var(--v26-line) !important;
+    box-shadow: var(--v26-shadow) !important;
+  }
+  .panel, .hero {
+    background: var(--v26-paper) !important;
+  }
+  .card, .table-card, .chartPanel, .chart-panel, .chart-card, .field-card,
+  .metric, .mini-card, .detail, .insight-card, .overview-card, .persona-card,
+  .concept-card, .price-card, .recommend-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%) !important;
+  }
+  .kicker, .eyebrow, .tag, .pill, .badge, .sku-pill, .chip, .mini-title,
+  .control-title, .card-headline, .meta {
+    letter-spacing: .04em !important;
+    font-weight: 800 !important;
+  }
+  .kicker, .eyebrow, .mini-title, .control-title {
+    color: var(--v26-muted) !important;
+    text-transform: uppercase;
+  }
+  .subtitle, .lead {
+    color: var(--v26-ink-soft) !important;
+    font-size: 16px !important;
+    line-height: 1.72 !important;
+  }
+  strong, b {
+    color: #20384e !important;
+    font-weight: 800 !important;
+  }
+  .takeaway, .insight, .field-insight, .recommendation, .opportunity,
+  .summary, .callout, .conclusion, .note-card {
+    border-radius: 8px !important;
+    border-color: #bfd3e4 !important;
+    background: #f3f8fc !important;
+    box-shadow: 0 8px 18px rgba(47, 111, 159, .07) !important;
+  }
+  .field-insight summary,
+  .takeaway strong,
+  .insight strong,
+  .recommendation strong,
+  .opportunity strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100%;
+  }
+  th {
+    background: #f3f7fb !important;
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  td, th {
+    border-color: #dbe4ed !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  tr:nth-child(even) td {
+    background-color: rgba(248, 250, 252, .62);
+  }
+  button, select, input {
+    font-family: inherit !important;
+  }
+  button, .tab, .toggle, .filter, .chip, .pill, select {
+    border-radius: 6px !important;
+  }
+  button:hover, .chip:hover, .pill:hover {
+    border-color: #9fb8cc !important;
+  }
+  .barwrap, .bar-wrap, .bar-track, .track {
+    background: #edf2f7 !important;
+  }
+  .value, .num, .big-number, .big-price, .score, .metric strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  .legend, .legend span, .axis, .tick, .label, .name {
+    color: #52687a !important;
+    font-size: 12px !important;
+    line-height: 1.42 !important;
+  }
+  svg text {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    fill: #52687a;
+  }
+  .grid, .grid-2, .grid-3, .charts, .overview-grid {
+    gap: 16px !important;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--v26-line);
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 14px 32px !important; }
+    h1 { font-size: 29px !important; }
+    h2 { font-size: 22px !important; }
+  }
+</style>
+
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel">
+      <p class="subtitle">
+        💡排水并非用户偶尔才会遇到的问题，而是使用过程中的一项常规维护动作。真正影响用户体验的，并不是排水次数本身，而是单次排水量、排水频率以及处理过程综合带来的负担。随着环境湿度升高，这一痛点会被进一步放大，因此在 Florida 等高湿地区，"免排水"或"减少排水"的价值感知会更加明显，更适合作为重点卖点进行传播。<br><br>
+        💡产品层面，建议将储水能力作为提升体验的重要方向。约 3L 储水箱可支持典型场景下约 48 小时免排水，既能明显降低维护负担，又具有较好的用户感知；对外宣传建议以24 小时免排水作为稳定、可信的承诺，而72 小时仅建议采用 "Up to 72 hours" 的表达，用于覆盖特定低湿环境下的最佳表现。
+      </p>
+      <div class="insight">
+        排水相关建议：<strong>3L 左右储水箱 + 48h 典型免排水</strong> 是更平衡的方案；
+        <strong>24h</strong> 适合作为硬承诺线；<strong>72h</strong> 更适合写成 <strong>up to 72h</strong>，不能只靠加大水箱解决。
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="kicker">Current Reality</div>
+      <h2>一、用户当前的排水现象：它已经不是“偶发麻烦”，而是常规维护任务</h2>
+      <div class="grid-4">
+        <div class="metric"><span>现有用户样本</span><strong>200</strong><small>排水体验分析主体口径</small></div>
+        <div class="metric"><span>每周及以上排水</span><strong>58.5%</strong><small>多数用户会把排水当作常规维护动作</small></div>
+        <div class="metric"><span>每天及以上排水</span><strong>16.0%</strong><small>存在一批明显更高频、更打扰的用户</small></div>
+        <div class="metric"><span>单次 1L+ 排水量</span><strong>52.3%</strong><small>不只是“要不要排”，而是“每次排得重不重”</small></div>
+      </div>
+      <div class="grid-2">
+        <section class="card">
+          <div class="tag">Overall Read</div>
+          <h3>排水负担的主矛盾不是只有频率，还包括每次处理量</h3>
+          <ul>
+            <li>从不需要排水的用户只有 <strong>11.0%</strong>，说明“完全无排水负担”不是主流体验。</li>
+            <li>高湿度用户占比约 <strong>31.4%</strong>，湿度会放大排水问题，但真正让体验拉开差距的，是单次排水量。</li>
+            <li>已知样本里，单次 1L+ 占比超过一半，意味着很多用户面对的不是“小水量顺手倒一下”，而是明显有体感的处理动作。</li>
+          </ul>
+        </section>
+        <section class="card">
+          <div class="tag teal">Mechanism</div>
+          <h3>机制上，湿度先推高频率，频率再推高排水量</h3>
+          <ul>
+            <li><span class="mono">湿度 → 排水频率</span>：Spearman <strong>0.217</strong>，<strong>p=0.007</strong>。</li>
+            <li><span class="mono">排水频率 → 排水量</span>：Spearman <strong>0.398</strong>，<strong>p&lt;0.001</strong>。</li>
+            <li><span class="mono">湿度 → 排水量</span> 方向是正向，但关系更弱，说明排水体验更像“先变频，再变重”。</li>
+          </ul>
+          <p class="note">* Spearman 表示两个变量是否同向变化，数值越高关联越强；p 值表示该关系是否足够稳定，通常 p&lt;0.05 代表具有统计显著性。</p>
+        </section>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="kicker">Who Feels It More</div>
+      <h2>二、哪些用户更重：分群差异更多体现在“每次排多少”，而不是“多久排一次”</h2>
+      <div class="grid-4">
+        <div class="metric"><span>频率差异检验</span><strong>p = 0.116</strong><small>6个人群在每周及以上排水上未达显著</small></div>
+        <div class="metric"><span>排水量差异检验</span><strong>p = 0.0036</strong><small>6个人群在单次 1L+ 排水量上显著不同</small></div>
+        <div class="metric"><span>湿度差异检验</span><strong>p = 0.473</strong><small>人群所处湿度带整体没有显著不同</small></div>
+        <div class="metric"><span>核心判断</span><strong>量差异强于频差异</strong><small>真正需要被设计解决的是“处理负担”</small></div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>人群</th>
+            <th>每周及以上排水</th>
+            <th>每天及以上排水</th>
+            <th>单次 1L+ 排水量</th>
+            <th>解读</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td>无需全屋制冷，快速冷却独立小房间（局部速冷控温型）</td>
+      <td>81.0%</td>
+      <td>19.0%</td>
+      <td>66.7%</td>
+      <td>排水频率最高，排水更容易变成高频维护动作。</td>
+    </tr>
+    
+
+    <tr>
+      <td>应对紧急情况/极端高温的可靠备用选择（理性应急准备型）</td>
+      <td>64.3%</td>
+      <td>25.0%</td>
+      <td>38.1%</td>
+      <td>每天及以上排水占比最高，更像高强度使用带来的频繁处理。</td>
+    </tr>
+    
+
+    <tr>
+      <td>兼顾小户型的舒适、静音、体积与成本（有限空间平衡型）</td>
+      <td>53.3%</td>
+      <td>6.7%</td>
+      <td>92.3%</td>
+      <td>频率不算极端，但单次排水量最高，属于“每次处理都更重”的类型。</td>
+    </tr>
+    
+        </tbody>
+      </table>
+      <p class="note">
+        *排水频次更适合做基础体验卖点；单次排水负担更适合做差异化洞察卖点。
+      </p>
+    </section>
+
+    <section class="panel">
+      <div class="kicker">Where It Gets Worse</div>
+      <h2>三、哪些环境更重：真正先分化的是湿度</h2>
+      <div class="grid-4">
+        <div class="metric"><span>州别频率差异</span><strong>p = 0.330</strong><small>每周及以上排水的州差异不显著</small></div>
+        <div class="metric"><span>州别排水量差异</span><strong>p = 0.416</strong><small>单次 1L+ 排水量州差异也不显著</small></div>
+        <div class="metric"><span>州别湿度差异</span><strong>p &lt; 0.001</strong><small>70%+湿度在州之间差异非常显著</small></div>
+        <div class="metric"><span>最值得盯住</span><strong>Florida</strong><small>高湿、高频、高排水量都更突出</small></div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>州</th>
+            <th>每周及以上排水</th>
+            <th>每天及以上排水</th>
+            <th>单次 1L+ 排水量</th>
+            <th>70%+ 湿度</th>
+            <th>解读</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td>Florida</td>
+      <td>72.0%</td>
+      <td>24.0%</td>
+      <td>68.4%</td>
+      <td>84.0%</td>
+      <td>高湿、高频、高排水量都突出，是排水负担最重的代表州。</td>
+    </tr>
+    
+
+    <tr>
+      <td>Texas</td>
+      <td>70.8%</td>
+      <td>25.0%</td>
+      <td>40.0%</td>
+      <td>37.5%</td>
+      <td>频率很高，但排水量没有同步拉满，更像“次数多”的州。</td>
+    </tr>
+    
+
+    <tr>
+      <td>California</td>
+      <td>54.5%</td>
+      <td>9.1%</td>
+      <td>44.0%</td>
+      <td>0.0%</td>
+      <td>湿度显著偏低，排水体验整体相对温和。</td>
+    </tr>
+    
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <div class="kicker">Product Translation</div>
+      <h2>四、产品建议：储水箱应该多大，免排水应该承诺到哪</h2>
+      <div class="grid-4">
+        <div class="metric"><span>目标储水箱</span><strong>约 3L</strong><small>更接近“真的减少打扰”的平衡点</small></div>
+        <div class="metric"><span>最低可用线</span><strong>2L</strong><small>够用，但不足以形成强卖点</small></div>
+        <div class="metric"><span>硬承诺线</span><strong>24h</strong><small>对高湿重负荷用户也较稳</small></div>
+        <div class="metric"><span>主卖点线</span><strong>48h</strong><small>更适合典型工况表达</small></div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>议题</th>
+            <th>建议</th>
+            <th>依据</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td>水箱容量</td>
+      <td>建议目标容量 3L 左右</td>
+      <td>每周及以上排水用户 p75 日积水量约 1.43L，3L 水箱对应约 50.4h；2L 仅约 33.6h。</td>
+    </tr>
+    
+
+    <tr>
+      <td>最低容量线</td>
+      <td>不建议低于 2L</td>
+      <td>2L 是够用线，但对高湿且每周及以上排水用户 p75 只约 19.2h，难以支撑强卖点。</td>
+    </tr>
+    
+
+    <tr>
+      <td>免排水硬承诺线</td>
+      <td>24h 免排水</td>
+      <td>对于高湿且每周及以上排水用户，3L 约 28.8h；因此 24h 是稳妥硬线。</td>
+    </tr>
+    
+
+    <tr>
+      <td>主卖点线</td>
+      <td>48h 典型免排水</td>
+      <td>3L 水箱对每周及以上排水用户 p75 可达约 50.4h，适合写成 typical / typical conditions。</td>
+    </tr>
+    
+
+    <tr>
+      <td>72h 说法</td>
+      <td>只能写 up to 72h，不建议硬承诺</td>
+      <td>单靠水箱很难全国稳定做到 72h，需配合冷凝水再蒸发或更强排水系统。</td>
+    </tr>
+    
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <div class="kicker">Why These Numbers</div>
+      <h2>五、为什么是这些数字：从日积水量反推容量和时长</h2>
+      <div class="grid-3">
+        <section class="card">
+          <div class="tag">Typical Load</div>
+          <h3>典型高频排水用户</h3>
+          <p class="desc">
+            每周及以上排水用户的日积水量 <strong>P75 = 1.429L/天</strong>，P90 达
+            <strong>2.500L/天</strong>。
+            这意味着 2L 更像“够用线”，3L 才开始进入“减少打扰”的区间。
+          </p>
+          <ul>
+            <li>2L 大约只能支撑 <strong>33.6h</strong></li>
+            <li>3L 可支撑约 <strong>50.4h</strong></li>
+            <li>5L 大约可支撑 <strong>84.0h</strong>（P75），但体积代价更大</li>
+          </ul>
+        </section>
+        <section class="card">
+          <div class="tag warn">Humid Load</div>
+          <h3>高湿且每周及以上排水用户</h3>
+          <p class="desc">
+            这是更接近“最苛刻典型场景”的一组。其日积水量 P75 已达到
+            <strong>1.920L/天</strong>，P90 达到
+            <strong>4.600L/天</strong>。
+          </p>
+          <ul>
+            <li>2L 大约只能支撑 <strong>25.0h</strong></li>
+            <li>3L 大约可支撑 <strong>37.5h</strong></li>
+            <li>因此 <strong>24h</strong> 是更稳妥的硬承诺线</li>
+          </ul>
+        </section>
+        <section class="card">
+          <div class="tag red">72h Reality</div>
+          <h3>72h的承诺需要综合改善来实现</h3>
+          <p class="desc">
+            即便在 5L 水箱下，对高湿且每周及以上排水用户，P90 也只有
+            <strong>26.1h</strong> 左右。
+            这意味着 72h 若要成立，必须依赖冷凝水再蒸发或更强系统设计，而不是只靠加大储水箱。
+          </p>
+        </section>
+      </div>
+      <div class="grid-2">
+        <section class="card">
+          <div class="tag teal">Data View</div>
+          <h3>从已知样本看，重负荷用户并不少</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>日积水量阈值</th>
+                <th>已知样本占比</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+    <tr>
+      <td>0.5 L/天及以上</td>
+      <td>41.9%</td>
+    </tr>
+    
+
+    <tr>
+      <td>1.0 L/天及以上</td>
+      <td>22.6%</td>
+    </tr>
+    
+
+    <tr>
+      <td>1.5 L/天及以上</td>
+      <td>14.8%</td>
+    </tr>
+    
+
+    <tr>
+      <td>2.0 L/天及以上</td>
+      <td>7.7%</td>
+    </tr>
+    
+
+    <tr>
+      <td>3.0 L/天及以上</td>
+      <td>4.5%</td>
+    </tr>
+    
+
+    <tr>
+      <td>4.0 L/天及以上</td>
+      <td>3.2%</td>
+    </tr>
+    
+            </tbody>
+          </table>
+        </section>
+        <section class="card">
+          <div class="tag">Base View</div>
+          <h3>整体分布说明了为什么要留出余量</h3>
+          <ul>
+            <li>已知日积水量样本中位数约 <strong>0.268L/天</strong></li>
+            <li>但到 P75 已经抬升到 <strong>0.893L/天</strong></li>
+            <li>每天及以上排水用户 P75 已到 <strong>3.125L/天</strong></li>
+            <li>这说明产品不能只按“平均用户”设计，否则很容易在重场景下失守</li>
+          </ul>
+        </section>
+      </div>
+    </section>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>codex用户画像v6</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg:#f4f6f9;
+      --paper:#ffffff;
+      --paper-soft:#fbfcfe;
+      --ink:#16202f;
+      --ink-soft:#334155;
+      --muted:#4b6075;
+      --line:#d9e2ec;
+      --line-strong:#c4d0dd;
+      --shadow:0 16px 38px rgba(15, 23, 42, 0.08);
+      --shadow-soft:0 10px 26px rgba(15, 23, 42, 0.06);
+      --radius-xl:24px;
+      --radius-lg:20px;
+      --radius-md:16px;
+      --radius-sm:12px;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      margin:0;
+      background:linear-gradient(180deg, #f2f5f9 0%, #f6f8fb 100%);
+      color:var(--ink);
+      font-family:"Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size:16px;
+      line-height:1.6;
+    }
+    h1, h2, h3, h4, p { margin:0; }
+    .wrap {
+      max-width:1480px;
+      margin:0 auto;
+      padding:28px 24px 44px;
+      display:grid;
+      gap:24px;
+    }
+    .panel {
+      background:var(--paper);
+      border:1px solid rgba(217, 226, 236, 0.92);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);
+      padding:34px 38px;
+      display:grid;
+      gap:18px;
+    }
+    .hero {
+      min-height:48vh;
+      align-content:center;
+      overflow:hidden;
+      position:relative;
+      background:
+        radial-gradient(circle at top right, rgba(91,130,150,.10), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(47,67,90,.08), transparent 22%),
+        linear-gradient(135deg, #ffffff 0%, #f8fbff 58%, #edf3fa 100%);
+    }
+    .hero::before,
+    .hero::after {
+      content:"";
+      position:absolute;
+      border-radius:999px;
+      pointer-events:none;
+    }
+    .hero::before {
+      width:300px;
+      height:300px;
+      right:-90px;
+      top:-120px;
+      background:radial-gradient(circle, rgba(91,130,150,.14), transparent 70%);
+    }
+    .hero::after {
+      width:220px;
+      height:220px;
+      left:-50px;
+      bottom:-120px;
+      background:radial-gradient(circle, rgba(197,139,88,.14), transparent 72%);
+    }
+    .kicker {
+      position:relative;
+      z-index:1;
+      font-size:13px;
+      line-height:1;
+      color:#6a7a8d;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-weight:800;
+    }
+    h1 {
+      position:relative;
+      z-index:1;
+      max-width:960px;
+      font-size:40px;
+      line-height:1.14;
+      letter-spacing:-0.02em;
+    }
+    .subtitle {
+      position:relative;
+      z-index:1;
+      max-width:1080px;
+      font-size:18px;
+      line-height:1.8;
+      color:var(--muted);
+    }
+    .hero-meta,
+    .chip-row,
+    .legend,
+    .cluster-chip-list,
+    .anchor-list,
+    .selected-field-list {
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .chip,
+    .pill,
+    .anchor-link {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:#fff;
+      padding:9px 13px;
+      font-size:13px;
+      line-height:1;
+      color:#44596d;
+      font-weight:700;
+      text-decoration:none;
+    }
+    .anchor-link:hover {
+      border-color:#9fb2c5;
+      box-shadow:var(--shadow-soft);
+    }
+    .section-head {
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-end;
+    }
+    .section-head h2 {
+      font-size:31px;
+      line-height:1.16;
+      letter-spacing:-0.02em;
+    }
+    .section-head p {
+      max-width:980px;
+      font-size:16px;
+      line-height:1.75;
+      color:var(--muted);
+    }
+    .overview-grid {
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:18px;
+    }
+    .cluster-card {
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      padding:20px;
+      display:grid;
+      gap:13px;
+      cursor:pointer;
+      transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    .cluster-card::before {
+      content:"";
+      position:absolute;
+      left:0;
+      top:0;
+      bottom:0;
+      width:6px;
+      background:var(--cluster-color, #94a3b8);
+    }
+    .cluster-card:hover {
+      transform:translateY(-2px);
+      box-shadow:0 14px 30px rgba(15, 23, 42, 0.08);
+    }
+    .cluster-card.active {
+      border-color:var(--cluster-color, #94a3b8);
+      box-shadow:0 18px 34px rgba(15, 23, 42, 0.10);
+    }
+    .cluster-top {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      padding-left:6px;
+    }
+    .cluster-name {
+      font-size:23px;
+      line-height:1.2;
+      letter-spacing:-0.02em;
+    }
+    .cluster-long,
+    .cluster-desc,
+    .cluster-diff {
+      font-size:14px;
+      line-height:1.75;
+      color:#52677a;
+    }
+    .cluster-sample {
+      flex:0 0 auto;
+      white-space:nowrap;
+      padding:8px 10px;
+      border-radius:14px;
+      font-size:12px;
+      font-weight:800;
+      color:#243647;
+      background:rgba(241, 245, 249, 0.92);
+      border:1px solid rgba(203, 213, 225, 0.9);
+    }
+    .tag-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      padding-left:6px;
+    }
+    .tag {
+      display:inline-flex;
+      align-items:center;
+      min-height:30px;
+      padding:7px 11px;
+      border-radius:999px;
+      background:rgba(243, 247, 251, 0.96);
+      border:1px solid rgba(214, 223, 233, 0.96);
+      color:#2b4155;
+      font-size:12px;
+      font-weight:800;
+    }
+    .mini-card {
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      padding:14px 15px;
+      margin-left:6px;
+    }
+    .mini-title {
+      font-size:12px;
+      line-height:1;
+      color:#6d8194;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+    .mini-list {
+      display:grid;
+      gap:6px;
+      font-size:13px;
+      line-height:1.65;
+      color:#354b5f;
+    }
+    .jump-panel {
+      position:sticky;
+      top:12px;
+      z-index:6;
+      background:rgba(244, 246, 249, 0.90);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(217,226,236,.95);
+      box-shadow:var(--shadow-soft);
+    }
+    .jump-head {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .jump-head h3 {
+      font-size:24px;
+      line-height:1.2;
+    }
+    .jump-head p {
+      max-width:880px;
+      font-size:15px;
+      line-height:1.75;
+      color:var(--muted);
+    }
+    .compare-layout {
+      display:grid;
+      grid-template-columns:minmax(320px, 420px) minmax(0, 1fr);
+      gap:16px;
+      align-items:start;
+    }
+    .control-card,
+    .summary-card,
+    .module-card,
+    .chart-card,
+    .detail-card {
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:20px;
+      box-shadow:var(--shadow-soft);
+    }
+    .control-card {
+      padding:18px;
+      display:grid;
+      gap:14px;
+    }
+    .control-title {
+      font-size:13px;
+      line-height:1;
+      color:#6c8094;
+      letter-spacing:.10em;
+      text-transform:uppercase;
+      font-weight:800;
+    }
+    .action-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .ghost-btn {
+      appearance:none;
+      border:1px solid var(--line-strong);
+      background:#fff;
+      border-radius:12px;
+      padding:9px 12px;
+      color:#41566a;
+      font-size:13px;
+      line-height:1;
+      font-weight:700;
+      cursor:pointer;
+      transition:all .14s ease;
+    }
+    .ghost-btn:hover {
+      border-color:#9eb0c3;
+      box-shadow:var(--shadow-soft);
+    }
+    .chart-sort-btn.is-active {
+      background:#2f6fa3;
+      border-color:#2f6fa3;
+      color:#fff;
+    }
+    .multi-list {
+      display:grid;
+      gap:10px;
+    }
+    .multi-option {
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:11px 12px;
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      background:#fff;
+    }
+    .multi-option input { margin-top:3px; }
+    .multi-option strong {
+      display:block;
+      font-size:14px;
+      line-height:1.35;
+      color:#283a4b;
+    }
+    .multi-option span {
+      display:block;
+      margin-top:4px;
+      font-size:12px;
+      line-height:1.6;
+      color:#62778b;
+    }
+    .cluster-summary {
+      display:grid;
+      gap:12px;
+      align-content:start;
+    }
+    .summary-strip {
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:12px;
+    }
+    .summary-card {
+      padding:16px;
+    }
+    .summary-value {
+      font-size:31px;
+      line-height:1;
+      letter-spacing:-0.03em;
+      font-weight:900;
+      color:#1d3550;
+    }
+    .summary-label {
+      margin-top:8px;
+      font-size:12px;
+      line-height:1;
+      color:#6b8094;
+      letter-spacing:.09em;
+      text-transform:uppercase;
+      font-weight:800;
+    }
+    .summary-desc {
+      margin-top:8px;
+      font-size:14px;
+      line-height:1.7;
+      color:#52677a;
+    }
+    .module-pages {
+      display:grid;
+      gap:24px;
+    }
+    .module-page-panel {
+      display:grid;
+      gap:18px;
+    }
+    .module-card {
+      padding:24px;
+      display:grid;
+      gap:18px;
+      background:linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+    .module-head {
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+    }
+    .module-head h2 {
+      font-size:30px;
+      line-height:1.18;
+      letter-spacing:-0.02em;
+    }
+    .module-head p {
+      margin-top:8px;
+      max-width:920px;
+      font-size:16px;
+      line-height:1.78;
+      color:var(--muted);
+    }
+    .module-grid {
+      display:grid;
+      grid-template-columns:minmax(320px, 380px) minmax(0, 1fr);
+      gap:16px;
+      align-items:start;
+    }
+    .field-panel {
+      display:grid;
+      gap:14px;
+      align-content:start;
+    }
+    .field-card {
+      padding:18px;
+    }
+    .field-help {
+      font-size:13px;
+      line-height:1.7;
+      color:#5b7186;
+    }
+    .field-pills {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .field-pill {
+      display:inline-flex;
+      align-items:center;
+      min-height:32px;
+      padding:8px 11px;
+      border-radius:999px;
+      background:#f8fafc;
+      border:1px solid #dbe4ee;
+      color:#364c60;
+      font-size:12px;
+      font-weight:700;
+    }
+    .field-multi-list {
+      display:grid;
+      gap:10px;
+    }
+    .field-multi-option {
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:11px 12px;
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      background:#fff;
+    }
+    .field-multi-option input { margin-top:3px; }
+    .field-multi-option strong {
+      display:block;
+      font-size:14px;
+      line-height:1.35;
+      color:#2b3d4e;
+    }
+    .field-multi-option span {
+      display:block;
+      margin-top:4px;
+      font-size:12px;
+      line-height:1.6;
+      color:#62778b;
+    }
+    .charts-stack {
+      display:grid;
+      gap:18px;
+      align-content:start;
+    }
+    .chart-card {
+      padding:18px;
+      display:grid;
+      gap:14px;
+      background:#fff;
+    }
+    .chart-head {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .chart-head-actions {
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .chart-head h4 {
+      font-size:22px;
+      line-height:1.2;
+      letter-spacing:-0.02em;
+    }
+    .chart-head p {
+      margin-top:6px;
+      font-size:14px;
+      line-height:1.7;
+      color:#5c7287;
+    }
+    .legend-item {
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:8px 11px;
+      border-radius:999px;
+      background:#f7f9fc;
+      border:1px solid var(--line);
+      font-size:12px;
+      line-height:1;
+      font-weight:800;
+      color:#44596d;
+    }
+    .swatch {
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      display:inline-block;
+    }
+    .rows,
+    .theme-summary-list {
+      display:grid;
+      gap:12px;
+    }
+    .theme-group {
+      display:grid;
+      gap:10px;
+    }
+    .theme-inline-detail {
+      width:90%;
+      margin-left:5%;
+    }
+    .cluster-toolbar-card {
+      display:grid;
+      gap:14px;
+    }
+    .cluster-inline-list {
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:10px;
+    }
+    .row {
+      display:grid;
+      grid-template-columns:minmax(170px, 260px) minmax(0, 1fr);
+      gap:14px;
+      align-items:start;
+    }
+    .row-label {
+      font-size:14px;
+      line-height:1.6;
+      color:#2b4054;
+    }
+    .bar-stack {
+      display:grid;
+      gap:7px;
+    }
+    .bar-line {
+      display:grid;
+      grid-template-columns:176px minmax(0, 1fr) 56px;
+      gap:10px;
+      align-items:center;
+    }
+    .bar-name {
+      font-size:12px;
+      line-height:1;
+      color:#5f7488;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .bar-track {
+      height:18px;
+      background:#edf2f7;
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .bar-fill {
+      height:100%;
+      border-radius:999px;
+    }
+    .bar-value {
+      text-align:right;
+      font-size:12px;
+      line-height:1;
+      color:#30495e;
+      font-weight:800;
+    }
+
+    .field-insight {
+      margin-top:10px;
+      padding:10px 12px;
+      border:1px solid #dbe5ee;
+      border-radius:8px;
+      background:#f8fbfd;
+    }
+    .field-insight summary {
+      cursor:pointer;
+      list-style:none;
+      font-size:12px;
+      line-height:1.4;
+      font-weight:800;
+      color:#263f57;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .field-insight summary::-webkit-details-marker {
+      display:none;
+    }
+    .field-insight summary::after {
+      content:"收起";
+      font-size:11px;
+      color:#71869a;
+      font-weight:700;
+    }
+    .field-insight:not([open]) summary::after {
+      content:"展开";
+    }
+    .field-insight-body {
+      display:grid;
+      gap:8px;
+      margin-top:8px;
+      font-size:12px;
+      line-height:1.65;
+      color:#40586f;
+    }
+    .field-insight-body p {
+      margin:0;
+    }
+    .field-instruction-card,
+    .field-summary-card {
+      background:linear-gradient(180deg,#ffffff 0%,#f7fbff 100%);
+    }
+    .field-summary-card .summary-line {
+      color:#294057;
+      font-size:14px;
+      line-height:1.75;
+      font-weight:700;
+    }
+    .tgi-tag {
+      display:inline-block;
+      min-width:62px;
+      margin-right:6px;
+      padding:2px 5px;
+      border-radius:5px;
+      background:#fff3da;
+      color:#8a4b00;
+      font-size:11px;
+      line-height:1.15;
+      font-weight:800;
+      vertical-align:middle;
+    }
+    .theme-summary {
+      width:100%;
+      border:1px solid #dfe7f0;
+      border-radius:16px;
+      background:#fcfdff;
+      padding:14px;
+      text-align:left;
+      cursor:pointer;
+      transition:all .14s ease;
+    }
+    .theme-summary:hover {
+      border-color:#b9c8d8;
+      box-shadow:var(--shadow-soft);
+    }
+    .theme-summary.active {
+      border-color:#7f99b3;
+      background:#f8fbfe;
+      box-shadow:var(--shadow-soft);
+    }
+    .theme-summary-head {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      margin-bottom:6px;
+    }
+    .theme-summary-title {
+      font-size:16px;
+      line-height:1.35;
+      font-weight:800;
+      color:#213446;
+    }
+    .theme-summary-meta {
+      flex:0 0 auto;
+      font-size:12px;
+      line-height:1;
+      color:#61778b;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .theme-summary-desc {
+      font-size:13px;
+      line-height:1.7;
+      color:#607487;
+      margin-bottom:10px;
+    }
+    .detail-card {
+      padding:16px;
+      background:#ffffff;
+      display:grid;
+      gap:12px;
+    }
+    .detail-head {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .detail-head h5 {
+      font-size:18px;
+      line-height:1.25;
+      margin:0;
+    }
+    .detail-head p {
+      margin-top:5px;
+      font-size:14px;
+      line-height:1.7;
+      color:#5c7185;
+    }
+    .detail-badge {
+      flex:0 0 auto;
+      border-radius:999px;
+      padding:8px 10px;
+      background:#f4f7fa;
+      border:1px solid var(--line);
+      color:#41586c;
+      font-size:12px;
+      line-height:1;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .empty {
+      padding:22px;
+      border:1px dashed #c6d3df;
+      border-radius:18px;
+      background:#f8fbfe;
+      color:#5f7488;
+      font-size:14px;
+      line-height:1.8;
+    }
+    .footnote {
+      font-size:12px;
+      line-height:1.8;
+      color:#6b8194;
+    }
+    @media (max-width:1220px) {
+      .overview-grid,
+      .compare-layout,
+      .module-grid,
+      .summary-strip,
+      .cluster-inline-list {
+        grid-template-columns:1fr;
+      }
+      .jump-panel { position:static; }
+    }
+    @media (max-width:860px) {
+      .wrap { padding:16px 14px 32px; }
+      .panel { padding:24px 18px; }
+      h1 { font-size:32px; }
+      .section-head,
+      .module-head,
+      .jump-head,
+      .chart-head,
+      .detail-head {
+        display:grid;
+      }
+      .row {
+        grid-template-columns:1fr;
+      }
+      .bar-line {
+        grid-template-columns:136px minmax(0, 1fr) 48px;
+      }
+    }
+  </style>
+
+<style id="visual-polish-v26">
+  :root {
+    --v26-bg: #f3f6f9;
+    --v26-paper: #ffffff;
+    --v26-paper-soft: #f8fafc;
+    --v26-ink: #17283b;
+    --v26-ink-soft: #4f6476;
+    --v26-muted: #6d7f8f;
+    --v26-line: #d8e1ea;
+    --v26-line-strong: #bccbd8;
+    --v26-brand: #2f6f9f;
+    --v26-brand-dark: #1f4f73;
+    --v26-brand-soft: #eaf3fa;
+    --v26-accent: #6f8f9f;
+    --v26-highlight: #b7791f;
+    --v26-shadow: 0 10px 26px rgba(23, 40, 59, .075);
+  }
+  html, body {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    color: var(--v26-ink) !important;
+    background: var(--v26-bg) !important;
+    text-rendering: geometricPrecision;
+  }
+  body { font-size: 15px; line-height: 1.6; }
+  h1, h2, h3, h4, .title, .section-title {
+    color: var(--v26-brand-dark) !important;
+    letter-spacing: 0 !important;
+  }
+  h1 {
+    font-size: clamp(30px, 3.2vw, 38px) !important;
+    line-height: 1.16 !important;
+    font-weight: 800 !important;
+  }
+  h2 {
+    font-size: clamp(22px, 2.2vw, 28px) !important;
+    line-height: 1.22 !important;
+    font-weight: 800 !important;
+  }
+  h3 {
+    font-size: 18px !important;
+    line-height: 1.28 !important;
+    font-weight: 800 !important;
+  }
+  h4 { font-size: 15px !important; line-height: 1.35 !important; font-weight: 800 !important; }
+  p, li, td, .subtitle, .desc, .note, .small, .muted, .cluster-desc, .cluster-diff, .body-copy {
+    color: var(--v26-ink-soft);
+    letter-spacing: 0 !important;
+  }
+  .wrap {
+    padding: 28px 24px 42px !important;
+  }
+  .panel, .hero, .card, .table-card, .chartPanel, .chart-panel, .chart-card,
+  .field-card, .cluster-card, .metric, .mini-card, .detail, .insight-card,
+  .overview-card, .persona-card, .concept-card, .price-card, .recommend-card {
+    border-radius: 8px !important;
+    border-color: var(--v26-line) !important;
+    box-shadow: var(--v26-shadow) !important;
+  }
+  .panel, .hero {
+    background: var(--v26-paper) !important;
+  }
+  .card, .table-card, .chartPanel, .chart-panel, .chart-card, .field-card,
+  .metric, .mini-card, .detail, .insight-card, .overview-card, .persona-card,
+  .concept-card, .price-card, .recommend-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%) !important;
+  }
+  .kicker, .eyebrow, .tag, .pill, .badge, .sku-pill, .chip, .mini-title,
+  .control-title, .card-headline, .meta {
+    letter-spacing: .04em !important;
+    font-weight: 800 !important;
+  }
+  .kicker, .eyebrow, .mini-title, .control-title {
+    color: var(--v26-muted) !important;
+    text-transform: uppercase;
+  }
+  .subtitle, .lead {
+    color: var(--v26-ink-soft) !important;
+    font-size: 16px !important;
+    line-height: 1.72 !important;
+  }
+  strong, b {
+    color: #20384e !important;
+    font-weight: 800 !important;
+  }
+  .takeaway, .insight, .field-insight, .recommendation, .opportunity,
+  .summary, .callout, .conclusion, .note-card {
+    border-radius: 8px !important;
+    border-color: #bfd3e4 !important;
+    background: #f3f8fc !important;
+    box-shadow: 0 8px 18px rgba(47, 111, 159, .07) !important;
+  }
+  .field-insight summary,
+  .takeaway strong,
+  .insight strong,
+  .recommendation strong,
+  .opportunity strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100%;
+  }
+  th {
+    background: #f3f7fb !important;
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  td, th {
+    border-color: #dbe4ed !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  tr:nth-child(even) td {
+    background-color: rgba(248, 250, 252, .62);
+  }
+  button, select, input {
+    font-family: inherit !important;
+  }
+  button, .tab, .toggle, .filter, .chip, .pill, select {
+    border-radius: 6px !important;
+  }
+  button:hover, .chip:hover, .pill:hover {
+    border-color: #9fb8cc !important;
+  }
+  .barwrap, .bar-wrap, .bar-track, .track {
+    background: #edf2f7 !important;
+  }
+  .value, .num, .big-number, .big-price, .score, .metric strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  .legend, .legend span, .axis, .tick, .label, .name {
+    color: #52687a !important;
+    font-size: 12px !important;
+    line-height: 1.42 !important;
+  }
+  svg text {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    fill: #52687a;
+  }
+  .grid, .grid-2, .grid-3, .charts, .overview-grid {
+    gap: 16px !important;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--v26-line);
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 14px 32px !important; }
+    h1 { font-size: 29px !important; }
+    h2 { font-size: 22px !important; }
+  }
+</style>
+
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel hero">
+      <div class="kicker">User Portrait Report</div>
+      <h1>6个人群画像总览与分模块画像对比</h1>
+      <div class="subtitle">v5 这一版把第二部分彻底改成 3 个独立模块页，不再通过交互切页。人群选择改为全局控制，字段选择留在各自模块内部；“其他原因”和“使用场景”也改成先看 theme 平均值，再点开下方细分项，整体更接近一页一页讲解的汇报材料。</div>
+      <div class="hero-meta">
+        <span class="chip">浅灰蓝底 · 白色卡片 · 独立页感</span>
+        <span class="chip">全局选人群 · 分页选字段</span>
+        <span class="chip">Theme 平均值 + 点击下钻</span>
+        <span class="chip">字段规则按最新要求收紧</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p>先快速抓住 6 个人群分别是谁、记忆点是什么、和其他人群差异在哪。点击卡片会同步勾选到下面 3 个模块页的全局对比人群里。</p>
+        </div>
+        <div class="chip">Overview Cards</div>
+      </div>
+      <div id="overviewGrid" class="overview-grid"></div>
+    </section>
+
+    <div id="modulePages" class="module-pages"></div>
+  </div>
+
+  <script id="reportData" type="application/json">{"title": "codex用户画像v7", "clusters": [{"id": "空间自主掌控型", "name": "空间自主掌控型", "sampleSize": 89, "longName": "全权掌控个人空间的温度（To take full control of the temperature in my personal space and achieve my ideal level of cooling comfort.）。原极致体感追求型", "description": "更在意对单个空间的独立控温权，典型语境是居家办公、局部空间过热、原有系统无法满足自己正在使用的那一个房间。", "difference": "和“局部速冷控温型”相比，这群人更看重“我能不能自己掌控这个房间”；和“应急型”相比，他们更像日常高频使用者。", "tags": ["独立控温", "居家办公", "局部补位"], "topReasons": ["系统不足/空间补位 44%", "节能与成本控制 30%", "居住限制/安装受限 16%"], "topScenes": ["日常居家活动 43%", "睡眠/照护场景 35%", "极端天气/应急场景 38%"], "topProfileHits": ["性别 · Female 60%", "移动空调使用年限 · 1–2 years 30%", "居住类型 · Detached single-family home 60%", "主要房间 · Kitchen 8%"], "sampleShare": "23%"}, {"id": "便捷安居实用型", "name": "便捷安居实用型", "sampleSize": 86, "longName": "空间有限、安装便捷的实用方案（To get a practical cooling solution that fits limited space and is easier than installing other AC types.）", "description": "更偏现实主义选择：方案要容易安装、容易切换房间、极端高温时能马上用起来，不一定追求最强体感，但要足够省事。", "difference": "和“空间自主掌控型”相比，他们没有那么执着于控温精度；和“小空间冷却型”相比，他们更强调安装便捷和灵活切换。", "tags": ["安装便捷", "灵活切换", "热浪即用"], "topReasons": ["灵活使用/便携补位 31%", "居住限制/安装受限 13%", "系统不足/空间补位 33%"], "topScenes": ["日常居家活动 36%", "极端天气/应急场景 40%", "睡眠/照护场景 27%"], "topProfileHits": ["用户类型 · 现有用户 67%", "性别 · Male 56%", "年龄 · > 64 20%", "住房权属 · I own the home 56%"], "sampleShare": "23%"}, {"id": "家庭健康守护型", "name": "家庭健康守护型", "sampleSize": 64, "longName": "守护家人的睡眠舒适度（To ensure a comfortable sleep environment for family members (especially children or the elderly), even if it requires more effort from me.）", "description": "最典型的家庭照护型人群，购买动机集中在睡眠舒适、老人儿童宠物照护，以及解决大房子里某些持续更热的房间。", "difference": "和“局部速冷控温型”相比，这群人不是只为自己舒服，而是为家庭整体舒适和睡眠质量做决策。", "tags": ["睡眠守护", "家人宠物舒适", "大户型照护"], "topReasons": ["多场景家庭舒适保障 44%", "系统不足/空间补位 36%", "居住限制/安装受限 10%"], "topScenes": ["睡眠/照护场景 52%", "极端天气/应急场景 45%", "日常居家活动 26%"], "topProfileHits": ["居住类型 · Detached single-family home 72%", "户型大小 · big 88%", "移动空调使用年限 · More than 4 years 54%", "年龄 · 45 - 54 31%"], "sampleShare": "16%"}, {"id": "局部速冷控温型", "name": "局部速冷控温型", "sampleSize": 51, "longName": "无需全屋制冷，快速冷却独立小空间（To cool a small bedroom or studio quickly without overcooling the whole space.）", "description": "更在意快速把当前所在区域降到舒服，不想为了一个房间开整屋制冷，尤其关注暴晒热房间和单点体感提升。", "difference": "和“空间自主掌控型”相比，这群人更看重结果而非控制权；和“家庭健康守护型”相比，他们更偏个人体感优化。", "tags": ["快速降温", "只冷单区", "暴晒热房间"], "topReasons": ["系统不足/空间补位 44%", "节能与成本控制 33%", "居住限制/安装受限 14%"], "topScenes": ["日常居家活动 39%", "睡眠/照护场景 37%", "极端天气/应急场景 41%"], "topProfileHits": ["主要房间 · Another Bedroom (Child, Guest, or Other family member) 27%", "用户类型 · 潜在用户 59%", "移动空调使用年限 · 1–2 years 29%", "移动空调使用年限 · 3–4 years 14%"], "sampleShare": "13%"}, {"id": "有限空间平衡型", "name": "有限空间平衡型", "sampleSize": 51, "longName": "兼顾小户型的舒适、静音、体积与成本（To balance comfort, noise, size, and cost in a smaller living environment where every trade-off is more noticeable.）", "description": "典型的小户型、公寓、客厅补位需求。居住条件更受限，常常是在原有系统不够用、家庭成员怕热、预算和空间都要平衡的前提下做选择。", "difference": "和“便捷安居实用型”相比，这群人更受小空间与公寓条件约束；和“理性应急准备型”相比，他们更偏日常现实补位。", "tags": ["小户型补位", "客厅公寓", "现实平衡"], "topReasons": ["节能与成本控制 29%", "应急备用/风险兜底 25%", "多场景家庭舒适保障 36%"], "topScenes": ["睡眠/照护场景 41%", "极端天气/应急场景 39%", "日常居家活动 29%"], "topProfileHits": ["移动空调使用年限 · 2–3 years 47%", "用户类型 · 潜在用户 71%", "户型大小 · small 45%", "居住类型 · Apartment (in a multi-unit building) 35%"], "sampleShare": "13%"}, {"id": "理性应急准备型", "name": "理性应急准备型", "sampleSize": 39, "longName": "应对紧急情况/极端高温的可靠备用选择（To have a reliable backup for emergencies or extreme heatwaves; not needed daily but important as a safety net.）", "description": "备用机心智最强的一群。不是一定天天用，但在主系统故障、停电、热浪、临时周转时，需要一台关键时刻靠得住的机器。", "difference": "和其他群相比，这群人最不像日常舒适升级，而更像风险兜底方案；价值点不在更舒服，而在更安心。", "tags": ["备用机心智", "故障应急", "极端天气保险"], "topReasons": ["应急备用/风险兜底 40%", "灵活使用/便携补位 31%", "多场景家庭舒适保障 36%"], "topScenes": ["极端天气/应急场景 55%", "日常居家活动 32%", "睡眠/照护场景 31%"], "topProfileHits": ["用户类型 · 现有用户 72%", "家庭收入 · $50,000 - $74,999 33%", "年龄 · 55 - 64 28%", "主要房间 · Main bedroom 46%"], "sampleShare": "10%"}], "clusterMeta": [{"name": "空间自主掌控型", "sampleSize": 89, "sampleShare": "23%", "shortLabel": "空间自主掌控型", "fullHeader": "全权掌控个人空间的温度（To take full control of the temperature in my personal space and achieve my ideal level of cooling comfort.）。原极致体感追求型"}, {"name": "便捷安居实用型", "sampleSize": 86, "sampleShare": "23%", "shortLabel": "便捷安居实用型", "fullHeader": "空间有限、安装便捷的实用方案（To get a practical cooling solution that fits limited space and is easier than installing other AC types.）"}, {"name": "家庭健康守护型", "sampleSize": 64, "sampleShare": "16%", "shortLabel": "家庭健康守护型", "fullHeader": "守护家人的睡眠舒适度（To ensure a comfortable sleep environment for family members (especially children or the elderly), even if it requires more effort from me.）"}, {"name": "局部速冷控温型", "sampleSize": 51, "sampleShare": "13%", "shortLabel": "局部速冷控温型", "fullHeader": "无需全屋制冷，快速冷却独立小空间（To cool a small bedroom or studio quickly without overcooling the whole space.）"}, {"name": "有限空间平衡型", "sampleSize": 51, "sampleShare": "13%", "shortLabel": "有限空间平衡型", "fullHeader": "兼顾小户型的舒适、静音、体积与成本（To balance comfort, noise, size, and cost in a smaller living environment where every trade-off is more noticeable.）"}, {"name": "理性应急准备型", "sampleSize": 39, "sampleShare": "10%", "shortLabel": "理性应急准备型", "fullHeader": "应对紧急情况/极端高温的可靠备用选择（To have a reliable backup for emergencies or extreme heatwaves; not needed daily but important as a safety net.）"}], "pages": [{"id": "page-motive", "title": "动机与使用触发", "subtitle": "此页重点看 why 与 when：为什么需要移动空调，以及它具体在什么场景下被调用。先看动机和场景，再看6 类人群里现有/潜在用户的结构差异。", "field_keys": ["其他原因", "使用场景", "user_type"], "default_fields": ["其他原因", "使用场景", "user_type"]}, {"id": "page-usage", "title": "使用情况", "subtitle": "此页侧重空间与使用条件，帮助快速识别人群在哪类房间、户型和居住条件下更有代表性。", "field_keys": ["primary_room", "primary_room_size", "portable_ac_count", "bigORsmall", "residence_type", "bighome_style", "smallhome_style", "housing_situation", "pac_experience_length"], "default_fields": ["primary_room", "primary_room_size", "bigORsmall", "housing_situation"]}, {"id": "page-demo", "title": "人口学", "subtitle": "此页单独展示人口学信息，避免和动机、空间变量混在同一屏里拖长阅读节奏。", "field_keys": ["age", "gender", "household_income", "household_size", "Education", "Occupation Field", "Race", "state"], "default_fields": ["age", "gender", "household_income"]}], "fields": {"其他原因": {"key": "其他原因", "title": "其他原因", "module": "其他原因", "mode": "theme", "themes": [{"key": "应急备用/风险兜底", "label": "应急备用/风险兜底", "description": "极端天气、主系统故障或修理周期内的临时/备用制冷需求", "items": [{"key": "reason_get_pac_main_home_ac_was_not_working_was_not", "label": "主力空调坏了或者制冷量不够，需要辅助制冷", "values": {"空间自主掌控型": 0.27, "便捷安居实用型": 0.233, "家庭健康守护型": 0.266, "局部速冷控温型": 0.21600000000000003, "有限空间平衡型": 0.353, "理性应急准备型": 0.385}}, {"key": "reason_get_pac_previous_ac_stopped_working_unexpectedly", "label": "我之前的空调意外停止工作了", "values": {"空间自主掌控型": 0.11199999999999999, "便捷安居实用型": 0.07, "家庭健康守护型": 0.094, "局部速冷控温型": 0.157, "有限空间平衡型": 0.21600000000000003, "理性应急准备型": 0.436}}, {"key": "reason_get_pac_wanted_emergency_backup_cooling_solution", "label": "我想要一个应急或备份的制冷解决方案", "values": {"空间自主掌控型": 0.124, "便捷安居实用型": 0.11599999999999999, "家庭健康守护型": 0.156, "局部速冷控温型": 0.196, "有限空间平衡型": 0.098, "理性应急准备型": 0.48700000000000004}}, {"key": "reason_get_pac_repairing_upgrading_central_ac_too_expensive_takes_too", "label": "维修或升级中央空调太贵或耗时太长", "values": {"空间自主掌控型": 0.225, "便捷安居实用型": 0.326, "家庭健康守护型": 0.266, "局部速冷控温型": 0.21600000000000003, "有限空间平衡型": 0.33299999999999996, "理性应急准备型": 0.308}}], "avgValues": {"空间自主掌控型": 0.18275, "便捷安居实用型": 0.18625000000000003, "家庭健康守护型": 0.1955, "局部速冷控温型": 0.19624999999999998, "有限空间平衡型": 0.24999999999999997, "理性应急准备型": 0.404}}, {"key": "系统不足/空间补位", "label": "系统不足/空间补位", "description": "原有空调覆盖不足、局部空间过热、需要独立控温补位", "items": [{"key": "reason_get_pac_existing_ac_system_does_not_cool_some_specific", "label": "现有的空调系统无法很好地冷却某些特定区域（局部控温）", "values": {"空间自主掌控型": 0.47200000000000003, "便捷安居实用型": 0.302, "家庭健康守护型": 0.375, "局部速冷控温型": 0.431, "有限空间平衡型": 0.51, "理性应急准备型": 0.205}}, {"key": "reason_get_pac_have_more_control_over_temperature_specific_room_space", "label": "为了对特定房间/空间的温度拥有更多控制权", "values": {"空间自主掌控型": 0.528, "便捷安居实用型": 0.37200000000000005, "家庭健康守护型": 0.313, "局部速冷控温型": 0.353, "有限空间平衡型": 0.41200000000000003, "理性应急准备型": 0.282}}, {"key": "reason_get_pac_cool_space_cooling_whole_home", "label": "为了在不冷却整栋房子的前提下冷却我的空间", "values": {"空间自主掌控型": 0.371, "便捷安居实用型": 0.29100000000000004, "家庭健康守护型": 0.281, "局部速冷控温型": 0.5489999999999999, "有限空间平衡型": 0.196, "理性应急准备型": 0.128}}, {"key": "reason_get_pac_floor_rooms_consistently_hotter_than_rest_home", "label": "顶层或高楼层的房间总是比家里其他地方更热", "values": {"空间自主掌控型": 0.326, "便捷安居实用型": 0.27899999999999997, "家庭健康守护型": 0.43799999999999994, "局部速冷控温型": 0.33299999999999996, "有限空间平衡型": 0.157, "理性应急准备型": 0.154}}, {"key": "reason_get_pac_strong_sun_exposure_causes_certain_rooms_overheat", "label": "强烈的阳光照射导致某些房间过热", "values": {"空间自主掌控型": 0.506, "便捷安居实用型": 0.40700000000000003, "家庭健康守护型": 0.375, "局部速冷控温型": 0.5489999999999999, "有限空间平衡型": 0.392, "理性应急准备型": 0.385}}], "avgValues": {"空间自主掌控型": 0.44060000000000005, "便捷安居实用型": 0.3302, "家庭健康守护型": 0.3564, "局部速冷控温型": 0.44299999999999995, "有限空间平衡型": 0.33340000000000003, "理性应急准备型": 0.23079999999999998}}, {"key": "灵活使用/便携补位", "label": "灵活使用/便携补位", "description": "强调可移动、可切换房间、安装更轻便的灵活使用逻辑", "items": [{"key": "reason_get_pac_needed_temporary_cooling_solution", "label": "我需要一个临时的制冷解决方案", "values": {"空间自主掌控型": 0.124, "便捷安居实用型": 0.233, "家庭健康守护型": 0.125, "局部速冷控温型": 0.17600000000000002, "有限空间平衡型": 0.11800000000000001, "理性应急准备型": 0.436}}, {"key": "reason_get_pac_needed_something_portable_move_store_easily", "label": "我需要便携、易于移动或收纳的产品", "values": {"空间自主掌控型": 0.348, "便捷安居实用型": 0.29100000000000004, "家庭健康守护型": 0.21899999999999997, "局部速冷控温型": 0.314, "有限空间平衡型": 0.255, "理性应急准备型": 0.205}}, {"key": "reason_get_pac_portable_ac_seemed_easier_install_set_up", "label": "移动空调似乎更容易安装或设置", "values": {"空间自主掌控型": 0.18, "便捷安居实用型": 0.267, "家庭健康守护型": 0.203, "局部速冷控温型": 0.235, "有限空间平衡型": 0.17600000000000002, "理性应急准备型": 0.154}}, {"key": "reason_get_pac_have_flexible_cooling_option_different_spaces", "label": "为了在不同的空间拥有灵活的制冷选择", "values": {"空间自主掌控型": 0.337, "便捷安居实用型": 0.465, "家庭健康守护型": 0.203, "局部速冷控温型": 0.353, "有限空间平衡型": 0.294, "理性应急准备型": 0.436}}], "avgValues": {"空间自主掌控型": 0.24724999999999997, "便捷安居实用型": 0.314, "家庭健康守护型": 0.1875, "局部速冷控温型": 0.26949999999999996, "有限空间平衡型": 0.21075, "理性应急准备型": 0.30775}}, {"key": "居住限制/安装受限", "label": "居住限制/安装受限", "description": "租房、HOA、窗型/空间不兼容等客观条件限制", "items": [{"key": "reason_get_pac_window_type_does_not_allow_window_ac_installed", "label": "我的窗户类型无法安装窗式空调", "values": {"空间自主掌控型": 0.213, "便捷安居实用型": 0.209, "家庭健康守护型": 0.156, "局部速冷控温型": 0.157, "有限空间平衡型": 0.11800000000000001, "理性应急准备型": 0.077}}, {"key": "reason_get_pac_window_ac_was_not_suitable_space", "label": "窗式空调不适合我的空间", "values": {"空间自主掌控型": 0.337, "便捷安居实用型": 0.209, "家庭健康守护型": 0.21899999999999997, "局部速冷控温型": 0.255, "有限空间平衡型": 0.157, "理性应急准备型": 0.10300000000000001}}, {"key": "reason_get_pac_rental_rules_hoa_rules_limit_ac_installation_options", "label": "租房规定或 HOA规则限制了空调的安装选择", "values": {"空间自主掌控型": 0.045, "便捷安居实用型": 0.081, "家庭健康守护型": 0.031, "局部速冷控温型": 0.157, "有限空间平衡型": 0.078, "理性应急准备型": 0.051}}, {"key": "reason_get_pac_landlord_hoa_building_rules_did_not_allow_another", "label": "我的房东、HOA或建筑规定不允许安装其他空调", "values": {"空间自主掌控型": 0.079, "便捷安居实用型": 0.047, "家庭健康守护型": 0.031, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.059000000000000004, "理性应急准备型": 0.154}}, {"key": "reason_get_pac_no_other_ac_available", "label": "没有其他可用的空调", "values": {"空间自主掌控型": 0.135, "便捷安居实用型": 0.081, "家庭健康守护型": 0.047, "局部速冷控温型": 0.078, "有限空间平衡型": 0.078, "理性应急准备型": 0.077}}], "avgValues": {"空间自主掌控型": 0.1618, "便捷安居实用型": 0.1254, "家庭健康守护型": 0.09680000000000001, "局部速冷控温型": 0.14120000000000002, "有限空间平衡型": 0.098, "理性应急准备型": 0.09240000000000001}}, {"key": "节能与成本控制", "label": "节能与成本控制", "description": "希望更精细地控制局部降温成本，避免整屋制冷浪费", "items": [{"key": "reason_get_pac_reduce_cooling_costs_cooling_only_space_use", "label": "为了只冷却我使用的空间，从而降低制冷成本", "values": {"空间自主掌控型": 0.303, "便捷安居实用型": 0.198, "家庭健康守护型": 0.203, "局部速冷控温型": 0.33299999999999996, "有限空间平衡型": 0.294, "理性应急准备型": 0.205}}], "avgValues": {"空间自主掌控型": 0.303, "便捷安居实用型": 0.198, "家庭健康守护型": 0.203, "局部速冷控温型": 0.33299999999999996, "有限空间平衡型": 0.294, "理性应急准备型": 0.205}}, {"key": "多场景家庭舒适保障", "label": "多场景家庭舒适保障", "description": "围绕日常长期居家（如居家办公）的专注与舒适体验、睡眠质量、以及家人/宠物等热敏感成员的照护需求。", "items": [{"key": "reason_get_pac_keep_family_members_pets_others_comfortable_safe", "label": "为了让家人、宠物或其他成员保持舒适与安全", "values": {"空间自主掌控型": 0.326, "便捷安居实用型": 0.349, "家庭健康守护型": 0.563, "局部速冷控温型": 0.255, "有限空间平衡型": 0.392, "理性应急准备型": 0.462}}, {"key": "reason_get_pac_improve_sleep_quality_hot_conditions", "label": "为了在炎热的环境下改善睡眠质量", "values": {"空间自主掌控型": 0.47200000000000003, "便捷安居实用型": 0.40700000000000003, "家庭健康守护型": 0.7190000000000001, "局部速冷控温型": 0.49, "有限空间平衡型": 0.431, "理性应急准备型": 0.48700000000000004}}, {"key": "reason_get_pac_maintain_comfort_while_working_home", "label": "为了在居家办公时保持舒适", "values": {"空间自主掌控型": 0.40399999999999997, "便捷安居实用型": 0.27899999999999997, "家庭健康守护型": 0.203, "局部速冷控温型": 0.21600000000000003, "有限空间平衡型": 0.294, "理性应急准备型": 0.308}}, {"key": "reason_get_pac_avoid_feeling_uncomfortable_sweaty_embarrassed_home", "label": "为了避免在家里感到不适、流汗或尴尬", "values": {"空间自主掌控型": 0.39299999999999996, "便捷安居实用型": 0.349, "家庭健康守护型": 0.406, "局部速冷控温型": 0.314, "有限空间平衡型": 0.33299999999999996, "理性应急准备型": 0.33299999999999996}}, {"key": "reason_get_pac_one_more_household_members_more_sensitive_heat_than", "label": "一名或多名家庭成员对热度比其他人更敏感", "values": {"空间自主掌控型": 0.315, "便捷安居实用型": 0.221, "家庭健康守护型": 0.32799999999999996, "局部速冷控温型": 0.255, "有限空间平衡型": 0.353, "理性应急准备型": 0.205}}], "avgValues": {"空间自主掌控型": 0.382, "便捷安居实用型": 0.321, "家庭健康守护型": 0.4438, "局部速冷控温型": 0.30600000000000005, "有限空间平衡型": 0.3606, "理性应急准备型": 0.35900000000000004}}], "sort": "dynamic"}, "使用场景": {"key": "使用场景", "title": "使用场景", "module": "使用场景", "mode": "theme", "themes": [{"key": "睡眠/照护场景", "label": "睡眠/照护场景", "description": "围绕夜间休息、照顾家人/宠物和维持家庭舒适的使用场景", "items": [{"key": "activity_pac_sleeping_resting_night", "label": "夜间睡觉或休息", "values": {"空间自主掌控型": 0.551, "便捷安居实用型": 0.442, "家庭健康守护型": 0.703, "局部速冷控温型": 0.627, "有限空间平衡型": 0.49, "理性应急准备型": 0.41}}, {"key": "activity_pac_taking_care_children_family_members_pets", "label": "照顾儿童、家人或宠物", "values": {"空间自主掌控型": 0.157, "便捷安居实用型": 0.105, "家庭健康守护型": 0.32799999999999996, "局部速冷控温型": 0.11800000000000001, "有限空间平衡型": 0.33299999999999996, "理性应急准备型": 0.205}}], "avgValues": {"空间自主掌控型": 0.35400000000000004, "便捷安居实用型": 0.2735, "家庭健康守护型": 0.5155, "局部速冷控温型": 0.3725, "有限空间平衡型": 0.4115, "理性应急准备型": 0.3075}}, {"key": "日常居家活动", "label": "日常居家活动", "description": "移动空调被纳入日常生活、工作学习、休闲娱乐的长期使用网络", "items": [{"key": "activity_pac_working_studying_home", "label": "居家办公或学习", "values": {"空间自主掌控型": 0.43799999999999994, "便捷安居实用型": 0.27899999999999997, "家庭健康守护型": 0.094, "局部速冷控温型": 0.275, "有限空间平衡型": 0.235, "理性应急准备型": 0.33299999999999996}}, {"key": "activity_pac_everyday_living_home", "label": "日常居家生活", "values": {"空间自主掌控型": 0.517, "便捷安居实用型": 0.5, "家庭健康守护型": 0.5, "局部速冷控温型": 0.529, "有限空间平衡型": 0.373, "理性应急准备型": 0.33299999999999996}}, {"key": "activity_pac_relaxing_gaming_watching_tv", "label": "放松、打游戏或看电视", "values": {"空间自主掌控型": 0.337, "便捷安居实用型": 0.302, "家庭健康守护型": 0.188, "局部速冷控温型": 0.353, "有限空间平衡型": 0.255, "理性应急准备型": 0.282}}], "avgValues": {"空间自主掌控型": 0.4306666666666667, "便捷安居实用型": 0.36033333333333334, "家庭健康守护型": 0.26066666666666666, "局部速冷控温型": 0.38566666666666666, "有限空间平衡型": 0.2876666666666667, "理性应急准备型": 0.316}}, {"key": "极端天气/应急场景", "label": "极端天气/应急场景", "description": "围绕热浪、极端高温和停电/故障等低频高重要场景", "items": [{"key": "activity_pac_during_ac_outage_other_emergency", "label": "空调停电或其他紧急情况期间", "values": {"空间自主掌控型": 0.146, "便捷安居实用型": 0.09300000000000001, "家庭健康守护型": 0.156, "局部速冷控温型": 0.196, "有限空间平衡型": 0.11800000000000001, "理性应急准备型": 0.59}}, {"key": "activity_pac_during_extreme_heat_heatwaves", "label": "在极端高温或热浪期间", "values": {"空间自主掌控型": 0.607, "便捷安居实用型": 0.698, "家庭健康守护型": 0.7340000000000001, "局部速冷控温型": 0.627, "有限空间平衡型": 0.667, "理性应急准备型": 0.513}}], "avgValues": {"空间自主掌控型": 0.3765, "便捷安居实用型": 0.39549999999999996, "家庭健康守护型": 0.44500000000000006, "局部速冷控温型": 0.4115, "有限空间平衡型": 0.3925, "理性应急准备型": 0.5515}}], "sort": "dynamic"}, "user_type": {"key": "user_type", "title": "用户类型", "module": "user_type", "mode": "plain", "sort": "fixed", "limit": null, "order": ["现有用户", "潜在用户"], "options": [{"key": "现有用户", "label": "现有用户", "values": {"空间自主掌控型": 0.494, "便捷安居实用型": 0.674, "家庭健康守护型": 0.43799999999999994, "局部速冷控温型": 0.41200000000000003, "有限空间平衡型": 0.294, "理性应急准备型": 0.718}}, {"key": "潜在用户", "label": "潜在用户", "values": {"空间自主掌控型": 0.506, "便捷安居实用型": 0.326, "家庭健康守护型": 0.563, "局部速冷控温型": 0.588, "有限空间平衡型": 0.706, "理性应急准备型": 0.282}}]}, "primary_room": {"key": "primary_room", "title": "主要房间", "module": "primary_room", "mode": "plain", "sort": "fixed", "limit": null, "order": ["Main bedroom", "Living room", "Another Bedroom (Child, Guest, or Other family member)", "Garage", "Home office/study room", "Kitchen"], "options": [{"key": "Main bedroom", "label": "Main bedroom", "values": {"空间自主掌控型": 0.315, "便捷安居实用型": 0.221, "家庭健康守护型": 0.469, "局部速冷控温型": 0.392, "有限空间平衡型": 0.353, "理性应急准备型": 0.462}}, {"key": "Living room", "label": "Living room", "values": {"空间自主掌控型": 0.303, "便捷安居实用型": 0.326, "家庭健康守护型": 0.203, "局部速冷控温型": 0.21600000000000003, "有限空间平衡型": 0.431, "理性应急准备型": 0.308}}, {"key": "Another Bedroom (Child, Guest, or Other family member)", "label": "Another Bedroom (Child, Guest, or Other family member)", "values": {"空间自主掌控型": 0.124, "便捷安居实用型": 0.14, "家庭健康守护型": 0.266, "局部速冷控温型": 0.275, "有限空间平衡型": 0.02, "理性应急准备型": 0.10300000000000001}}, {"key": "Garage", "label": "Garage", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.09300000000000001, "家庭健康守护型": 0.047, "局部速冷控温型": 0.039, "有限空间平衡型": 0.0, "理性应急准备型": 0.051}}, {"key": "Home office/study room", "label": "Home office/study room", "values": {"空间自主掌控型": 0.067, "便捷安居实用型": 0.057999999999999996, "家庭健康守护型": 0.0, "局部速冷控温型": 0.039, "有限空间平衡型": 0.039, "理性应急准备型": 0.051}}, {"key": "Kitchen", "label": "Kitchen", "values": {"空间自主掌控型": 0.079, "便捷安居实用型": 0.035, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.098, "理性应急准备型": 0.0}}]}, "primary_room_size": {"key": "primary_room_size", "title": "主要房间面积", "module": "primary_room_size", "mode": "plain", "sort": "fixed", "limit": null, "order": ["Under 100 sq. ft.", "101-150 sq. ft.", "151–250 sq. ft.", "251–350 sq. ft.", "351–450 sq. ft.", "451–600 sq. ft.", "Over 600 sq. ft."], "options": [{"key": "Under 100 sq. ft.", "label": "Under 100 sq. ft.", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.047, "家庭健康守护型": 0.063, "局部速冷控温型": 0.039, "有限空间平衡型": 0.039, "理性应急准备型": 0.051}}, {"key": "101-150 sq. ft.", "label": "101-150 sq. ft.", "values": {"空间自主掌控型": 0.213, "便捷安居实用型": 0.198, "家庭健康守护型": 0.063, "局部速冷控温型": 0.235, "有限空间平衡型": 0.13699999999999998, "理性应急准备型": 0.10300000000000001}}, {"key": "151–250 sq. ft.", "label": "151–250 sq. ft.", "values": {"空间自主掌控型": 0.247, "便捷安居实用型": 0.302, "家庭健康守护型": 0.313, "局部速冷控温型": 0.373, "有限空间平衡型": 0.235, "理性应急准备型": 0.256}}, {"key": "251–350 sq. ft.", "label": "251–350 sq. ft.", "values": {"空间自主掌控型": 0.191, "便捷安居实用型": 0.163, "家庭健康守护型": 0.281, "局部速冷控温型": 0.13699999999999998, "有限空间平衡型": 0.275, "理性应急准备型": 0.256}}, {"key": "351–450 sq. ft.", "label": "351–450 sq. ft.", "values": {"空间自主掌控型": 0.135, "便捷安居实用型": 0.09300000000000001, "家庭健康守护型": 0.156, "局部速冷控温型": 0.11800000000000001, "有限空间平衡型": 0.13699999999999998, "理性应急准备型": 0.10300000000000001}}, {"key": "451–600 sq. ft.", "label": "451–600 sq. ft.", "values": {"空间自主掌控型": 0.055999999999999994, "便捷安居实用型": 0.081, "家庭健康守护型": 0.016, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.078, "理性应急准备型": 0.051}}, {"key": "Over 600 sq. ft.", "label": "Over 600 sq. ft.", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.035, "家庭健康守护型": 0.016, "局部速冷控温型": 0.02, "有限空间平衡型": 0.02, "理性应急准备型": 0.026000000000000002}}]}, "portable_ac_count": {"key": "portable_ac_count", "title": "移动空调数量", "module": "portable_ac_count", "mode": "plain", "sort": "fixed", "limit": null, "order": ["1", "2", "More than 2"], "options": [{"key": "1", "label": "1", "values": {"空间自主掌控型": 0.705, "便捷安居实用型": 0.7240000000000001, "家庭健康守护型": 0.5710000000000001, "局部速冷控温型": 0.7140000000000001, "有限空间平衡型": 0.5329999999999999, "理性应急准备型": 0.643}}, {"key": "2", "label": "2", "values": {"空间自主掌控型": 0.25, "便捷安居实用型": 0.24100000000000002, "家庭健康守护型": 0.321, "局部速冷控温型": 0.14300000000000002, "有限空间平衡型": 0.267, "理性应急准备型": 0.28600000000000003}}, {"key": "More than 2", "label": "More than 2", "values": {"空间自主掌控型": 0.045, "便捷安居实用型": 0.034, "家庭健康守护型": 0.107, "局部速冷控温型": 0.14300000000000002, "有限空间平衡型": 0.2, "理性应急准备型": 0.071}}]}, "bigORsmall": {"key": "bigORsmall", "title": "户型大小", "module": "bigORsmall", "mode": "plain", "sort": "fixed", "limit": null, "order": ["small", "big"], "options": [{"key": "small", "label": "small", "values": {"空间自主掌控型": 0.303, "便捷安居实用型": 0.267, "家庭健康守护型": 0.125, "局部速冷控温型": 0.255, "有限空间平衡型": 0.451, "理性应急准备型": 0.33299999999999996}}, {"key": "big", "label": "big", "values": {"空间自主掌控型": 0.6970000000000001, "便捷安居实用型": 0.733, "家庭健康守护型": 0.875, "局部速冷控温型": 0.745, "有限空间平衡型": 0.5489999999999999, "理性应急准备型": 0.667}}]}, "residence_type": {"key": "residence_type", "title": "居住类型", "module": "residence_type", "mode": "plain", "sort": "dynamic", "limit": null, "order": [], "options": [{"key": "Apartment (in a multi-unit building)", "label": "Apartment (in a multi-unit building)", "values": {"空间自主掌控型": 0.18, "便捷安居实用型": 0.163, "家庭健康守护型": 0.109, "局部速冷控温型": 0.17600000000000002, "有限空间平衡型": 0.353, "理性应急准备型": 0.205}}, {"key": "Condominium (condo)", "label": "Condominium (condo)", "values": {"空间自主掌控型": 0.067, "便捷安居实用型": 0.023, "家庭健康守护型": 0.016, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.039, "理性应急准备型": 0.051}}, {"key": "Detached single-family home", "label": "Detached single-family home", "values": {"空间自主掌控型": 0.596, "便捷安居实用型": 0.581, "家庭健康守护型": 0.7190000000000001, "局部速冷控温型": 0.569, "有限空间平衡型": 0.373, "理性应急准备型": 0.462}}, {"key": "Duplex / Triplex", "label": "Duplex / Triplex", "values": {"空间自主掌控型": 0.045, "便捷安居实用型": 0.023, "家庭健康守护型": 0.016, "局部速冷控温型": 0.078, "有限空间平衡型": 0.078, "理性应急准备型": 0.128}}, {"key": "Mobile home / Manufactured home", "label": "Mobile home / Manufactured home", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.07, "家庭健康守护型": 0.0, "局部速冷控温型": 0.02, "有限空间平衡型": 0.059000000000000004, "理性应急准备型": 0.077}}, {"key": "Townhouse / Row house", "label": "Townhouse / Row house", "values": {"空间自主掌控型": 0.055999999999999994, "便捷安居实用型": 0.128, "家庭健康守护型": 0.141, "局部速冷控温型": 0.098, "有限空间平衡型": 0.098, "理性应急准备型": 0.077}}]}, "bighome_style": {"key": "bighome_style", "title": "大户型房屋风格", "module": "bighome_style", "mode": "plain", "sort": "dynamic", "limit": null, "order": [], "options": [{"key": "Cape Cod", "label": "Cape Cod", "values": {"空间自主掌控型": 0.065, "便捷安居实用型": 0.032, "家庭健康守护型": 0.0, "局部速冷控温型": 0.026000000000000002, "有限空间平衡型": 0.036000000000000004, "理性应急准备型": 0.077}}, {"key": "Colonial", "label": "Colonial", "values": {"空间自主掌控型": 0.081, "便捷安居实用型": 0.063, "家庭健康守护型": 0.036000000000000004, "局部速冷控温型": 0.053, "有限空间平衡型": 0.071, "理性应急准备型": 0.077}}, {"key": "Contemporary / Modern", "label": "Contemporary / Modern", "values": {"空间自主掌控型": 0.27399999999999997, "便捷安居实用型": 0.222, "家庭健康守护型": 0.321, "局部速冷控温型": 0.316, "有限空间平衡型": 0.321, "理性应急准备型": 0.192}}, {"key": "Craftsman / Bungalow", "label": "Craftsman / Bungalow", "values": {"空间自主掌控型": 0.065, "便捷安居实用型": 0.079, "家庭健康守护型": 0.071, "局部速冷控温型": 0.026000000000000002, "有限空间平衡型": 0.214, "理性应急准备型": 0.038}}, {"key": "Farmhouse", "label": "Farmhouse", "values": {"空间自主掌控型": 0.065, "便捷安居实用型": 0.063, "家庭健康守护型": 0.071, "局部速冷控温型": 0.026000000000000002, "有限空间平衡型": 0.071, "理性应急准备型": 0.077}}, {"key": "Ranch", "label": "Ranch", "values": {"空间自主掌控型": 0.21, "便捷安居实用型": 0.302, "家庭健康守护型": 0.107, "局部速冷控温型": 0.237, "有限空间平衡型": 0.036000000000000004, "理性应急准备型": 0.26899999999999996}}, {"key": "Split-level", "label": "Split-level", "values": {"空间自主掌控型": 0.081, "便捷安居实用型": 0.048, "家庭健康守护型": 0.107, "局部速冷控温型": 0.158, "有限空间平衡型": 0.14300000000000002, "理性应急准备型": 0.0}}, {"key": "Tudor", "label": "Tudor", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.038}}]}, "smallhome_style": {"key": "smallhome_style", "title": "小户型结构", "module": "smallhome_style", "mode": "plain", "sort": "fixed", "limit": null, "order": ["Studio", "1 Bedroom", "2 Bedrooms", "3+ Bedrooms"], "options": [{"key": "Studio", "label": "Studio", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.16699999999999998, "有限空间平衡型": 0.0, "理性应急准备型": 0.1}}, {"key": "1 Bedroom", "label": "1 Bedroom", "values": {"空间自主掌控型": 0.136, "便捷安居实用型": 0.125, "家庭健康守护型": 0.375, "局部速冷控温型": 0.25, "有限空间平衡型": 0.25, "理性应急准备型": 0.3}}, {"key": "2 Bedrooms", "label": "2 Bedrooms", "values": {"空间自主掌控型": 0.545, "便捷安居实用型": 0.563, "家庭健康守护型": 0.375, "局部速冷控温型": 0.5, "有限空间平衡型": 0.6, "理性应急准备型": 0.4}}, {"key": "3+ Bedrooms", "label": "3+ Bedrooms", "values": {"空间自主掌控型": 0.318, "便捷安居实用型": 0.313, "家庭健康守护型": 0.25, "局部速冷控温型": 0.083, "有限空间平衡型": 0.15, "理性应急准备型": 0.2}}]}, "housing_situation": {"key": "housing_situation", "title": "住房权属", "module": "housing_situation", "mode": "plain", "sort": "dynamic", "limit": null, "order": [], "options": [{"key": "I live in a home owned by my family (e.g., parents/partner/kids)", "label": "I live in a home owned by my family (e.g., parents/partner/kids)", "values": {"空间自主掌控型": 0.135, "便捷安居实用型": 0.105, "家庭健康守护型": 0.188, "局部速冷控温型": 0.13699999999999998, "有限空间平衡型": 0.196, "理性应急准备型": 0.231}}, {"key": "I live with relatives or others without paying rent", "label": "I live with relatives or others without paying rent", "values": {"空间自主掌控型": 0.055999999999999994, "便捷安居实用型": 0.023, "家庭健康守护型": 0.016, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.059000000000000004, "理性应急准备型": 0.026000000000000002}}, {"key": "I own the home", "label": "I own the home", "values": {"空间自主掌控型": 0.483, "便捷安居实用型": 0.5579999999999999, "家庭健康守护型": 0.578, "局部速冷控温型": 0.529, "有限空间平衡型": 0.373, "理性应急准备型": 0.359}}, {"key": "I rent the home", "label": "I rent the home", "values": {"空间自主掌控型": 0.315, "便捷安居实用型": 0.29100000000000004, "家庭健康守护型": 0.21899999999999997, "局部速冷控温型": 0.275, "有限空间平衡型": 0.353, "理性应急准备型": 0.385}}]}, "pac_experience_length": {"key": "pac_experience_length", "title": "移动空调使用年限", "module": "pac_experience_length", "mode": "plain", "sort": "fixed", "limit": null, "order": ["Less than 1 year", "1–2 years", "2–3 years", "3–4 years", "More than 4 years"], "options": [{"key": "Less than 1 year", "label": "Less than 1 year", "values": {"空间自主掌控型": 0.023, "便捷安居实用型": 0.034, "家庭健康守护型": 0.107, "局部速冷控温型": 0.095, "有限空间平衡型": 0.067, "理性应急准备型": 0.071}}, {"key": "1–2 years", "label": "1–2 years", "values": {"空间自主掌控型": 0.295, "便捷安居实用型": 0.207, "家庭健康守护型": 0.179, "局部速冷控温型": 0.28600000000000003, "有限空间平衡型": 0.133, "理性应急准备型": 0.214}}, {"key": "2–3 years", "label": "2–3 years", "values": {"空间自主掌控型": 0.273, "便捷安居实用型": 0.31, "家庭健康守护型": 0.107, "局部速冷控温型": 0.095, "有限空间平衡型": 0.467, "理性应急准备型": 0.14300000000000002}}, {"key": "3–4 years", "label": "3–4 years", "values": {"空间自主掌控型": 0.091, "便捷安居实用型": 0.069, "家庭健康守护型": 0.071, "局部速冷控温型": 0.14300000000000002, "有限空间平衡型": 0.0, "理性应急准备型": 0.179}}, {"key": "More than 4 years", "label": "More than 4 years", "values": {"空间自主掌控型": 0.318, "便捷安居实用型": 0.379, "家庭健康守护型": 0.536, "局部速冷控温型": 0.381, "有限空间平衡型": 0.33299999999999996, "理性应急准备型": 0.39299999999999996}}]}, "age": {"key": "age", "title": "年龄", "module": "age", "mode": "plain", "sort": "fixed", "limit": null, "order": ["18 - 24", "25 - 34", "35 - 44", "45 - 54", "55 - 64", "> 64"], "options": [{"key": "18 - 24", "label": "18 - 24", "values": {"空间自主掌控型": 0.045, "便捷安居实用型": 0.07, "家庭健康守护型": 0.094, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.059000000000000004, "理性应急准备型": 0.10300000000000001}}, {"key": "25 - 34", "label": "25 - 34", "values": {"空间自主掌控型": 0.213, "便捷安居实用型": 0.209, "家庭健康守护型": 0.172, "局部速冷控温型": 0.196, "有限空间平衡型": 0.294, "理性应急准备型": 0.205}}, {"key": "35 - 44", "label": "35 - 44", "values": {"空间自主掌控型": 0.247, "便捷安居实用型": 0.163, "家庭健康守护型": 0.23399999999999999, "局部速冷控温型": 0.275, "有限空间平衡型": 0.235, "理性应急准备型": 0.205}}, {"key": "45 - 54", "label": "45 - 54", "values": {"空间自主掌控型": 0.213, "便捷安居实用型": 0.221, "家庭健康守护型": 0.313, "局部速冷控温型": 0.196, "有限空间平衡型": 0.098, "理性应急准备型": 0.128}}, {"key": "55 - 64", "label": "55 - 64", "values": {"空间自主掌控型": 0.135, "便捷安居实用型": 0.11599999999999999, "家庭健康守护型": 0.125, "局部速冷控温型": 0.157, "有限空间平衡型": 0.196, "理性应急准备型": 0.282}}, {"key": "> 64", "label": "> 64", "values": {"空间自主掌控型": 0.135, "便捷安居实用型": 0.198, "家庭健康守护型": 0.063, "局部速冷控温型": 0.11800000000000001, "有限空间平衡型": 0.11800000000000001, "理性应急准备型": 0.077}}]}, "gender": {"key": "gender", "title": "性别", "module": "gender", "mode": "plain", "sort": "dynamic", "limit": null, "order": [], "options": [{"key": "Female", "label": "Female", "values": {"空间自主掌控型": 0.596, "便捷安居实用型": 0.419, "家庭健康守护型": 0.531, "局部速冷控温型": 0.529, "有限空间平衡型": 0.5489999999999999, "理性应急准备型": 0.48700000000000004}}, {"key": "Male", "label": "Male", "values": {"空间自主掌控型": 0.39299999999999996, "便捷安居实用型": 0.5579999999999999, "家庭健康守护型": 0.469, "局部速冷控温型": 0.47100000000000003, "有限空间平衡型": 0.451, "理性应急准备型": 0.462}}]}, "household_income": {"key": "household_income", "title": "家庭收入", "module": "household_income", "mode": "plain", "sort": "fixed", "limit": null, "order": ["< $25,000", "$25,000 - $49,999", "$50,000 - $74,999", "$75,000 - $99,999", "$100,000 - $149,999", "$150,000 - $199,999", "$200,000 - $249,999", "> $250,000"], "options": [{"key": "< $25,000", "label": "< $25,000", "values": {"空间自主掌控型": 0.146, "便捷安居实用型": 0.07, "家庭健康守护型": 0.094, "局部速冷控温型": 0.098, "有限空间平衡型": 0.098, "理性应急准备型": 0.205}}, {"key": "$25,000 - $49,999", "label": "$25,000 - $49,999", "values": {"空间自主掌控型": 0.213, "便捷安居实用型": 0.244, "家庭健康守护型": 0.21899999999999997, "局部速冷控温型": 0.21600000000000003, "有限空间平衡型": 0.314, "理性应急准备型": 0.026000000000000002}}, {"key": "$50,000 - $74,999", "label": "$50,000 - $74,999", "values": {"空间自主掌控型": 0.20199999999999999, "便捷安居实用型": 0.14, "家庭健康守护型": 0.23399999999999999, "局部速冷控温型": 0.157, "有限空间平衡型": 0.157, "理性应急准备型": 0.33299999999999996}}, {"key": "$75,000 - $99,999", "label": "$75,000 - $99,999", "values": {"空间自主掌控型": 0.191, "便捷安居实用型": 0.256, "家庭健康守护型": 0.21899999999999997, "局部速冷控温型": 0.196, "有限空间平衡型": 0.21600000000000003, "理性应急准备型": 0.205}}, {"key": "$100,000 - $149,999", "label": "$100,000 - $149,999", "values": {"空间自主掌控型": 0.135, "便捷安居实用型": 0.151, "家庭健康守护型": 0.094, "局部速冷控温型": 0.11800000000000001, "有限空间平衡型": 0.11800000000000001, "理性应急准备型": 0.128}}, {"key": "$150,000 - $199,999", "label": "$150,000 - $199,999", "values": {"空间自主掌控型": 0.055999999999999994, "便捷安居实用型": 0.023, "家庭健康守护型": 0.063, "局部速冷控温型": 0.078, "有限空间平衡型": 0.059000000000000004, "理性应急准备型": 0.026000000000000002}}, {"key": "$200,000 - $249,999", "label": "$200,000 - $249,999", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.035, "家庭健康守护型": 0.031, "局部速冷控温型": 0.039, "有限空间平衡型": 0.0, "理性应急准备型": 0.026000000000000002}}, {"key": "> $250,000", "label": "> $250,000", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.047, "家庭健康守护型": 0.016, "局部速冷控温型": 0.039, "有限空间平衡型": 0.039, "理性应急准备型": 0.026000000000000002}}]}, "household_size": {"key": "household_size", "title": "家庭人口", "module": "household_size", "mode": "plain", "sort": "fixed", "limit": null, "order": ["1 person (Living alone)", "2 people", "3-4 people", "5 or more people"], "options": [{"key": "1 person (Living alone)", "label": "1 person (Living alone)", "values": {"空间自主掌控型": 0.213, "便捷安居实用型": 0.163, "家庭健康守护型": 0.172, "局部速冷控温型": 0.157, "有限空间平衡型": 0.21600000000000003, "理性应急准备型": 0.231}}, {"key": "2 people", "label": "2 people", "values": {"空间自主掌控型": 0.303, "便捷安居实用型": 0.314, "家庭健康守护型": 0.21899999999999997, "局部速冷控温型": 0.294, "有限空间平衡型": 0.275, "理性应急准备型": 0.308}}, {"key": "3-4 people", "label": "3-4 people", "values": {"空间自主掌控型": 0.371, "便捷安居实用型": 0.384, "家庭健康守护型": 0.406, "局部速冷控温型": 0.431, "有限空间平衡型": 0.431, "理性应急准备型": 0.359}}, {"key": "5 or more people", "label": "5 or more people", "values": {"空间自主掌控型": 0.11199999999999999, "便捷安居实用型": 0.14, "家庭健康守护型": 0.203, "局部速冷控温型": 0.11800000000000001, "有限空间平衡型": 0.078, "理性应急准备型": 0.10300000000000001}}]}, "Education": {"key": "Education", "title": "教育程度", "module": "Education", "mode": "plain", "sort": "dynamic", "limit": 10, "order": [], "options": [{"key": "Associate degree (for example: AA, AS)", "label": "Associate degree (for example: AA, AS)", "values": {"空间自主掌控型": 0.09, "便捷安居实用型": 0.081, "家庭健康守护型": 0.063, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.059000000000000004, "理性应急准备型": 0.026000000000000002}}, {"key": "Bachelor's degree (for example: BA, AB, BS)", "label": "Bachelor's degree (for example: BA, AB, BS)", "values": {"空间自主掌控型": 0.348, "便捷安居实用型": 0.267, "家庭健康守护型": 0.266, "局部速冷控温型": 0.196, "有限空间平衡型": 0.33299999999999996, "理性应急准备型": 0.256}}, {"key": "Doctorate degree (for example: PhD, EdD)", "label": "Doctorate degree (for example: PhD, EdD)", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.023, "家庭健康守护型": 0.016, "局部速冷控温型": 0.0, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}, {"key": "High school graduate - high school diploma or the equivalent (for example: GED)", "label": "High school graduate - high school diploma or the equivalent (for example: GED)", "values": {"空间自主掌控型": 0.067, "便捷安居实用型": 0.057999999999999996, "家庭健康守护型": 0.094, "局部速冷控温型": 0.098, "有限空间平衡型": 0.157, "理性应急准备型": 0.051}}, {"key": "Less than a high school diploma", "label": "Less than a high school diploma", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Master's degree (for example: MA, MS, MEng, MEd, MSW, MBA)", "label": "Master's degree (for example: MA, MS, MEng, MEd, MSW, MBA)", "values": {"空间自主掌控型": 0.11199999999999999, "便捷安居实用型": 0.09300000000000001, "家庭健康守护型": 0.109, "局部速冷控温型": 0.098, "有限空间平衡型": 0.13699999999999998, "理性应急准备型": 0.128}}, {"key": "Professional degree (for example: MD, DDS, DVM, LLB, JD)", "label": "Professional degree (for example: MD, DDS, DVM, LLB, JD)", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.012, "家庭健康守护型": 0.0, "局部速冷控温型": 0.02, "有限空间平衡型": 0.02, "理性应急准备型": 0.026000000000000002}}, {"key": "Some college, but no degree", "label": "Some college, but no degree", "values": {"空间自主掌控型": 0.124, "便捷安居实用型": 0.244, "家庭健康守护型": 0.109, "局部速冷控温型": 0.11800000000000001, "有限空间平衡型": 0.078, "理性应急准备型": 0.205}}]}, "Occupation Field": {"key": "Occupation Field", "title": "职业领域", "module": "Occupation Field", "mode": "plain", "sort": "dynamic", "limit": 10, "order": [], "options": [{"key": "Agriculture, Food and Natural Resources", "label": "Agriculture, Food and Natural Resources", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.023, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Architecture and Construction", "label": "Architecture and Construction", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}, {"key": "Arts", "label": "Arts", "values": {"空间自主掌控型": 0.055999999999999994, "便捷安居实用型": 0.0, "家庭健康守护型": 0.016, "局部速冷控温型": 0.039, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}, {"key": "Business Management & Administration", "label": "Business Management & Administration", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.047, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.051}}, {"key": "Education & Training", "label": "Education & Training", "values": {"空间自主掌控型": 0.055999999999999994, "便捷安居实用型": 0.047, "家庭健康守护型": 0.047, "局部速冷控温型": 0.039, "有限空间平衡型": 0.098, "理性应急准备型": 0.077}}, {"key": "Finance", "label": "Finance", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.047, "家庭健康守护型": 0.031, "局部速冷控温型": 0.039, "有限空间平衡型": 0.039, "理性应急准备型": 0.10300000000000001}}, {"key": "Government & Public Administration", "label": "Government & Public Administration", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.012, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.051}}, {"key": "Hospitality & Tourism", "label": "Hospitality & Tourism", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.02, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Information Technology", "label": "Information Technology", "values": {"空间自主掌控型": 0.079, "便捷安居实用型": 0.07, "家庭健康守护型": 0.125, "局部速冷控温型": 0.0, "有限空间平衡型": 0.078, "理性应急准备型": 0.0}}, {"key": "Legal", "label": "Legal", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.023, "家庭健康守护型": 0.016, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Manufacturing", "label": "Manufacturing", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.039, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}, {"key": "Marketing and Sales", "label": "Marketing and Sales", "values": {"空间自主掌控型": 0.055999999999999994, "便捷安居实用型": 0.023, "家庭健康守护型": 0.016, "局部速冷控温型": 0.02, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}, {"key": "Medicine", "label": "Medicine", "values": {"空间自主掌控型": 0.055999999999999994, "便捷安居实用型": 0.047, "家庭健康守护型": 0.031, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.098, "理性应急准备型": 0.077}}, {"key": "Military", "label": "Military", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.012, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Policing", "label": "Policing", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.0, "家庭健康守护型": 0.016, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Retail", "label": "Retail", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.057999999999999996, "家庭健康守护型": 0.031, "局部速冷控温型": 0.078, "有限空间平衡型": 0.078, "理性应急准备型": 0.051}}, {"key": "Retired", "label": "Retired", "values": {"空间自主掌控型": 0.055999999999999994, "便捷安居实用型": 0.09300000000000001, "家庭健康守护型": 0.031, "局部速冷控温型": 0.039, "有限空间平衡型": 0.039, "理性应急准备型": 0.0}}, {"key": "Science, Technology, Engineering & Mathematics", "label": "Science, Technology, Engineering & Mathematics", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.035, "家庭健康守护型": 0.016, "局部速冷控温型": 0.02, "有限空间平衡型": 0.11800000000000001, "理性应急准备型": 0.026000000000000002}}, {"key": "Social Sciences", "label": "Social Sciences", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.012, "家庭健康守护型": 0.016, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Transportation, Distribution & Logistics", "label": "Transportation, Distribution & Logistics", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.012, "家庭健康守护型": 0.016, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.02, "理性应急准备型": 0.026000000000000002}}]}, "Race": {"key": "Race", "title": "种族", "module": "Race", "mode": "plain", "sort": "fixed", "limit": null, "order": ["White", "Black or African American", "American Indian or Alaska Native"], "options": [{"key": "White", "label": "White", "values": {"空间自主掌控型": 0.506, "便捷安居实用型": 0.523, "家庭健康守护型": 0.406, "局部速冷控温型": 0.373, "有限空间平衡型": 0.529, "理性应急准备型": 0.41}}, {"key": "Black or African American", "label": "Black or African American", "values": {"空间自主掌控型": 0.11199999999999999, "便捷安居实用型": 0.057999999999999996, "家庭健康守护型": 0.078, "局部速冷控温型": 0.039, "有限空间平衡型": 0.13699999999999998, "理性应急准备型": 0.10300000000000001}}, {"key": "American Indian or Alaska Native", "label": "American Indian or Alaska Native", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.023, "家庭健康守护型": 0.016, "局部速冷控温型": 0.039, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}]}, "state": {"key": "state", "title": "所在州", "module": "state", "mode": "plain", "sort": "dynamic", "limit": 10, "order": [], "options": [{"key": "Alabama", "label": "Alabama", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.039, "有限空间平衡型": 0.0, "理性应急准备型": 0.026000000000000002}}, {"key": "Arizona", "label": "Arizona", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.012, "家庭健康守护型": 0.031, "局部速冷控温型": 0.02, "有限空间平衡型": 0.059000000000000004, "理性应急准备型": 0.051}}, {"key": "Arkansas", "label": "Arkansas", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.023, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "California", "label": "California", "values": {"空间自主掌控型": 0.09, "便捷安居实用型": 0.174, "家庭健康守护型": 0.094, "局部速冷控温型": 0.098, "有限空间平衡型": 0.196, "理性应急准备型": 0.077}}, {"key": "Colorado", "label": "Colorado", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.023, "家庭健康守护型": 0.016, "局部速冷控温型": 0.039, "有限空间平衡型": 0.039, "理性应急准备型": 0.0}}, {"key": "Connecticut", "label": "Connecticut", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.0, "家庭健康守护型": 0.016, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Delaware", "label": "Delaware", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.02, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Florida", "label": "Florida", "values": {"空间自主掌控型": 0.157, "便捷安居实用型": 0.07, "家庭健康守护型": 0.078, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.059000000000000004, "理性应急准备型": 0.154}}, {"key": "Georgia", "label": "Georgia", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.012, "家庭健康守护型": 0.078, "局部速冷控温型": 0.02, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}, {"key": "Hawaii", "label": "Hawaii", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.012, "家庭健康守护型": 0.0, "局部速冷控温型": 0.02, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Illinois", "label": "Illinois", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.023, "家庭健康守护型": 0.016, "局部速冷控温型": 0.039, "有限空间平衡型": 0.039, "理性应急准备型": 0.026000000000000002}}, {"key": "Indiana", "label": "Indiana", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.023, "家庭健康守护型": 0.047, "局部速冷控温型": 0.02, "有限空间平衡型": 0.039, "理性应急准备型": 0.0}}, {"key": "Iowa", "label": "Iowa", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.02, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Kansas", "label": "Kansas", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.02, "有限空间平衡型": 0.039, "理性应急准备型": 0.0}}, {"key": "Kentucky", "label": "Kentucky", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.023, "家庭健康守护型": 0.016, "局部速冷控温型": 0.02, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}, {"key": "Louisiana", "label": "Louisiana", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.02, "有限空间平衡型": 0.039, "理性应急准备型": 0.026000000000000002}}, {"key": "Maine", "label": "Maine", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.026000000000000002}}, {"key": "Maryland", "label": "Maryland", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.026000000000000002}}, {"key": "Massachusetts", "label": "Massachusetts", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.0, "家庭健康守护型": 0.016, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.039, "理性应急准备型": 0.0}}, {"key": "Michigan", "label": "Michigan", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.023, "家庭健康守护型": 0.031, "局部速冷控温型": 0.02, "有限空间平衡型": 0.0, "理性应急准备型": 0.026000000000000002}}, {"key": "Minnesota", "label": "Minnesota", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.012, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.026000000000000002}}, {"key": "Mississippi", "label": "Mississippi", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.0, "家庭健康守护型": 0.016, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.026000000000000002}}, {"key": "Missouri", "label": "Missouri", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.047, "家庭健康守护型": 0.047, "局部速冷控温型": 0.02, "有限空间平衡型": 0.02, "理性应急准备型": 0.026000000000000002}}, {"key": "Montana", "label": "Montana", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.012, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Nebraska", "label": "Nebraska", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}, {"key": "Nevada", "label": "Nevada", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.012, "家庭健康守护型": 0.016, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.026000000000000002}}, {"key": "New Hampshire", "label": "New Hampshire", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.0, "家庭健康守护型": 0.016, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "New Jersey", "label": "New Jersey", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.047, "家庭健康守护型": 0.016, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.02, "理性应急准备型": 0.026000000000000002}}, {"key": "New York", "label": "New York", "values": {"空间自主掌控型": 0.067, "便捷安居实用型": 0.09300000000000001, "家庭健康守护型": 0.063, "局部速冷控温型": 0.059000000000000004, "有限空间平衡型": 0.098, "理性应急准备型": 0.051}}, {"key": "North Carolina", "label": "North Carolina", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.023, "家庭健康守护型": 0.063, "局部速冷控温型": 0.02, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}, {"key": "Ohio", "label": "Ohio", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.023, "家庭健康守护型": 0.031, "局部速冷控温型": 0.02, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}, {"key": "Oklahoma", "label": "Oklahoma", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.026000000000000002}}, {"key": "Oregon", "label": "Oregon", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.012, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.039, "理性应急准备型": 0.026000000000000002}}, {"key": "Pennsylvania", "label": "Pennsylvania", "values": {"空间自主掌控型": 0.034, "便捷安居实用型": 0.047, "家庭健康守护型": 0.063, "局部速冷控温型": 0.11800000000000001, "有限空间平衡型": 0.039, "理性应急准备型": 0.026000000000000002}}, {"key": "Rhode Island", "label": "Rhode Island", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.012, "家庭健康守护型": 0.016, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "South Carolina", "label": "South Carolina", "values": {"空间自主掌控型": 0.055999999999999994, "便捷安居实用型": 0.035, "家庭健康守护型": 0.031, "局部速冷控温型": 0.0, "有限空间平衡型": 0.039, "理性应急准备型": 0.0}}, {"key": "South Dakota", "label": "South Dakota", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.012, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Tennessee", "label": "Tennessee", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.0, "家庭健康守护型": 0.016, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.026000000000000002}}, {"key": "Texas", "label": "Texas", "values": {"空间自主掌控型": 0.124, "便捷安居实用型": 0.081, "家庭健康守护型": 0.125, "局部速冷控温型": 0.11800000000000001, "有限空间平衡型": 0.02, "理性应急准备型": 0.231}}, {"key": "Utah", "label": "Utah", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.0, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.026000000000000002}}, {"key": "Vermont", "label": "Vermont", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.012, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Virginia", "label": "Virginia", "values": {"空间自主掌控型": 0.055999999999999994, "便捷安居实用型": 0.047, "家庭健康守护型": 0.0, "局部速冷控温型": 0.039, "有限空间平衡型": 0.039, "理性应急准备型": 0.026000000000000002}}, {"key": "Washington", "label": "Washington", "values": {"空间自主掌控型": 0.011000000000000001, "便捷安居实用型": 0.012, "家庭健康守护型": 0.031, "局部速冷控温型": 0.02, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}, {"key": "West Virginia", "label": "West Virginia", "values": {"空间自主掌控型": 0.0, "便捷安居实用型": 0.012, "家庭健康守护型": 0.0, "局部速冷控温型": 0.0, "有限空间平衡型": 0.0, "理性应急准备型": 0.0}}, {"key": "Wisconsin", "label": "Wisconsin", "values": {"空间自主掌控型": 0.022000000000000002, "便捷安居实用型": 0.035, "家庭健康守护型": 0.016, "局部速冷控温型": 0.0, "有限空间平衡型": 0.02, "理性应急准备型": 0.0}}]}}, "clusterColors": {"空间自主掌控型": "#2F435A", "便捷安居实用型": "#9E8E7D", "家庭健康守护型": "#6E8B74", "局部速冷控温型": "#9F7A81", "有限空间平衡型": "#5B8296", "理性应急准备型": "#C58B58"}}</script>
+  <script id="pageMeta" type="application/json">{"page-motive": {"anchor": "module-motive", "kicker": "", "section_title": "2. 动机、原因与触发", "badge": "Motivation & Triggers", "note": "这一页重点看 why 与 when：为什么需要移动空调，以及它具体在什么场景下被调用。"}, "page-usage": {"anchor": "module-usage", "kicker": "", "section_title": "3. 使用场景：细节情况", "badge": "Usage Context", "note": "这一页只讲空间与使用条件，帮助快速识别人群在哪类房间、户型和居住条件下更有代表性。"}, "page-demo": {"anchor": "module-demo", "kicker": "", "section_title": "3. 人口学", "badge": "Demographics", "note": ""}}</script>
+  <script>
+    const report = JSON.parse(document.getElementById('reportData').textContent);
+    const pageMeta = JSON.parse(document.getElementById('pageMeta').textContent);
+    const clusterOrder = report.clusters.map(item => item.name);
+    const clusterMap = Object.fromEntries(report.clusters.map(item => [item.name, item]));
+    const clusterMetaMap = Object.fromEntries(report.clusterMeta.map(item => [item.name, item]));
+    const fieldMap = report.fields;
+
+    const state = {
+      overviewSelected: report.clusters[0]?.name || null,
+      selectedClustersByPage: Object.fromEntries(report.pages.map(page => [page.id, new Set([report.clusters[0].name])])),
+      selectedFieldsByPage: Object.fromEntries(report.pages.map(page => [page.id, new Set(page.default_fields)])),
+      expandedThemesByPage: {},
+      sortModeByField: {},
+    };
+
+    const els = {
+      overviewGrid: document.getElementById('overviewGrid'),
+      modulePages: document.getElementById('modulePages'),
+    };
+
+    function selectedClusters(pageId) {
+      const selected = state.selectedClustersByPage[pageId] || new Set();
+      return clusterOrder.filter(name => selected.has(name));
+    }
+
+    function selectedFields(page) {
+      const selected = state.selectedFieldsByPage[page.id] || new Set();
+      return page.field_keys.filter(key => selected.has(key));
+    }
+
+    function clusterColor(name) {
+      return (report.clusterColors || {})[name] || '#94a3b8';
+    }
+
+    function avgAcrossClusters(values, clusters) {
+      if (!clusters.length) return 0;
+      return clusters.reduce((sum, cluster) => sum + (values[cluster] || 0), 0) / clusters.length;
+    }
+
+    function formatPct(value) {
+      return `${Math.round((value || 0) * 100)}%`;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function toggleOverviewCluster(name) {
+      state.overviewSelected = state.overviewSelected === name ? null : name;
+      render();
+    }
+
+    function toggleCluster(pageId, name) {
+      const next = new Set(state.selectedClustersByPage[pageId] || []);
+      if (next.has(name)) next.delete(name); else next.add(name);
+      state.selectedClustersByPage[pageId] = next;
+      render();
+    }
+
+    function setPageClusters(pageId, names) {
+      state.selectedClustersByPage[pageId] = new Set(names);
+      render();
+    }
+
+    function toggleField(pageId, key) {
+      const next = new Set(state.selectedFieldsByPage[pageId] || []);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      state.selectedFieldsByPage[pageId] = next;
+      render();
+    }
+
+    function setPageFields(pageId, keys) {
+      state.selectedFieldsByPage[pageId] = new Set(keys);
+      render();
+    }
+
+    function themeStateKey(pageId, fieldKey) {
+      return `${pageId}::${fieldKey}`;
+    }
+
+    function fieldSortStateKey(pageId, fieldKey) {
+      return `${pageId}::${fieldKey}`;
+    }
+
+    function fieldSortMode(pageId, fieldKey) {
+      return state.sortModeByField[fieldSortStateKey(pageId, fieldKey)] || 'natural';
+    }
+
+    function toggleFieldSort(pageId, fieldKey) {
+      const key = fieldSortStateKey(pageId, fieldKey);
+      state.sortModeByField[key] = fieldSortMode(pageId, fieldKey) === 'value' ? 'natural' : 'value';
+      render();
+    }
+
+    function setExpandedTheme(pageId, fieldKey, themeKey) {
+      const key = themeStateKey(pageId, fieldKey);
+      state.expandedThemesByPage[key] = state.expandedThemesByPage[key] === themeKey ? null : themeKey;
+      render();
+    }
+
+    function renderOverview() {
+      els.overviewGrid.innerHTML = report.clusters.map(cluster => {
+        const reasons = (cluster.topReasons || []).slice(0, 2).map(item => `<div>${escapeHtml(item)}</div>`).join('');
+        const scenes = (cluster.topScenes || []).slice(0, 2).map(item => `<div>${escapeHtml(item)}</div>`).join('');
+        const color = clusterColor(cluster.name);
+        return `
+          <article class="cluster-card ${state.overviewSelected === cluster.name ? 'active' : ''}" data-cluster="${escapeHtml(cluster.name)}" style="--cluster-color:${color}">
+            <div class="cluster-top">
+              <div>
+                <h3 class="cluster-name">${escapeHtml(cluster.name)}</h3>
+                <div class="cluster-long">${escapeHtml(cluster.longName || '')}</div>
+              </div>
+              <div class="cluster-sample">${escapeHtml(cluster.sampleShare || "")}</div>
+            </div>
+            <div class="tag-row">${(cluster.tags || []).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>
+            <div class="cluster-desc">${escapeHtml(cluster.description || '')}</div>
+            <div class="mini-card">
+              <div class="mini-title">优先看的 theme / 场景</div>
+              <div class="mini-list">${reasons}${scenes}</div>
+            </div>
+            <div class="mini-card">
+              <div class="mini-title">和其他人群的关键区别</div>
+              <div class="cluster-diff">${escapeHtml(cluster.difference || '')}</div>
+            </div>
+          </article>
+        `;
+      }).join('');
+      Array.from(els.overviewGrid.querySelectorAll('.cluster-card')).forEach(card => {
+        card.addEventListener('click', () => toggleOverviewCluster(card.getAttribute('data-cluster')));
+      });
+    }
+
+    function orderedPlainOptions(pageId, field, clusters) {
+      let options = (field.options || []).slice();
+      const mode = fieldSortMode(pageId, field.key);
+      if (mode === 'value') {
+        options.sort((a, b) => avgAcrossClusters(b.values, clusters) - avgAcrossClusters(a.values, clusters));
+      } else if (Array.isArray(field.order) && field.order.length) {
+        const rank = label => {
+          const index = field.order.indexOf(label);
+          return index === -1 ? 999 : index;
+        };
+        options.sort((a, b) => rank(a.label) - rank(b.label));
+      }
+      if (field.limit) options = options.slice(0, field.limit);
+      return options;
+    }
+
+    function orderedThemes(field, clusters) {
+      return (field.themes || []).slice().sort((a, b) => avgAcrossClusters(b.avgValues, clusters) - avgAcrossClusters(a.avgValues, clusters)).map(theme => ({
+        ...theme,
+        items: theme.items.slice().sort((a, b) => avgAcrossClusters(b.values, clusters) - avgAcrossClusters(a.values, clusters)),
+      }));
+    }
+
+
+    function userTypeTgiBadge(fieldKey, itemLabel, cluster) {
+      if (fieldKey !== 'user_type') return '';
+      const tgiMap = {
+        '现有用户': {
+          '便捷安居实用型': 'TGI=132.1',
+          '理性应急准备型': 'TGI=140.6',
+        },
+        '潜在用户': {
+          '空间自主掌控型': 'TGI=103.3',
+          '家庭健康守护型': 'TGI=114.9',
+          '有限空间平衡型': 'TGI=144.2',
+          '局部速冷控温型': 'TGI=120.2',
+        },
+      };
+      const badge = (tgiMap[itemLabel] || {})[cluster];
+      return badge ? `<span class="tgi-tag">${escapeHtml(badge)}</span>` : '';
+    }
+
+    function userTypeInsightHtml() {
+      return `
+              <details class="field-insight" open>
+                <summary>图表结论</summary>
+                <div class="field-insight-body">
+                  <p>💡现有用户已经把移动空调接受为“便捷且可靠的补位工具”，而潜在用户更把它想象成“改善局部空间体感和睡眠舒适的解决方案”；这意味着存量市场要靠实用与可靠性维持，增量市场则可以侧重舒适体验和空间价值。</p>
+                  <p>💡便捷安居实用型和理性应急准备型更像已经被现有移动空调市场教育过、已经进入购买或使用的人群（p＜0.05）。<br>局部速冷控温型明显更偏潜在用户，说明这群人对“局部制冷快速舒服降温”的需求强，但还没有完全被现有产品转化（p＜0.05）。<br>空间自主掌控型 / 家庭健康守护型 / 有限空间平衡型 在现有/潜在上没有显著偏向，更适合看成两边都能覆盖的人群，而不是单边人群。</p>
+                </div>
+              </details>
+      `;
+    }
+
+    const FIELD_INSIGHTS = {
+      primary_room: [
+        '💡主卧是 6 类人群里最稳定的核心场景，但权重并不相同。最偏主卧的是：家庭健康守护型、理性应急准备型和局部速冷控温型，说明这些人群更容易把移动空调和“关键卧室任务”绑定。客厅最突出的则是有限空间平衡型，其次是便捷安居实用型，说明这两类人更容易把移动空调理解为共享空间和日常生活补位工具。次卧更偏家庭健康守护型和局部速冷控温型，说明它在照护和补位场景中的作用更强。',
+        '一句话：主卧是共同主场景，客厅更偏生活型人群，次卧更偏照护和补位型人群。'
+      ],
+      primary_room_size: [
+        '💡家庭健康守护型更偏 251–350 sq. ft.，说明它更容易处理家庭关键房间的中等偏大空间舒适问题。局部速冷控温型和有限空间平衡型更偏 151–250 sq. ft.，说明它们更像在处理中小空间里的快速舒适和代价平衡。整体上看，251–350 sq. ft. 更像家庭照护场景带，151–250 sq. ft. 更像速冷和平衡型的核心带。',
+        '一句话：251–350 sq. ft. 更偏家庭照护，151–250 sq. ft. 更偏速冷与有限空间平衡。'
+      ],
+      portable_ac_count: [
+        '💡大多数人群都以 1 台为主，但家庭健康守护型和理性应急准备型更容易出现 2 台及以上。这说明这两类人群更容易把移动空调看成家庭多空间工具，而不是只解决一个最关键空间。有限空间平衡型和局部速冷控温型则更偏 1 台主导，说明它们更接近“先把一个最需要的空间解决掉”的逻辑。',
+        '一句话：1台是常态，但家庭照护和应急类更容易走向多台部署。'
+      ],
+      bigORsmall: [
+        '💡家庭健康守护型、便捷安居实用型、空间自主掌控型更偏大户型；有限空间平衡型和局部速冷控温型更偏小户型；理性应急准备型则居中但仍略偏大户型。这说明大户型人群更像家庭舒适管理逻辑，小户型人群更像个人空间权衡逻辑。',
+        '一句话：大户型对应家庭舒适管理，小户型对应个人空间权衡。'
+      ],
+      residence_type: [
+        '💡Detached single-family home 在家庭健康守护型、便捷安居实用型、空间自主掌控型中更强，说明独栋用户更容易把移动空调当作家庭系统补位工具。Apartment / multi-unit building 在有限空间平衡型和局部速冷控温型中更高，说明公寓人群更容易把它当作局部解决方案，而不是全屋舒适系统的一部分。',
+        '一句话：独栋偏家庭补位逻辑，公寓偏小空间解决逻辑。'
+      ],
+      bighome_style: [
+        '💡Contemporary / Modern 在家庭健康守护型、局部速冷控温型、有限空间平衡型中不低，说明现代型住宅更容易叠加体验和舒适要求。Ranch 在便捷安居实用型和理性应急准备型中更突出，说明这类住宅更容易长出务实补位和应急备用逻辑。',
+        '一句话：现代住宅更偏体验与舒适，Ranch 更偏务实与备用。'
+      ],
+      smallhome_style: [
+        '💡2 Bedrooms 是多个小户型相关人群的主流结构，说明小户型并不等于极小空间。1 Bedroom 和 Studio 更容易与局部速冷控温型、有限空间平衡型相连，说明真正的小空间更容易长出“快速解决个人舒适问题”的人群。',
+        '一句话：2 Bedrooms 是小户型主盘，1B / Studio 更容易长出有限空间平衡和速冷诉求。'
+      ],
+      housing_situation: [
+        '💡自有房更高的人群包括：家庭健康守护型、便捷安居实用型、空间自主掌控型；租房更高的人群包括：有限空间平衡型、理性应急准备型以及部分局部速冷控温型。这说明自有房用户更像做长期舒适优化，而租房用户更偏向在受限条件下做现实补位。',
+        '一句话：自有房偏长期优化，租房偏受限补位。'
+      ],
+      pac_experience_length: [
+        '💡家庭健康守护型和便捷安居实用型的使用年限相对更长，说明它们更接近成熟存量用户；局部速冷控温型和有限空间平衡型更容易出现在中短年限群体里，说明它们更像仍在发展中的增长机会；理性应急准备型则介于成熟与增长之间，更像一个偏大户型但以关键时刻可靠为主的中间型人群。',
+        '一句话：家庭守护和便捷实用更成熟，速冷和平衡型更像新机会。'
+      ],
+      age: [
+        '💡年龄结构上，有限空间平衡型最明显偏年轻，25–34占比最高，而且比其他人群更集中；家庭健康守护型更偏 45–54；理性应急准备型更偏 55–64；便捷安居实用型则相对更偏年长，>64 更高。',
+        '一句话：年轻人更容易落在“小空间权衡”逻辑里，中年偏家庭照护，年长人群更偏务实和备用心智。'
+      ],
+      gender: [
+        '💡性别分布最明显的是：空间自主掌控型女性占比最高，便捷安居实用型男性占比最高；其他几类整体性别差异不算极端，但多偏女性略高。',
+        '一句话：女性更容易落在“空间自主掌控”和舒适感知更强的人群里，男性更容易落在“便捷实用型”里。'
+      ],
+      household_income: [
+        '💡一句话：应急准备型更偏中等收入、需要理性做风险管理；小空间和平衡型更容易出现在预算更敏感的人群里。'
+      ],
+      household_size: [
+        '💡家庭人口差异较为明显。家庭健康守护型最明显偏 3–4人及以上；空间自主掌控型、便捷安居实用型更偏 2人或3–4人；理性应急准备型也偏2–4人；有限空间平衡型和局部速冷控温型更容易落在1人或2人。',
+        '一句话：家庭守护型最像典型家庭用户，平衡型和速冷型更像小家庭或单人生活场景。'
+      ],
+      Education: [
+        '💡教育上没有特别极端的断裂，但有两个值得提的点：空间自主掌控型和便捷安居实用型里，本科及以上占比更稳；有限空间平衡型在 Some college / 高中后未拿学位 这类中间学历层更容易出现。',
+        '一句话：掌控型和实用型更偏教育程度较稳定的人群，而有限空间型更容易落在生活条件约束更强的教育层。'
+      ],
+      'Occupation Field': [
+        '💡职业领域不适合每个小项展开，但有几个可讲方向：空间自主掌控型更容易出现在需要居家办公、个人专注空间要求更强的职业；便捷安居实用型更偏广谱、泛职业人群；家庭健康守护型更像家庭责任更重、对生活安排更敏感的人群；理性应急准备型更像风险意识更强、生活组织性较高的人群。',
+        '一句话：职业领域不是最强分化维度，但它强化了“掌控型偏个人工作空间、守护型偏家庭责任、应急型偏风险管理”的解释。'
+      ],
+      Race: [
+        '💡种族不做过度阐释。当前数据里最明显的是：多数人群里 White 占比都最高；有限空间平衡型、局部速冷控温型的分布相对更多元一些。',
+        '一句话：种族不是这 6 类最值得讲的核心分化维度，更多适合作为背景结构，而不是主解释变量。'
+      ],
+      state: [
+        '💡州别分布同样更适合作背景，而不是主结论。不过有些群体会在高温州（例如 Texas、Florida、California）更集中，这和移动空调本身的场景逻辑是一致的。',
+        '一句话：州别更像环境背景变量，说明这些人群在高温州更容易出现，但不单独拿来定义人群。'
+      ]
+    };
+
+    function fieldInsightHtml(fieldKey) {
+      const lines = FIELD_INSIGHTS[fieldKey];
+      if (!lines) return '';
+      return `
+              <details class="field-insight" open>
+                <summary>图表结论</summary>
+                <div class="field-insight-body">
+                  ${lines.map(line => `<p>${escapeHtml(line)}</p>`).join('')}
+                </div>
+              </details>
+      `;
+    }
+
+    function plainFieldIntroHtml(fieldKey, field) {
+      if (fieldKey === 'user_type') return userTypeInsightHtml();
+      return fieldInsightHtml(fieldKey);
+    }
+
+    function barRowsHtml(items, clusters, valueKey = 'values', fieldKey = '') {
+      const max = Math.max(...items.flatMap(item => clusters.map(cluster => ((item[valueKey] || {})[cluster] || 0))), 0.01);
+      return `
+        <div class="rows">
+          ${items.map(item => `
+            <div class="row">
+              <div class="row-label">${escapeHtml(item.label)}</div>
+              <div class="bar-stack">
+                ${clusters.map(cluster => `
+                  <div class="bar-line">
+                    <div class="bar-name">${userTypeTgiBadge(fieldKey, item.label, cluster)}${escapeHtml(clusterMetaMap[cluster].shortLabel || cluster)}</div>
+                    <div class="bar-track"><div class="bar-fill" style="width:${(((item[valueKey] || {})[cluster] || 0) / max) * 100}%; background:${clusterColor(cluster)}"></div></div>
+                    <div class="bar-value">${formatPct(((item[valueKey] || {})[cluster] || 0))}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderPlainField(pageId, fieldKey, clusters) {
+      const field = fieldMap[fieldKey];
+      const options = orderedPlainOptions(pageId, field, clusters);
+      const isSorted = fieldSortMode(pageId, fieldKey) === 'value';
+      return `
+        <section class="chart-card">
+          <div class="chart-head">
+            <div>
+              <h4>${escapeHtml(field.title)}</h4>
+              ${plainFieldIntroHtml(fieldKey, field)}
+            </div>
+            <div class="chart-head-actions">
+              <button class="ghost-btn chart-sort-btn ${isSorted ? 'is-active' : ''}" type="button" data-sort-page="${escapeHtml(pageId)}" data-sort-field="${escapeHtml(fieldKey)}">${isSorted ? '恢复顺序' : '排序'}</button>
+            </div>
+          </div>
+          <div class="legend">
+            ${clusters.map(cluster => `<span class="legend-item"><span class="swatch" style="background:${clusterColor(cluster)}"></span>${escapeHtml(clusterMetaMap[cluster].shortLabel || cluster)}</span>`).join('')}
+          </div>
+          ${barRowsHtml(options, clusters, 'values', fieldKey)}
+        </section>
+      `;
+    }
+
+    function renderThemeField(pageId, fieldKey, clusters) {
+      const field = fieldMap[fieldKey];
+      const themes = orderedThemes(field, clusters);
+      const key = themeStateKey(pageId, fieldKey);
+      const expandedKey = state.expandedThemesByPage[key] && themes.some(theme => theme.key === state.expandedThemesByPage[key])
+        ? state.expandedThemesByPage[key]
+        : null;
+      return `
+        <section class="chart-card">
+          <div class="chart-head">
+            <div>
+              <h4>${escapeHtml(field.title)}</h4>
+              <p>先看 theme 的平均选择率，再展开到对应细分项，看不同人群具体高在哪里。</p>
+            </div>
+            <div class="module-badge">${themes.length} 个 theme</div>
+          </div>
+          <div class="legend">
+            ${clusters.map(cluster => `<span class="legend-item"><span class="swatch" style="background:${clusterColor(cluster)}"></span>${escapeHtml(clusterMetaMap[cluster].shortLabel || cluster)}</span>`).join('')}
+          </div>
+          <div class="theme-summary-list">
+            ${themes.map(theme => `
+              <div class="theme-group">
+                <button class="theme-summary ${theme.key === expandedKey ? 'active' : ''}" type="button" data-page="${escapeHtml(pageId)}" data-field="${escapeHtml(fieldKey)}" data-theme="${escapeHtml(theme.key)}">
+                  <div class="theme-summary-head">
+                    <div class="theme-summary-title">${escapeHtml(theme.label)}</div>
+                    <div class="theme-summary-meta">${theme.items.length} 个细分项 / 平均值</div>
+                  </div>
+                  <div class="theme-summary-desc">${escapeHtml(theme.description || '点击当前 theme 后，可展开查看细分项在不同人群中的选择率。')}</div>
+                  ${barRowsHtml([{ label: 'Theme 平均值', avgValues: theme.avgValues }], clusters, 'avgValues')}
+                </button>
+                ${theme.key === expandedKey ? `
+                  <div class="detail-card theme-inline-detail">
+                    <div class="detail-head">
+                      <div>
+                        <h5>${escapeHtml(theme.label)} - 细分项</h5>
+                        <p>${escapeHtml(theme.description || '点击当前 theme 后，可展开查看细分项在不同人群中的选择率。')}</p>
+                      </div>
+                      <div class="detail-badge">${theme.items.length} 个细分项</div>
+                    </div>
+                    ${barRowsHtml(theme.items, clusters)}
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderModulePage(page) {
+      const meta = pageMeta[page.id];
+      const clusters = selectedClusters(page.id);
+      const fields = selectedFields(page);
+      const boardHtml = (!clusters.length || !fields.length)
+        ? `<div class="empty">${!clusters.length ? '还没有选中任何人群' : '还没有选中任何字段'}</div>`
+        : fields.map(fieldKey => fieldMap[fieldKey].mode === 'theme' ? renderThemeField(page.id, fieldKey, clusters) : renderPlainField(page.id, fieldKey, clusters)).join('');
+      return `
+        <section class="panel module-page-panel" id="${escapeHtml(meta.anchor)}">
+          <div class="section-head">
+            <div>
+              <p>${escapeHtml(page.subtitle)} ${escapeHtml(meta.note)}</p>
+            </div>
+            <div class="chip">${escapeHtml(meta.badge)}</div>
+          </div>
+          <div class="module-card">
+            <div class="module-grid">
+              <aside class="field-panel">
+                <div class="control-card">
+                  <div class="control-title">选择字段</div>
+                  <div class="action-row">
+                    <button class="ghost-btn" type="button" data-action="defaults" data-page="${escapeHtml(page.id)}">恢复本页推荐</button>
+                    <button class="ghost-btn" type="button" data-action="all" data-page="${escapeHtml(page.id)}">全选本页字段</button>
+                    <button class="ghost-btn" type="button" data-action="clear" data-page="${escapeHtml(page.id)}">清空本页字段</button>
+                  </div>
+                  
+                  <div class="field-multi-list">
+                    ${page.field_keys.map(key => `
+                      <label class="field-multi-option">
+                        <input type="checkbox" value="${escapeHtml(key)}" data-page-field="${escapeHtml(page.id)}" ${fields.includes(key) ? 'checked' : ''} />
+                        <div>
+                          <strong>${escapeHtml(fieldMap[key].title)}</strong>
+                          ${fieldMap[key].mode === 'theme' ? '<span>按 theme 再展开细项</span>' : ''}
+                        </div>
+                      </label>
+                    `).join('')}
+                  </div>
+                </div>
+                ${page.id === 'page-usage' ? `<div class="control-card field-summary-card"><div class="control-title">核心结论</div><div class="summary-line">🚩家庭健康守护型、便捷安居实用型、空间自主掌控型更偏大户型、自有房、主卧/客厅和成熟使用市场；有限空间平衡型和局部速冷控温型更偏小户型、公寓、租房和较新的增长机会，而理性应急准备型则是一个偏大户型、以关键时刻可靠为核心的中间型人群。</div></div>` : ''}
+              </aside>
+              <div class="charts-stack">
+                <div class="control-card cluster-toolbar-card">
+                  <div class="control-title">选择人群</div>
+                  <div class="action-row">
+                    <button class="ghost-btn" type="button" data-cluster-action="defaults" data-page="${escapeHtml(page.id)}">恢复本页推荐</button>
+                    <button class="ghost-btn" type="button" data-cluster-action="all" data-page="${escapeHtml(page.id)}">全选</button>
+                    <button class="ghost-btn" type="button" data-cluster-action="clear" data-page="${escapeHtml(page.id)}">清空</button>
+                  </div>
+                  <div class="field-help">可多选群体进行对比。</div>
+                  <div class="cluster-inline-list">
+                    ${report.clusterMeta.map(metaItem => `
+                      <label class="field-multi-option">
+                        <input type="checkbox" value="${escapeHtml(metaItem.name)}" data-page-cluster="${escapeHtml(page.id)}" ${clusters.includes(metaItem.name) ? 'checked' : ''} />
+                        <div>
+                          <strong>${escapeHtml(metaItem.name)}</strong>
+                          <span>${escapeHtml(metaItem.shortLabel)} / n=${metaItem.sampleSize} / ${escapeHtml(metaItem.sampleShare)}</span>
+                        </div>
+                      </label>
+                    `).join('')}
+                  </div>
+                </div>
+                ${['page-usage', 'page-demo'].includes(page.id) ? `<div class="control-card field-instruction-card"><div class="control-title">排序说明</div><div class="field-help">按字段本身的自然顺序展示，右上角“排序”可根据占比大小顺序展示</div></div>` : ''}
+                ${boardHtml}
+                ${['page-usage', 'page-demo'].includes(page.id) ? '' : `<div class="footnote">说明：默认按字段自然顺序展示，点击每张图右上角“排序”可切换为按当前选中人群平均占比降序；教育程度、职业领域、所在州默认只显示前 10 项。</div>`}
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderModulePages() {
+      els.modulePages.innerHTML = report.pages.map(renderModulePage).join('');
+      Array.from(els.modulePages.querySelectorAll('input[data-page-cluster]')).forEach(input => {
+        input.addEventListener('change', () => toggleCluster(input.getAttribute('data-page-cluster'), input.value));
+      });
+      Array.from(els.modulePages.querySelectorAll('input[data-page-field]')).forEach(input => {
+        input.addEventListener('change', () => toggleField(input.getAttribute('data-page-field'), input.value));
+      });
+      Array.from(els.modulePages.querySelectorAll('button[data-cluster-action]')).forEach(button => {
+        button.addEventListener('click', () => {
+          const pageId = button.getAttribute('data-page');
+          const action = button.getAttribute('data-cluster-action');
+          if (action === 'defaults') setPageClusters(pageId, [report.clusters[0].name]);
+          if (action === 'all') setPageClusters(pageId, clusterOrder);
+          if (action === 'clear') setPageClusters(pageId, []);
+        });
+      });
+      Array.from(els.modulePages.querySelectorAll('button[data-action]')).forEach(button => {
+        button.addEventListener('click', () => {
+          const pageId = button.getAttribute('data-page');
+          const page = report.pages.find(item => item.id === pageId);
+          const action = button.getAttribute('data-action');
+          if (action === 'defaults') setPageFields(pageId, page.default_fields);
+          if (action === 'all') setPageFields(pageId, page.field_keys);
+          if (action === 'clear') setPageFields(pageId, []);
+        });
+      });
+      Array.from(els.modulePages.querySelectorAll('.theme-summary')).forEach(button => {
+        button.addEventListener('click', () => setExpandedTheme(button.getAttribute('data-page'), button.getAttribute('data-field'), button.getAttribute('data-theme')));
+      });
+      Array.from(els.modulePages.querySelectorAll('button[data-sort-page]')).forEach(button => {
+        button.addEventListener('click', () => toggleFieldSort(button.getAttribute('data-sort-page'), button.getAttribute('data-sort-field')));
+      });
+    }
+
+    function render() {
+      renderOverview();
+      renderModulePages();
+    }
+    render();
+  </script>
+<script>
+  (function() {
+    const mode = "module";
+    const targetId = "module-demo";
+    const title = "02.4_人群对比：人口学";
+    const note = "只保留年龄、性别、收入、家庭结构、州等人口学变量。";
+    let didInitialScroll = false;
+    function enforcePageBoundary() {
+      document.title = title;
+      document.body.classList.add('report-split-page');
+
+      const wrap = document.querySelector('.wrap');
+      const hero = document.querySelector('.hero');
+      const overviewPanel = document.querySelector('#overviewGrid')?.closest('.panel');
+      const modulePages = document.getElementById('modulePages');
+      if (hero) hero.style.display = 'none';
+
+      if (mode === 'overview') {
+        if (overviewPanel) overviewPanel.style.display = '';
+        if (modulePages) modulePages.style.display = 'none';
+      } else {
+        if (overviewPanel) overviewPanel.style.display = 'none';
+        if (modulePages) {
+          modulePages.style.display = '';
+          Array.from(modulePages.children).forEach((child) => {
+            child.style.display = child.id === targetId ? '' : 'none';
+          });
+        }
+      }
+
+      if (!didInitialScroll) {
+        didInitialScroll = true;
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
+    }
+
+    function start() {
+      enforcePageBoundary();
+      const modulePages = document.getElementById('modulePages');
+      if (modulePages) {
+        new MutationObserver(enforcePageBoundary).observe(modulePages, { childList: true });
+      }
+      document.addEventListener('change', () => setTimeout(enforcePageBoundary, 0), true);
+      document.addEventListener('click', () => setTimeout(enforcePageBoundary, 0), true);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(start, 40));
+    } else {
+      setTimeout(start, 40);
+    }
+  })();
+</script>
+
+</body>
+</html>

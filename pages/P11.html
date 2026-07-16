@@ -1,0 +1,1219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>codex_用户聚类痛点解读_v4</title>
+<style>
+:root {
+  --bg:#f4f6f9;
+  --paper:#ffffff;
+  --paper-soft:#fbfcfe;
+  --ink:#16202f;
+  --ink-soft:#334155;
+  --muted:#4b6075;
+  --line:#d9e2ec;
+  --line-strong:#c4d0dd;
+  --shadow:0 16px 38px rgba(15, 23, 42, 0.08);
+  --shadow-soft:0 10px 26px rgba(15, 23, 42, 0.06);
+  --radius-xl:24px;
+  --radius-lg:20px;
+  --radius-md:16px;
+  --radius-sm:12px;
+  --blue:#2f6fed;
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+html, body {
+  margin:0;
+  padding:0;
+  background:linear-gradient(180deg, #f2f5f9 0%, #f6f8fb 100%);
+  color:var(--ink);
+  font-family:"Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+body { padding:0; }
+h1,h2,h3,p { margin:0; }
+.shell {
+  max-width:1480px;
+  margin:0 auto;
+  padding:28px 24px 44px;
+  display:grid;
+  gap:24px;
+}
+.page {
+  background:var(--paper);
+  border:1px solid rgba(217, 226, 236, 0.92);
+  border-radius:var(--radius-xl);
+  box-shadow:var(--shadow);
+  padding:34px 38px;
+}
+.hero {
+  min-height:0;
+  align-content:center;
+  overflow:hidden;
+  position:relative;
+  padding:20px 28px;
+  background:
+    radial-gradient(circle at top right, rgba(91,130,150,.10), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(47,67,90,.08), transparent 22%),
+    linear-gradient(135deg, #ffffff 0%, #f8fbff 58%, #edf3fa 100%);
+}
+.hero:before,
+.hero:after {
+  content:"";
+  position:absolute;
+  border-radius:999px;
+  pointer-events:none;
+}
+.hero:before {
+  width:300px;
+  height:300px;
+  right:-90px;
+  top:-120px;
+  background:radial-gradient(circle, rgba(91,130,150,.14), transparent 70%);
+}
+.hero:after {
+  width:220px;
+  height:220px;
+  left:-50px;
+  bottom:-120px;
+  background:radial-gradient(circle, rgba(197,139,88,.14), transparent 72%);
+}
+.kicker,
+.mini-kicker {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#fff;
+  padding:8px 12px;
+  font-size:12px;
+  line-height:1;
+  color:#44596d;
+  font-weight:800;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.kicker {
+  position:relative;
+  z-index:1;
+  background:#eef4ff;
+  border-color:#d6e3ff;
+  color:var(--blue);
+}
+.mini-kicker {
+  font-size:11px;
+  color:#6c8094;
+  background:#f7f9fc;
+}
+h1 {
+  position:relative;
+  z-index:1;
+  max-width:980px;
+  margin-top:18px;
+  font-size:40px;
+  line-height:1.14;
+  letter-spacing:-0.02em;
+}
+.hero p {
+  position:relative;
+  z-index:1;
+  max-width:1060px;
+  margin-top:14px;
+  font-size:18px;
+  line-height:1.8;
+  color:var(--muted);
+}
+.hero-meta,
+.tag-row,
+.button-row,
+.chip-row,
+.cluster-selector {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.hero-meta,
+.tag-row,
+.chip-row { margin-top:18px; }
+.hero .hero-meta { margin-top:0; }
+.chip,
+.sample-pill,
+.tag,
+.selector-pill {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:#fff;
+  padding:9px 13px;
+  font-size:13px;
+  line-height:1;
+  color:#44596d;
+  font-weight:700;
+}
+.sample-pill {
+  background:#eef4ff;
+  border-color:#d6e3ff;
+  color:var(--blue);
+  font-weight:800;
+}
+.sample-pill.large { font-size:16px; }
+.tag {
+  background:rgba(243, 247, 251, 0.96);
+  border-color:rgba(214, 223, 233, 0.96);
+  color:#2b4155;
+  font-size:12px;
+  font-weight:800;
+}
+.section-head,
+.chart-head,
+.card-top {
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:flex-end;
+}
+.section-head { margin-bottom:18px; }
+.section-head h2 {
+  font-size:31px;
+  line-height:1.16;
+  letter-spacing:-0.02em;
+}
+.section-head p {
+  max-width:980px;
+  margin-top:10px;
+  font-size:16px;
+  line-height:1.75;
+  color:var(--muted);
+}
+.method-grid,
+.overview-grid,
+.insight-grid,
+.compare-toolbar,
+.chart-list {
+  display:grid;
+  gap:18px;
+}
+.method-grid { grid-template-columns:repeat(4, minmax(0,1fr)); }
+.overview-grid { grid-template-columns:repeat(3, minmax(0,1fr)); }
+.insight-grid { grid-template-columns:repeat(3, minmax(0,1fr)); }
+.overview-tabs { display:flex; flex-wrap:wrap; gap:10px; margin:4px 0 18px; }
+.overview-tab-btn { appearance:none; border:1px solid var(--line-strong); border-radius:999px; background:#fff; color:#385068; padding:10px 16px; font-size:14px; font-weight:900; cursor:pointer; }
+.overview-tab-btn.active { background:#2f6fed; border-color:#2f6fed; color:#fff; }
+.overview-tab-panel { display:none; }
+.overview-tab-panel.active { display:block; }
+.detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.detail-persona-card { border:1px solid var(--line); border-radius:20px; background:linear-gradient(180deg,#ffffff 0%,#fbfcfe 100%); box-shadow:var(--shadow-soft); padding:18px; display:grid; gap:12px; }
+.detail-persona-card h3 { font-size:22px; line-height:1.2; }
+.detail-persona-card p { color:#52677a; font-size:14px; line-height:1.75; }
+.detail-persona-card ul { margin:0; padding-left:18px; color:#1f405a; font-size:14px; line-height:1.7; }
+.compare-toolbar { grid-template-columns:minmax(150px,.7fr) minmax(260px,1.1fr) minmax(360px,1.45fr) minmax(520px,2.8fr); align-items:start; margin-top:18px; }
+.compare-toolbar .button-row { flex-wrap:nowrap; }
+.compare-toolbar .toolbar-card { min-width:0; }
+.compare-toolbar .panel-note { margin-top:0; }
+.chart-list { grid-template-columns:repeat(3, minmax(0,1fr)); align-items:start; }
+.method-card,
+.overview-card,
+.insight-card,
+.mini-block,
+.toolbar-card,
+.chart-card {
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:linear-gradient(180deg,#ffffff 0%,#fbfcfe 100%);
+  box-shadow:var(--shadow-soft);
+  padding:18px;
+}
+.method-card h3,
+.overview-card h3,
+.insight-card h3,
+.toolbar-card h3,
+.chart-card h3 {
+  font-size:22px;
+  line-height:1.2;
+  letter-spacing:-0.02em;
+}
+.method-card p,
+.overview-desc,
+.insight-card p,
+.toolbar-card p,
+.subtle,
+.empty-note,
+.panel-note {
+  margin-top:10px;
+  color:#52677a;
+  font-size:14px;
+  line-height:1.75;
+}
+.overview-card {
+  position:relative;
+  overflow:hidden;
+  display:grid;
+  gap:14px;
+}
+.overview-card::before {
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:6px;
+  background:var(--cluster-color, #94a3b8);
+}
+.mini-block {
+  padding:16px;
+  background:#fff;
+}
+.mini-title {
+  font-size:12px;
+  line-height:1;
+  color:#6d8194;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-weight:800;
+  margin-bottom:8px;
+}
+.mini-item + .mini-item { margin-top:12px; padding-top:12px; border-top:1px solid #edf2f7; }
+.mini-item-title,
+.bar-name {
+  font-size:14px;
+  line-height:1.65;
+  color:#1f405a;
+}
+.mini-item-meta,
+.bar-sub {
+  margin-top:4px;
+  color:#587084;
+  font-size:13px;
+  line-height:1.55;
+}
+.text-link,
+.to-top {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  color:var(--blue);
+  font-weight:800;
+  text-decoration:none;
+  border:none;
+  background:transparent;
+  padding:0;
+  cursor:pointer;
+  font-size:14px;
+}
+.button-row { margin-top:14px; }
+.metric-btn,
+.selector-btn,
+.cluster-chip {
+  appearance:none;
+  border:1px solid var(--line-strong);
+  background:#fff;
+  color:#41566a;
+  border-radius:14px;
+  padding:10px 14px;
+  font-size:13px;
+  font-weight:800;
+  cursor:pointer;
+  transition:all .14s ease;
+}
+.metric-btn:hover,
+.selector-btn:hover,
+.cluster-chip:hover {
+  border-color:#9eb0c3;
+  box-shadow:var(--shadow-soft);
+}
+.metric-btn.active,
+.selector-btn.active,
+.cluster-chip.active {
+  background:#eef4ff;
+  border-color:#cfe0ff;
+  color:var(--blue);
+}
+.cluster-chip {
+  border-radius:16px;
+  padding:12px 14px;
+}
+.cluster-chip small {
+  display:block;
+  margin-top:4px;
+  font-size:11px;
+  font-weight:700;
+  color:#6a8093;
+}
+.heatmap-shell {
+  display:grid;
+  gap:16px;
+}
+.heatmap-table {
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+}
+.heatmap-table th,
+.heatmap-table td {
+  border:1px solid #e5edf4;
+  padding:12px 10px;
+  text-align:left;
+  vertical-align:top;
+  font-size:14px;
+  line-height:1.55;
+}
+.heatmap-table thead th {
+  background:#f8fbff;
+  color:#3c5368;
+  font-weight:800;
+}
+.heatmap-table tbody th {
+  background:#fbfdff;
+  min-width:90px;
+}
+.heat-cell {
+  border-radius:14px;
+  padding:10px;
+  min-height:72px;
+}
+.heat-main {
+  font-size:18px;
+  font-weight:800;
+  line-height:1.2;
+}
+.heat-sub {
+  margin-top:6px;
+  font-size:12px;
+  color:#587084;
+}
+.toolbar-card .button-row { margin-top:10px; }
+.filter-group + .filter-group {
+  margin-top:18px;
+  padding-top:18px;
+  border-top:1px solid #edf2f7;
+}
+.filter-title {
+  font-size:12px;
+  line-height:1;
+  color:#6d8194;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-weight:800;
+  margin-bottom:10px;
+}
+.chart-list {
+  display:grid;
+  gap:18px;
+}
+.chart-card {
+  overflow:hidden;
+}
+.chart-note {
+  margin-top:10px;
+  font-size:13px;
+  color:#587084;
+  line-height:1.65;
+}
+.bar-stack {
+  display:grid;
+  gap:14px;
+  margin-top:14px;
+}
+.bar-row {
+  padding:12px 14px;
+  border:1px solid #edf2f7;
+  border-radius:16px;
+  background:#fff;
+}
+.bar-meta {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+.bar-value {
+  flex:0 0 auto;
+  font-size:15px;
+  font-weight:800;
+  color:#25384b;
+}
+.track {
+  margin-top:8px;
+  width:100%;
+  height:10px;
+  border-radius:999px;
+  background:#eaf0f6;
+  overflow:hidden;
+}
+.fill {
+  height:100%;
+  border-radius:999px;
+  background:var(--cluster-color, #2f6fed);
+}
+.fill.missing {
+  width:12px !important;
+  background:repeating-linear-gradient(
+    45deg,
+    #cbd5e1,
+    #cbd5e1 4px,
+    #e2e8f0 4px,
+    #e2e8f0 8px
+  );
+}
+.legend-note {
+  margin-top:12px;
+  color:#52677a;
+  font-size:13px;
+  line-height:1.7;
+}
+.muted-box {
+  margin-top:14px;
+  padding:12px 14px;
+  border-radius:16px;
+  background:#f8fbff;
+  border:1px solid #e0ebf8;
+  color:#52677a;
+  font-size:13px;
+  line-height:1.7;
+}
+@media (max-width: 1180px) {
+  .method-grid,
+  .overview-grid,
+  .insight-grid,
+  .chart-list { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .compare-toolbar { grid-template-columns:1fr; }
+  .compare-toolbar .button-row { flex-wrap:wrap; }
+}
+@media (max-width: 900px) {
+  .compare-toolbar,
+  .chart-list { grid-template-columns:1fr; }
+}
+@media (max-width: 780px) {
+  .shell { padding:18px 14px 28px; }
+  .page { padding:24px 18px; }
+  h1 { font-size:32px; }
+  .section-head h2 { font-size:26px; }
+  .bar-meta { flex-direction:column; }
+}
+</style>
+
+<style id="visual-polish-v26">
+  :root {
+    --v26-bg: #f3f6f9;
+    --v26-paper: #ffffff;
+    --v26-paper-soft: #f8fafc;
+    --v26-ink: #17283b;
+    --v26-ink-soft: #4f6476;
+    --v26-muted: #6d7f8f;
+    --v26-line: #d8e1ea;
+    --v26-line-strong: #bccbd8;
+    --v26-brand: #2f6f9f;
+    --v26-brand-dark: #1f4f73;
+    --v26-brand-soft: #eaf3fa;
+    --v26-accent: #6f8f9f;
+    --v26-highlight: #b7791f;
+    --v26-shadow: 0 10px 26px rgba(23, 40, 59, .075);
+  }
+  html, body {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    color: var(--v26-ink) !important;
+    background: var(--v26-bg) !important;
+    text-rendering: geometricPrecision;
+  }
+  body { font-size: 15px; line-height: 1.6; }
+  h1, h2, h3, h4, .title, .section-title {
+    color: var(--v26-brand-dark) !important;
+    letter-spacing: 0 !important;
+  }
+  h1 {
+    font-size: clamp(30px, 3.2vw, 38px) !important;
+    line-height: 1.16 !important;
+    font-weight: 800 !important;
+  }
+  h2 {
+    font-size: clamp(22px, 2.2vw, 28px) !important;
+    line-height: 1.22 !important;
+    font-weight: 800 !important;
+  }
+  h3 {
+    font-size: 18px !important;
+    line-height: 1.28 !important;
+    font-weight: 800 !important;
+  }
+  h4 { font-size: 15px !important; line-height: 1.35 !important; font-weight: 800 !important; }
+  p, li, td, .subtitle, .desc, .note, .small, .muted, .cluster-desc, .cluster-diff, .body-copy {
+    color: var(--v26-ink-soft);
+    letter-spacing: 0 !important;
+  }
+  .wrap {
+    padding: 28px 24px 42px !important;
+  }
+  .panel, .hero, .card, .table-card, .chartPanel, .chart-panel, .chart-card,
+  .field-card, .cluster-card, .metric, .mini-card, .detail, .insight-card,
+  .overview-card, .persona-card, .concept-card, .price-card, .recommend-card {
+    border-radius: 8px !important;
+    border-color: var(--v26-line) !important;
+    box-shadow: var(--v26-shadow) !important;
+  }
+  .panel, .hero {
+    background: var(--v26-paper) !important;
+  }
+  .card, .table-card, .chartPanel, .chart-panel, .chart-card, .field-card,
+  .metric, .mini-card, .detail, .insight-card, .overview-card, .persona-card,
+  .concept-card, .price-card, .recommend-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%) !important;
+  }
+  .kicker, .eyebrow, .tag, .pill, .badge, .sku-pill, .chip, .mini-title,
+  .control-title, .card-headline, .meta {
+    letter-spacing: .04em !important;
+    font-weight: 800 !important;
+  }
+  .kicker, .eyebrow, .mini-title, .control-title {
+    color: var(--v26-muted) !important;
+    text-transform: uppercase;
+  }
+  .subtitle, .lead {
+    color: var(--v26-ink-soft) !important;
+    font-size: 16px !important;
+    line-height: 1.72 !important;
+  }
+  strong, b {
+    color: #20384e !important;
+    font-weight: 800 !important;
+  }
+  .takeaway, .insight, .field-insight, .recommendation, .opportunity,
+  .summary, .callout, .conclusion, .note-card {
+    border-radius: 8px !important;
+    border-color: #bfd3e4 !important;
+    background: #f3f8fc !important;
+    box-shadow: 0 8px 18px rgba(47, 111, 159, .07) !important;
+  }
+  .field-insight summary,
+  .takeaway strong,
+  .insight strong,
+  .recommendation strong,
+  .opportunity strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  table {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100%;
+  }
+  th {
+    background: #f3f7fb !important;
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  td, th {
+    border-color: #dbe4ed !important;
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  tr:nth-child(even) td {
+    background-color: rgba(248, 250, 252, .62);
+  }
+  button, select, input {
+    font-family: inherit !important;
+  }
+  button, .tab, .toggle, .filter, .chip, .pill, select {
+    border-radius: 6px !important;
+  }
+  button:hover, .chip:hover, .pill:hover {
+    border-color: #9fb8cc !important;
+  }
+  .barwrap, .bar-wrap, .bar-track, .track {
+    background: #edf2f7 !important;
+  }
+  .value, .num, .big-number, .big-price, .score, .metric strong {
+    color: var(--v26-brand-dark) !important;
+    font-weight: 800 !important;
+  }
+  .legend, .legend span, .axis, .tick, .label, .name {
+    color: #52687a !important;
+    font-size: 12px !important;
+    line-height: 1.42 !important;
+  }
+  svg text {
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif !important;
+    fill: #52687a;
+  }
+  .grid, .grid-2, .grid-3, .charts, .overview-grid {
+    gap: 16px !important;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--v26-line);
+  }
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 14px 32px !important; }
+    h1 { font-size: 29px !important; }
+    h2 { font-size: 22px !important; }
+  }
+</style>
+
+</head>
+<body id="top">
+<div class="shell">
+  <section class="page hero">
+    <div class="hero-meta">
+      <span class="chip">指标口径：R值、综合分</span>
+      <span class="chip">综合分公式：0.7 × R值 + 0.3 × 提及率%</span>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section-head">
+      <div>
+        <h2>一、六个人群总览</h2>
+        <p>先快速看清每个人群当前最需要解决的痛点方向，以及相较整体更偏离、值得单独被讲出来的痛点。</p>
+      </div>
+    </div>
+    <div class="overview-tabs"><button class="overview-tab-btn active" type="button" data-overview-tab="overview">概览</button><button class="overview-tab-btn" type="button" data-overview-tab="detail">💡详细解读</button></div>
+    <div class="overview-tab-panel active" data-overview-panel="overview">
+    <div class="overview-grid" style="margin-top:18px;">
+      
+            <article class="overview-card" style="--cluster-color:#2F435A">
+              <div class="card-top">
+                <div>
+                  <h3>空间自主掌控型</h3>
+                </div>
+                <span class="sample-pill">n=89</span>
+              </div>
+              <p class="overview-desc">这一群体当前最需要优先解决的是 <strong>能耗</strong> 类问题，最高综合分痛点是“担心耗电量或电费单。”。若只看 R 值强度，评分最高的痛点是“安装时需要额外的工具。”。</p>
+              <div class="tag-row"><span class="tag" style="border-color:#2F435A22;background:#2F435A10;color:#2F435A;">制冷</span><span class="tag" style="border-color:#2F435A22;background:#2F435A10;color:#2F435A;">能耗</span><span class="tag" style="border-color:#2F435A22;background:#2F435A10;color:#2F435A;">噪音</span></div>
+              <div class="mini-block">
+                <div class="mini-title">最突出的优先项</div>
+                
+            <div class="mini-item">
+              <div class="mini-item-title">担心耗电量或电费单。</div>
+              <div class="mini-item-meta">能耗 | 综合分 76.9</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">极端高温让降温变难 / 机器在非常炎热时力不从心。</div>
+              <div class="mini-item-meta">制冷 | 综合分 74.4</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">安装时需要额外的工具。</div>
+              <div class="mini-item-meta">安装 | 综合分 73.7</div>
+            </div>
+            
+              </div>
+              <div class="mini-block">
+                <div class="mini-title">相较整体更偏离的痛点</div>
+                <div class="mini-item-title">安装时需要额外的工具。</div>
+                <div class="mini-item-meta">安装 | 综合分较整体 +17.9</div>
+              </div>
+            </article>
+            
+
+            <article class="overview-card" style="--cluster-color:#9E8E7D">
+              <div class="card-top">
+                <div>
+                  <h3>便捷安居实用型</h3>
+                </div>
+                <span class="sample-pill">n=86</span>
+              </div>
+              <p class="overview-desc">这一群体当前最需要优先解决的是 <strong>能耗</strong> 类问题，最高综合分痛点是“担心耗电量或电费单。”。若只看 R 值强度，评分最高的痛点是“配件缺失或不匹配，增加了安装难度。”。</p>
+              <div class="tag-row"><span class="tag" style="border-color:#9E8E7D22;background:#9E8E7D10;color:#9E8E7D;">制冷</span><span class="tag" style="border-color:#9E8E7D22;background:#9E8E7D10;color:#9E8E7D;">能耗</span><span class="tag" style="border-color:#9E8E7D22;background:#9E8E7D10;color:#9E8E7D;">噪音</span></div>
+              <div class="mini-block">
+                <div class="mini-title">最突出的优先项</div>
+                
+            <div class="mini-item">
+              <div class="mini-item-title">担心耗电量或电费单。</div>
+              <div class="mini-item-meta">能耗 | 综合分 77.6</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">配件缺失或不匹配，增加了安装难度。</div>
+              <div class="mini-item-meta">安装 | 综合分 71.7</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">房间的实际体感温度没有设定的温度那么凉快。</div>
+              <div class="mini-item-meta">制冷 | 综合分 70.4</div>
+            </div>
+            
+              </div>
+              <div class="mini-block">
+                <div class="mini-title">相较整体更偏离的痛点</div>
+                <div class="mini-item-title">排水口的位置很难够到，操作别扭。</div>
+                <div class="mini-item-meta">排水 | 综合分较整体 +11.8</div>
+              </div>
+            </article>
+            
+
+            <article class="overview-card" style="--cluster-color:#6E8B74">
+              <div class="card-top">
+                <div>
+                  <h3>家庭健康守护型</h3>
+                </div>
+                <span class="sample-pill">n=64</span>
+              </div>
+              <p class="overview-desc">这一群体当前最需要优先解决的是 <strong>制冷</strong> 类问题，最高综合分痛点是“房间的实际体感温度没有设定的温度那么凉快。”。若只看 R 值强度，评分最高的痛点是“宣传的 BTU（制冷量）/ 性能与实际使用体验不符。”。</p>
+              <div class="tag-row"><span class="tag" style="border-color:#6E8B7422;background:#6E8B7410;color:#6E8B74;">制冷</span><span class="tag" style="border-color:#6E8B7422;background:#6E8B7410;color:#6E8B74;">能耗</span><span class="tag" style="border-color:#6E8B7422;background:#6E8B7410;color:#6E8B74;">噪音</span></div>
+              <div class="mini-block">
+                <div class="mini-title">最突出的优先项</div>
+                
+            <div class="mini-item">
+              <div class="mini-item-title">房间的实际体感温度没有设定的温度那么凉快。</div>
+              <div class="mini-item-meta">制冷 | 综合分 76.9</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">担心耗电量或电费单。</div>
+              <div class="mini-item-meta">能耗 | 综合分 75.5</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">机器附近感觉挺凉快，但无法覆盖到整个房间。</div>
+              <div class="mini-item-meta">制冷 | 综合分 75.2</div>
+            </div>
+            
+              </div>
+              <div class="mini-block">
+                <div class="mini-title">相较整体更偏离的痛点</div>
+                <div class="mini-item-title">宣传的 BTU（制冷量）/ 性能与实际使用体验不符。</div>
+                <div class="mini-item-meta">制冷 | 综合分较整体 +21.1</div>
+              </div>
+            </article>
+            
+
+            <article class="overview-card" style="--cluster-color:#9F7A81">
+              <div class="card-top">
+                <div>
+                  <h3>局部速冷控温型</h3>
+                </div>
+                <span class="sample-pill">n=51</span>
+              </div>
+              <p class="overview-desc">这一群体当前最需要优先解决的是 <strong>制冷</strong> 类问题，最高综合分痛点是“极端高温让降温变难 / 机器在非常炎热时力不从心。”。若只看 R 值强度，评分最高的痛点是“机器运行一段时间后就不再吹冷风了。”。</p>
+              <div class="tag-row"><span class="tag" style="border-color:#9F7A8122;background:#9F7A8110;color:#9F7A81;">能耗</span><span class="tag" style="border-color:#9F7A8122;background:#9F7A8110;color:#9F7A81;">噪音</span><span class="tag" style="border-color:#9F7A8122;background:#9F7A8110;color:#9F7A81;">制冷</span></div>
+              <div class="mini-block">
+                <div class="mini-title">最突出的优先项</div>
+                
+            <div class="mini-item">
+              <div class="mini-item-title">极端高温让降温变难 / 机器在非常炎热时力不从心。</div>
+              <div class="mini-item-meta">制冷 | 综合分 76.7</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">担心耗电量或电费单。</div>
+              <div class="mini-item-meta">能耗 | 综合分 75.4</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">即使机器一直在运行，但随着时间推移，感觉制冷效果变差了。</div>
+              <div class="mini-item-meta">制冷 | 综合分 74.7</div>
+            </div>
+            
+              </div>
+              <div class="mini-block">
+                <div class="mini-title">相较整体更偏离的痛点</div>
+                <div class="mini-item-title">排水口的位置很难够到，操作别扭。</div>
+                <div class="mini-item-meta">排水 | 综合分较整体 +17.7</div>
+              </div>
+            </article>
+            
+
+            <article class="overview-card" style="--cluster-color:#5B8296">
+              <div class="card-top">
+                <div>
+                  <h3>有限空间平衡型</h3>
+                </div>
+                <span class="sample-pill">n=51</span>
+              </div>
+              <p class="overview-desc">这一群体当前最需要优先解决的是 <strong>噪音</strong> 类问题，最高综合分痛点是“噪音干扰了接打电话、会议、打游戏或远程办公。”。若只看 R 值强度，评分最高的痛点是“压缩机循环运行或启动/停机时的噪音很吵。”。</p>
+              <div class="tag-row"><span class="tag" style="border-color:#5B829622;background:#5B829610;color:#5B8296;">能耗</span><span class="tag" style="border-color:#5B829622;background:#5B829610;color:#5B8296;">制冷</span><span class="tag" style="border-color:#5B829622;background:#5B829610;color:#5B8296;">噪音</span></div>
+              <div class="mini-block">
+                <div class="mini-title">最突出的优先项</div>
+                
+            <div class="mini-item">
+              <div class="mini-item-title">噪音干扰了接打电话、会议、打游戏或远程办公。</div>
+              <div class="mini-item-meta">噪音 | 综合分 77.6</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">即使机器一直在运行，但随着时间推移，感觉制冷效果变差了。</div>
+              <div class="mini-item-meta">制冷 | 综合分 77.6</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">天气极热或房屋隔热差，导致机器工作得更吃力。</div>
+              <div class="mini-item-meta">能耗 | 综合分 75.0</div>
+            </div>
+            
+              </div>
+              <div class="mini-block">
+                <div class="mini-title">相较整体更偏离的痛点</div>
+                <div class="mini-item-title">排水系统的安装/设置很不方便。</div>
+                <div class="mini-item-meta">排水 | 综合分较整体 +19.2</div>
+              </div>
+            </article>
+            
+
+            <article class="overview-card" style="--cluster-color:#C58B58">
+              <div class="card-top">
+                <div>
+                  <h3>理性应急准备型</h3>
+                </div>
+                <span class="sample-pill">n=39</span>
+              </div>
+              <p class="overview-desc">这一群体当前最需要优先解决的是 <strong>能耗</strong> 类问题，最高综合分痛点是“担心耗电量或电费单。”。若只看 R 值强度，评分最高的痛点是“安装后的外观与房间的美观度不协调。”。</p>
+              <div class="tag-row"><span class="tag" style="border-color:#C58B5822;background:#C58B5810;color:#C58B58;">能耗</span><span class="tag" style="border-color:#C58B5822;background:#C58B5810;color:#C58B58;">制冷</span><span class="tag" style="border-color:#C58B5822;background:#C58B5810;color:#C58B58;">安装</span></div>
+              <div class="mini-block">
+                <div class="mini-title">最突出的优先项</div>
+                
+            <div class="mini-item">
+              <div class="mini-item-title">担心耗电量或电费单。</div>
+              <div class="mini-item-meta">能耗 | 综合分 80.6</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">窗户的类型或尺寸不兼容。</div>
+              <div class="mini-item-meta">安装 | 综合分 73.1</div>
+            </div>
+            
+            <div class="mini-item">
+              <div class="mini-item-title">不合理的安装与排气降低运行性能，增加了能耗。</div>
+              <div class="mini-item-meta">能耗 | 综合分 73.1</div>
+            </div>
+            
+              </div>
+              <div class="mini-block">
+                <div class="mini-title">相较整体更偏离的痛点</div>
+                <div class="mini-item-title">不合理的安装与排气降低运行性能，增加了能耗。</div>
+                <div class="mini-item-meta">能耗 | 综合分较整体 +15.2</div>
+              </div>
+            </article>
+            
+    </div>
+    </div>
+    <div class="overview-tab-panel" data-overview-panel="detail">
+      <div class="detail-grid">
+        <article class="detail-persona-card"><h3>空间自主掌控型</h3><p><strong>核心问题：</strong>空间控制失败 + 成本焦虑。用户已经想掌控局部空间，但机器没有把房间稳定调到想要状态，而且电费代价不低。</p><ul><li>优先痛点：耗电/电费、高温下力不从心、体感不达标、局部凉但全房间不够凉。</li><li>产品体现：精准控温、局部空间稳定输出、能效透明、电费/能耗可视化。</li></ul></article>
+        <article class="detail-persona-card"><h3>便捷安居实用型</h3><p><strong>核心问题：</strong>效果够用，但用起来不够省事。他们更在意现实生活里是否好装、好用、少维护。</p><ul><li>优先痛点：耗电、配件不匹配、安装密封麻烦、高温下效果下降、排水操作别扭。</li><li>产品体现：低门槛安装、易移动收纳、少维护、安装引导和维护提醒。</li></ul></article>
+        <article class="detail-persona-card"><h3>家庭健康守护型</h3><p><strong>核心问题：</strong>家庭照护 / 睡眠保障失效。关键房间不舒服会影响家人的睡眠、照护和家庭安排。</p><ul><li>优先痛点：体感不够凉、高温更难降温、BTU/性能与真实体验不符、夜间舒适不稳定。</li><li>产品体现：夜间舒适、安静、关键房间持续稳定、远程监控/远程调节。</li></ul></article>
+        <article class="detail-persona-card"><h3>局部速冷控温型</h3><p><strong>核心问题：</strong>局部速冷效率失灵。他们不是慢慢变舒服就行，而是希望一开机就尽快见效。</p><ul><li>优先痛点：极端高温顶不住、运行一段时间后不够冷、局部降温不彻底、长时间效果打折。</li><li>产品体现：快速见效、高温不掉性能、一键速冷、场景预设。</li></ul></article>
+        <article class="detail-persona-card"><h3>有限空间平衡型</h3><p><strong>核心问题：</strong>小空间生活代价放大。问题不只是冷不冷，而是噪音、排水、体积和打扰感在小空间里都更明显。</p><ul><li>优先痛点：噪音干扰通话/会议/远程办公、排水不方便、高温与能耗压力、小空间打扰感。</li><li>产品体现：安静、小体积、低打扰、排水低负担、夜间静音和智能排水提醒。</li></ul></article>
+        <article class="detail-persona-card"><h3>理性应急准备型</h3><p><strong>核心问题：</strong>低频使用，但关键时刻不能失效。他们不一定天天用，但真遇到热浪、主系统故障或停电风险时必须可靠。</p><ul><li>优先痛点：耗电/电费、安装排风不合理导致能耗更高、外观不协调、应急场景下可靠性。</li><li>产品体现：应急可靠性、快速可用、备用安心感、备用模式和快速启动指南。</li></ul></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section-head">
+      <div>
+        <h2>二、类目热力图</h2>
+        <p>把单题先卷到类目层看，判断哪一类问题在不同人群中最值得被优先解决。可以在 R值 与 综合分 之间切换。</p>
+      </div>
+    </div>
+    <div class="heatmap-shell">
+      <div class="button-row" id="heatmap-metric-buttons"></div>
+      <div id="heatmap-wrap"></div>
+      <div class="muted-box">热力图中的每个格子，都是对应人群在该类目下所有细分痛点的平均值。颜色越深，说明该类目在该人群中越需要重点关注。</div>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="section-head">
+      <div>
+        <h2>三、痛点对比台</h2>
+        <p>先选人群，再选对比维度与呈现数量。第一个选中的人群会决定痛点清单，其他人群只是在这份清单上展示各自的对应数值。</p>
+      </div>
+    </div>
+    <div class="cluster-selector" id="cluster-selector"></div>
+    <div class="compare-toolbar">
+      <article class="toolbar-card">
+        <div class="filter-title">对比维度</div>
+        <div class="button-row" id="compare-metric-buttons"></div>
+      </article>
+      <article class="toolbar-card">
+        <div class="filter-title">呈现数量</div>
+        <div class="button-row" id="compare-range-buttons"></div>
+      </article>
+      <article class="toolbar-card">
+        <div class="filter-title">痛点标签</div>
+        <div class="button-row" id="compare-category-buttons"></div>
+      </article>
+      <article class="toolbar-card">
+        <div class="filter-title">说明</div>
+        <div class="panel-note" id="compare-anchor-note"></div>
+      </article>
+    </div>
+    <div class="chart-list" id="compare-chart-list" style="margin-top:18px;"></div>
+  </section>
+</div>
+
+<script>
+const DATA = {"clusterMeta": [{"id": "cluster-1", "name": "空间自主掌控型", "long_name": "全权掌控个人空间的温度（To take full control of the temperature in my personal space and achieve my ideal level of cooling comfort.）。原局部速冷控温型", "sample_size": 89, "color": "#2F435A"}, {"id": "cluster-2", "name": "便捷安居实用型", "long_name": "空间有限、安装便捷的实用方案（To get a practical cooling solution that fits limited space and is easier than installing other AC types.）", "sample_size": 86, "color": "#9E8E7D"}, {"id": "cluster-3", "name": "家庭健康守护型", "long_name": "守护家人的睡眠舒适度（To ensure a comfortable sleep environment for family members (especially children or the elderly), even if it requires more effort from me.）", "sample_size": 64, "color": "#6E8B74"}, {"id": "cluster-4", "name": "局部速冷控温型", "long_name": "无需全屋制冷，快速冷却独立小空间（To cool a small bedroom or studio quickly without overcooling the whole space.）", "sample_size": 51, "color": "#9F7A81"}, {"id": "cluster-5", "name": "有限空间平衡型", "long_name": "兼顾小户型的舒适、静音、体积与成本（To balance comfort, noise, size, and cost in a smaller living environment where every trade-off is more noticeable.）", "sample_size": 51, "color": "#5B8296"}, {"id": "cluster-6", "name": "理性应急准备型", "long_name": "应对紧急情况/极端高温的可靠备用选择（To have a reliable backup for emergencies or extreme heatwaves; not needed daily but important as a safety net.）", "sample_size": 39, "color": "#C58B58"}], "overview": [{"cluster": "空间自主掌控型", "sample_size": 89, "top_categories": ["制冷", "能耗", "噪音"], "top_item": {"category": "能耗", "pain_desc": "担心耗电量或电费单。", "mention_pct": 58.4, "r_value": 84.9, "composite": 76.9}, "top_r_item": {"category": "安装", "pain_desc": "安装时需要额外的工具。", "r_value": 100.0}, "distinctive_item": {"category": "安装", "pain_desc": "安装时需要额外的工具。", "gap": 17.9}, "top_items": [{"category": "能耗", "pain_desc": "担心耗电量或电费单。", "composite": 76.9}, {"category": "制冷", "pain_desc": "极端高温让降温变难 / 机器在非常炎热时力不从心。", "composite": 74.4}, {"category": "安装", "pain_desc": "安装时需要额外的工具。", "composite": 73.7}]}, {"cluster": "便捷安居实用型", "sample_size": 86, "top_categories": ["制冷", "能耗", "噪音"], "top_item": {"category": "能耗", "pain_desc": "担心耗电量或电费单。", "mention_pct": 53.5, "r_value": 88.0, "composite": 77.6}, "top_r_item": {"category": "安装", "pain_desc": "配件缺失或不匹配，增加了安装难度。", "r_value": 100.0}, "distinctive_item": {"category": "排水", "pain_desc": "排水口的位置很难够到，操作别扭。", "gap": 11.8}, "top_items": [{"category": "能耗", "pain_desc": "担心耗电量或电费单。", "composite": 77.6}, {"category": "安装", "pain_desc": "配件缺失或不匹配，增加了安装难度。", "composite": 71.7}, {"category": "制冷", "pain_desc": "房间的实际体感温度没有设定的温度那么凉快。", "composite": 70.4}]}, {"cluster": "家庭健康守护型", "sample_size": 64, "top_categories": ["制冷", "能耗", "噪音"], "top_item": {"category": "制冷", "pain_desc": "房间的实际体感温度没有设定的温度那么凉快。", "mention_pct": 48.4, "r_value": 89.1, "composite": 76.9}, "top_r_item": {"category": "制冷", "pain_desc": "宣传的 BTU（制冷量）/ 性能与实际使用体验不符。", "r_value": 100.0}, "distinctive_item": {"category": "制冷", "pain_desc": "宣传的 BTU（制冷量）/ 性能与实际使用体验不符。", "gap": 21.1}, "top_items": [{"category": "制冷", "pain_desc": "房间的实际体感温度没有设定的温度那么凉快。", "composite": 76.9}, {"category": "能耗", "pain_desc": "担心耗电量或电费单。", "composite": 75.5}, {"category": "制冷", "pain_desc": "机器附近感觉挺凉快，但无法覆盖到整个房间。", "composite": 75.2}]}, {"cluster": "局部速冷控温型", "sample_size": 51, "top_categories": ["能耗", "噪音", "制冷"], "top_item": {"category": "制冷", "pain_desc": "极端高温让降温变难 / 机器在非常炎热时力不从心。", "mention_pct": 31.4, "r_value": 96.1, "composite": 76.7}, "top_r_item": {"category": "制冷", "pain_desc": "机器运行一段时间后就不再吹冷风了。", "r_value": 100.0}, "distinctive_item": {"category": "排水", "pain_desc": "排水口的位置很难够到，操作别扭。", "gap": 17.7}, "top_items": [{"category": "制冷", "pain_desc": "极端高温让降温变难 / 机器在非常炎热时力不从心。", "composite": 76.7}, {"category": "能耗", "pain_desc": "担心耗电量或电费单。", "composite": 75.4}, {"category": "制冷", "pain_desc": "即使机器一直在运行，但随着时间推移，感觉制冷效果变差了。", "composite": 74.7}]}, {"cluster": "有限空间平衡型", "sample_size": 51, "top_categories": ["能耗", "制冷", "噪音"], "top_item": {"category": "噪音", "pain_desc": "噪音干扰了接打电话、会议、打游戏或远程办公。", "mention_pct": 25.5, "r_value": 100.0, "composite": 77.6}, "top_r_item": {"category": "噪音", "pain_desc": "压缩机循环运行或启动/停机时的噪音很吵。", "r_value": 100.0}, "distinctive_item": {"category": "排水", "pain_desc": "排水系统的安装/设置很不方便。", "gap": 19.2}, "top_items": [{"category": "噪音", "pain_desc": "噪音干扰了接打电话、会议、打游戏或远程办公。", "composite": 77.6}, {"category": "制冷", "pain_desc": "即使机器一直在运行，但随着时间推移，感觉制冷效果变差了。", "composite": 77.6}, {"category": "能耗", "pain_desc": "天气极热或房屋隔热差，导致机器工作得更吃力。", "composite": 75.0}]}, {"cluster": "理性应急准备型", "sample_size": 39, "top_categories": ["能耗", "制冷", "安装"], "top_item": {"category": "能耗", "pain_desc": "担心耗电量或电费单。", "mention_pct": 56.4, "r_value": 91.0, "composite": 80.6}, "top_r_item": {"category": "安装", "pain_desc": "安装后的外观与房间的美观度不协调。", "r_value": 100.0}, "distinctive_item": {"category": "能耗", "pain_desc": "不合理的安装与排气降低运行性能，增加了能耗。", "gap": 15.2}, "top_items": [{"category": "能耗", "pain_desc": "担心耗电量或电费单。", "composite": 80.6}, {"category": "安装", "pain_desc": "窗户的类型或尺寸不兼容。", "composite": 73.1}, {"category": "能耗", "pain_desc": "不合理的安装与排气降低运行性能，增加了能耗。", "composite": 73.1}]}], "rows": [{"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "机器附近感觉挺凉快，但无法覆盖到整个房间。", "pain_code": "pain_cooling_felt_cool_near_unit_but_not_across_whole", "mention_pct": 38.2022, "r_value": 82.0, "composite_70_30": 68.8607, "mention_gap_vs_overall": -6.7978, "r_gap_vs_overall": 1.2058, "composite_gap_vs_overall": -1.1953, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "房间或空间太大，超出了机器的制冷能力。", "pain_code": "pain_cooling_room_space_was_too_large_unit", "mention_pct": 30.3371, "r_value": 69.5, "composite_70_30": 57.7511, "mention_gap_vs_overall": 4.2844, "r_gap_vs_overall": -7.4979, "composite_gap_vs_overall": -3.9632, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "排气管散发的热量降低了制冷效果。", "pain_code": "pain_cooling_heat_exhaust_hose_reduced_cooling_effect", "mention_pct": 12.3596, "r_value": 82.0, "composite_70_30": 61.1079, "mention_gap_vs_overall": -2.9036, "r_gap_vs_overall": 7.9667, "composite_gap_vs_overall": 4.7056, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "机器运行一段时间后就不再吹冷风了。", "pain_code": "pain_cooling_unit_stopped_blowing_cold_air_after_some_time", "mention_pct": 16.8539, "r_value": 92.5, "composite_70_30": 69.8062, "mention_gap_vs_overall": -1.8303, "r_gap_vs_overall": 2.382, "composite_gap_vs_overall": 1.1183, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "宣传的 BTU（制冷量）/ 性能与实际使用体验不符。", "pain_code": "pain_cooling_advertised_btu_performance_did_not_match_actual_experience", "mention_pct": 13.4831, "r_value": 76.6667, "composite_70_30": 57.7116, "mention_gap_vs_overall": 0.3253, "r_gap_vs_overall": 6.3969, "composite_gap_vs_overall": 4.5754, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "安装或窗户密封问题导致制冷性能下降。", "pain_code": "pain_cooling_installation_window_sealing_issues_reduced_cooling_performance", "mention_pct": 32.5843, "r_value": 77.2222, "composite_70_30": 63.8308, "mention_gap_vs_overall": 0.2158, "r_gap_vs_overall": 0.3213, "composite_gap_vs_overall": 0.2896, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "极端高温让降温变难 / 机器在非常炎热时力不从心。", "pain_code": "pain_cooling_extreme_heat_made_room_harder_cool_unit_not", "mention_pct": 50.5618, "r_value": 84.6296, "composite_70_30": 74.4093, "mention_gap_vs_overall": 10.2986, "r_gap_vs_overall": -2.4874, "composite_gap_vs_overall": 1.3484, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "房间的实际体感温度没有设定的温度那么凉快。", "pain_code": "pain_cooling_room_did_not_feel_cool_temperature_setting_suggested", "mention_pct": 46.0674, "r_value": 81.1111, "composite_70_30": 70.598, "mention_gap_vs_overall": 5.0148, "r_gap_vs_overall": -1.8152, "composite_gap_vs_overall": 0.2338, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "房间需要花太长时间才能让人感到凉快。", "pain_code": "pain_cooling_took_too_long_room_feel_cool", "mention_pct": 28.0899, "r_value": 79.6667, "composite_70_30": 64.1936, "mention_gap_vs_overall": -4.2785, "r_gap_vs_overall": -0.0309, "composite_gap_vs_overall": -1.3052, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "即使机器一直在运行，但随着时间推移，感觉制冷效果变差了。", "pain_code": "pain_cooling_cooling_felt_less_effective_over_time_even_though", "mention_pct": 26.9663, "r_value": 84.4444, "composite_70_30": 67.201, "mention_gap_vs_overall": -1.1916, "r_gap_vs_overall": -2.3316, "composite_gap_vs_overall": -1.9896, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "噪音太大导致无法开到强力制冷所需的档位（权衡）。", "pain_code": "pain_cooling_noise_tradeoff", "mention_pct": 26.9663, "r_value": 77.7778, "composite_70_30": 62.5343, "mention_gap_vs_overall": -6.1916, "r_gap_vs_overall": -2.3057, "composite_gap_vs_overall": -3.4715, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "用电或电路限制（例如：导致断路器跳闸）。", "pain_code": "pain_cooling_electrical_circuit_limitations_breaker_trips", "mention_pct": 12.3596, "r_value": 87.5, "composite_70_30": 64.9579, "mention_gap_vs_overall": 0.7806, "r_gap_vs_overall": 0.3512, "composite_gap_vs_overall": 0.48, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "制冷", "pain_desc": "维护问题降低了制冷效果（如：滤网堵塞、水箱已满等）。", "pain_code": "pain_cooling_maintenance_issues_reduced_cooling_effect_filter_clogged_water", "mention_pct": 13.4831, "r_value": 77.5, "composite_70_30": 58.2949, "mention_gap_vs_overall": 0.8516, "r_gap_vs_overall": 3.1584, "composite_gap_vs_overall": 2.4663, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "购买前不确定机器的尺寸是否合适。", "pain_code": "pain_install_was_unsure_whether_unit_size_fit_before_purchase", "mention_pct": 16.8539, "r_value": 82.5, "composite_70_30": 62.8062, "mention_gap_vs_overall": -0.5145, "r_gap_vs_overall": 11.1246, "composite_gap_vs_overall": 7.6329, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "担心会损坏窗户、墙壁或房屋结构。", "pain_code": "pain_install_was_concerned_damaging_window_wall_home_structure", "mention_pct": 31.4607, "r_value": 74.0, "composite_70_30": 61.2382, "mention_gap_vs_overall": 0.9344, "r_gap_vs_overall": -0.3996, "composite_gap_vs_overall": 0.0006, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "说明书不清晰或令人困惑。", "pain_code": "pain_install_instructions_were_unclear_confusing", "mention_pct": 11.236, "r_value": 72.0, "composite_70_30": 53.7708, "mention_gap_vs_overall": -1.9219, "r_gap_vs_overall": 4.7221, "composite_gap_vs_overall": 2.7289, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "配件缺失或不匹配，增加了安装难度。", "pain_code": "pain_install_missing_unsuitable_parts_made_setup_harder", "mention_pct": 6.7416, "r_value": 100.0, "composite_70_30": 72.0225, "mention_gap_vs_overall": -0.6268, "r_gap_vs_overall": 7.8276, "composite_gap_vs_overall": 5.2913, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "安装时需要额外的工具。", "pain_code": "pain_install_extra_tools_were_needed_installation", "mention_pct": 12.3596, "r_value": 100.0, "composite_70_30": 73.7079, "mention_gap_vs_overall": -1.5878, "r_gap_vs_overall": 26.193, "composite_gap_vs_overall": 17.8587, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "安装后的外观与房间的美观度不协调。", "pain_code": "pain_install_setup_did_not_match_room_aesthetics", "mention_pct": 22.4719, "r_value": 71.875, "composite_70_30": 57.0541, "mention_gap_vs_overall": 4.314, "r_gap_vs_overall": -1.0046, "composite_gap_vs_overall": 0.591, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "窗户的类型或尺寸不兼容。", "pain_code": "pain_install_window_type_window_size_was_not_compatible", "mention_pct": 15.7303, "r_value": 83.3333, "composite_70_30": 63.0524, "mention_gap_vs_overall": 1.2567, "r_gap_vs_overall": 3.0496, "composite_gap_vs_overall": 2.5117, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "排气管或管道连接处很难安装。", "pain_code": "pain_install_exhaust_hose_hose_connection_was_difficult_install", "mention_pct": 12.3596, "r_value": 65.0, "composite_70_30": 49.2079, "mention_gap_vs_overall": -3.1668, "r_gap_vs_overall": -12.598, "composite_gap_vs_overall": -9.7686, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "机器太重或很难挪到合适的位置。", "pain_code": "pain_install_unit_was_too_heavy_difficult_position", "mention_pct": 23.5955, "r_value": 81.25, "composite_70_30": 63.9537, "mention_gap_vs_overall": 3.5955, "r_gap_vs_overall": -1.2007, "composite_gap_vs_overall": 0.2382, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "需要额外的密封措施或进行改装。", "pain_code": "pain_install_extra_sealing_modification_was_needed", "mention_pct": 39.3258, "r_value": 72.6667, "composite_70_30": 62.6644, "mention_gap_vs_overall": 3.0101, "r_gap_vs_overall": -5.2548, "composite_gap_vs_overall": -2.7754, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "安装花费了太多时间。", "pain_code": "pain_install_installation_took_too_time", "mention_pct": 17.9775, "r_value": 76.6667, "composite_70_30": 59.0599, "mention_gap_vs_overall": 2.4512, "r_gap_vs_overall": 7.1895, "composite_gap_vs_overall": 5.768, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "即便移动机器，依然需要重复部分安装步骤。", "pain_code": "pain_install_moving_unit_still_required_setup_steps", "mention_pct": 17.9775, "r_value": 75.0, "composite_70_30": 57.8933, "mention_gap_vs_overall": 4.5565, "r_gap_vs_overall": 15.9314, "composite_gap_vs_overall": 12.5189, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "安装", "pain_desc": "重新安装、拆卸或收纳机器非常不便。", "pain_code": "pain_install_reinstalling_removing_storing_unit_was_inconvenient", "mention_pct": 30.3371, "r_value": 71.6667, "composite_70_30": 59.2678, "mention_gap_vs_overall": 0.3371, "r_gap_vs_overall": -1.1923, "composite_gap_vs_overall": -0.7335, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "噪音", "pain_desc": "机器在夜间或睡觉时干扰尤其严重。", "pain_code": "pain_noise_unit_was_especially_disruptive_night_during_sleep", "mention_pct": 14.6067, "r_value": 72.5, "composite_70_30": 55.132, "mention_gap_vs_overall": -4.3406, "r_gap_vs_overall": -6.7328, "composite_gap_vs_overall": -6.0151, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "噪音", "pain_desc": "噪音干扰了接打电话、会议、打游戏或远程办公。", "pain_code": "pain_noise_noise_interfered_calls_meetings_gaming_remote_work", "mention_pct": 20.2247, "r_value": 86.1111, "composite_70_30": 66.3452, "mention_gap_vs_overall": -1.0911, "r_gap_vs_overall": 2.0035, "composite_gap_vs_overall": 1.0751, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "噪音", "pain_desc": "噪音让人很难听清电视、音乐或其他媒体的声音。", "pain_code": "pain_noise_noise_made_harder_hear_tv_music_other_media", "mention_pct": 32.5843, "r_value": 69.6875, "composite_70_30": 58.5565, "mention_gap_vs_overall": -6.0999, "r_gap_vs_overall": -5.2707, "composite_gap_vs_overall": -5.5194, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "噪音", "pain_desc": "家庭聚会或家里招待客人时，噪音很煞风景。", "pain_code": "pain_noise_noise_was_disruptive_during_family_gatherings_hosting_home", "mention_pct": 15.7303, "r_value": 75.0, "composite_70_30": 57.2191, "mention_gap_vs_overall": 6.783, "r_gap_vs_overall": -0.3159, "composite_gap_vs_overall": 1.8138, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "噪音", "pain_desc": "风扇声或风流动的声音很大。", "pain_code": "pain_noise_fan_airflow_noise_was_loud", "mention_pct": 32.5843, "r_value": 76.6667, "composite_70_30": 63.4419, "mention_gap_vs_overall": 3.9001, "r_gap_vs_overall": -1.5531, "composite_gap_vs_overall": 0.0829, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "噪音", "pain_desc": "压缩机循环运行或启动/停机时的噪音很吵。", "pain_code": "pain_noise_compressor_cycling_startup_shutdown_noise_was_disruptive", "mention_pct": 15.7303, "r_value": 83.3333, "composite_70_30": 63.0524, "mention_gap_vs_overall": 1.5198, "r_gap_vs_overall": 10.3904, "composite_gap_vs_overall": 7.7292, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "噪音", "pain_desc": "咔哒声、震动声或机械音让人觉得很吵闹。", "pain_code": "pain_noise_rattling_vibration_mechanical_sounds_made_feel_noisy", "mention_pct": 17.9775, "r_value": 81.25, "composite_70_30": 62.2683, "mention_gap_vs_overall": -2.0225, "r_gap_vs_overall": 1.4529, "composite_gap_vs_overall": 0.4103, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "噪音", "pain_desc": "为了减少噪音不得不调低档位，牺牲了制冷性能。", "pain_code": "pain_noise_had_use_lower_setting_reduce_noise_also_reduced", "mention_pct": 31.4607, "r_value": 85.0, "composite_70_30": 68.9382, "mention_gap_vs_overall": 4.6186, "r_gap_vs_overall": 6.469, "composite_gap_vs_overall": 5.9139, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "噪音", "pain_desc": "房间小或离机器太近，噪音听起来更明显。", "pain_code": "pain_noise_noise_felt_worse_because_room_was_small_unit", "mention_pct": 11.236, "r_value": 87.5, "composite_70_30": 64.6208, "mention_gap_vs_overall": -2.7114, "r_gap_vs_overall": 11.6812, "composite_gap_vs_overall": 7.3634, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "排水", "pain_desc": "排水系统的安装/设置很不方便。", "pain_code": "pain_drain_drain_setup_was_inconvenient", "mention_pct": 12.3596, "r_value": 30.0, "composite_70_30": 24.7079, "mention_gap_vs_overall": 1.8332, "r_gap_vs_overall": -42.2649, "composite_gap_vs_overall": -29.0355, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "排水", "pain_desc": "排水管感觉太短、质量太单薄或设计很差。", "pain_code": "pain_drain_drain_tube_felt_too_short_weak_poorly_designed", "mention_pct": 5.618, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -0.4347, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "排水", "pain_desc": "排水口的位置很难够到，操作别扭。", "pain_code": "pain_drain_drain_outlet_was_awkward_access", "mention_pct": 13.4831, "r_value": 30.0, "composite_70_30": 25.0449, "mention_gap_vs_overall": 1.3779, "r_gap_vs_overall": -20.5069, "composite_gap_vs_overall": -13.9415, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "排水", "pain_desc": "排水结构或水管连接不方便。", "pain_code": "pain_drain_drain_setup_hose_connection_was_inconvenient", "mention_pct": 10.1124, "r_value": 75.0, "composite_70_30": 55.5337, "mention_gap_vs_overall": -0.1508, "r_gap_vs_overall": -6.2204, "composite_gap_vs_overall": -4.3995, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "排水", "pain_desc": "排水感觉成了一种额外的日常维护负担。", "pain_code": "pain_drain_drainage_felt_like_extra_maintenance_burden", "mention_pct": 19.1011, "r_value": 70.8333, "composite_70_30": 55.3137, "mention_gap_vs_overall": -2.2147, "r_gap_vs_overall": -0.3433, "composite_gap_vs_overall": -0.9047, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "排水", "pain_desc": "机器存在漏水或滴水的情况。", "pain_code": "pain_drain_unit_leaked_dripped_water", "mention_pct": 24.7191, "r_value": 87.5, "composite_70_30": 68.6657, "mention_gap_vs_overall": 6.5612, "r_gap_vs_overall": 1.0211, "composite_gap_vs_overall": 2.6831, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "排水", "pain_desc": "不清楚什么时候该排水，或者该怎么排水。", "pain_code": "pain_drain_was_unclear_drain", "mention_pct": 19.1011, "r_value": 79.1667, "composite_70_30": 61.147, "mention_gap_vs_overall": 3.838, "r_gap_vs_overall": 6.875, "composite_gap_vs_overall": 5.9639, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "排水", "pain_desc": "排水功能没有达到预期的效果。", "pain_code": "pain_drain_drain_feature_did_not_work_expected", "mention_pct": 8.9888, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": 1.094, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "排水", "pain_desc": "机器需要排水的频率太高了。", "pain_code": "pain_drain_unit_needed_draining_too_often", "mention_pct": 15.7303, "r_value": 87.5, "composite_70_30": 65.9691, "mention_gap_vs_overall": 2.5724, "r_gap_vs_overall": 3.4189, "composite_gap_vs_overall": 3.1649, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "排水", "pain_desc": "我必须经常检查以防满水溢出。", "pain_code": "pain_drain_had_keep_checking_overflow", "mention_pct": 16.8539, "r_value": 77.0, "composite_70_30": 58.9562, "mention_gap_vs_overall": 0.5381, "r_gap_vs_overall": 8.5741, "composite_gap_vs_overall": 6.1633, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "排水", "pain_desc": "担心水会弄坏房间或家里的财物。", "pain_code": "pain_drain_was_worried_water_damaging_room_belongings", "mention_pct": 19.1011, "r_value": 75.8333, "composite_70_30": 58.8137, "mention_gap_vs_overall": 4.3643, "r_gap_vs_overall": -0.1393, "composite_gap_vs_overall": 1.2118, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "能耗", "pain_desc": "担心耗电量或电费单。", "pain_code": "pain_energy_was_concerned_electricity_use_utility_bills", "mention_pct": 58.427, "r_value": 84.8611, "composite_70_30": 76.9309, "mention_gap_vs_overall": 6.848, "r_gap_vs_overall": -1.9691, "composite_gap_vs_overall": 0.6761, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "能耗", "pain_desc": "制冷效率差，让人觉得它不是很节能。", "pain_code": "pain_energy_poor_efficiency", "mention_pct": 19.1011, "r_value": 76.875, "composite_70_30": 59.5428, "mention_gap_vs_overall": -0.1094, "r_gap_vs_overall": -5.4885, "composite_gap_vs_overall": -3.8748, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "能耗", "pain_desc": "机器没有提供清晰的能耗信息。", "pain_code": "pain_energy_unit_did_not_provide_clear_information_energy_use", "mention_pct": 10.1124, "r_value": 70.0, "composite_70_30": 52.0337, "mention_gap_vs_overall": 1.4281, "r_gap_vs_overall": 0.8465, "composite_gap_vs_overall": 1.021, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "能耗", "pain_desc": "机器必须运行很长时间才能保持空间凉爽。", "pain_code": "pain_energy_unit_had_run_too_long_keep_space_cool", "mention_pct": 26.9663, "r_value": 83.5, "composite_70_30": 66.5399, "mention_gap_vs_overall": 1.9663, "r_gap_vs_overall": -2.3583, "composite_gap_vs_overall": -1.0609, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "能耗", "pain_desc": "房间或空间太大，超出了机器的承载能力。", "pain_code": "pain_energy_room_space_was_too_large_unit", "mention_pct": 13.4831, "r_value": 83.0, "composite_70_30": 62.1449, "mention_gap_vs_overall": 0.3253, "r_gap_vs_overall": 2.214, "composite_gap_vs_overall": 1.6474, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "能耗", "pain_desc": "天气极热或房屋隔热差，导致机器工作得更吃力。", "pain_code": "pain_energy_very_hot_weather_poor_insulation_made_work_harder", "mention_pct": 34.8315, "r_value": 84.2857, "composite_70_30": 69.4494, "mention_gap_vs_overall": 3.5157, "r_gap_vs_overall": -3.2186, "composite_gap_vs_overall": -1.1983, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "能耗", "pain_desc": "不合理的安装与排气降低运行性能，增加了能耗。", "pain_code": "pain_energy_inefficient_setup_venting_may_have_reduced_performance", "mention_pct": 14.6067, "r_value": 75.0, "composite_70_30": 56.882, "mention_gap_vs_overall": 0.9225, "r_gap_vs_overall": -1.7781, "composite_gap_vs_overall": -0.9679, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "能耗", "pain_desc": "机器给电路或断路器带来了过大的负荷。", "pain_code": "pain_energy_unit_put_too_load_circuit_breaker", "mention_pct": 15.7303, "r_value": 91.6667, "composite_70_30": 68.8858, "mention_gap_vs_overall": 2.5724, "r_gap_vs_overall": 6.5155, "composite_gap_vs_overall": 5.3326, "sample_size": 89}, {"cluster": "空间自主掌控型", "category": "能耗", "pain_desc": "滤网堵塞或排气不畅导致机器的能效变低。", "pain_code": "pain_energy_filter_venting_efficiency", "mention_pct": 6.7416, "r_value": 70.0, "composite_70_30": 51.0225, "mention_gap_vs_overall": 1.2153, "r_gap_vs_overall": -7.2647, "composite_gap_vs_overall": -4.7207, "sample_size": 89}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "机器附近感觉挺凉快，但无法覆盖到整个房间。", "pain_code": "pain_cooling_felt_cool_near_unit_but_not_across_whole", "mention_pct": 48.8372, "r_value": 78.4091, "composite_70_30": 69.5375, "mention_gap_vs_overall": 3.8372, "r_gap_vs_overall": -2.3851, "composite_gap_vs_overall": -0.5184, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "房间或空间太大，超出了机器的制冷能力。", "pain_code": "pain_cooling_room_space_was_too_large_unit", "mention_pct": 19.7674, "r_value": 88.0, "composite_70_30": 67.5302, "mention_gap_vs_overall": -6.2852, "r_gap_vs_overall": 11.0021, "composite_gap_vs_overall": 5.8159, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "排气管散发的热量降低了制冷效果。", "pain_code": "pain_cooling_heat_exhaust_hose_reduced_cooling_effect", "mention_pct": 18.6047, "r_value": 73.5714, "composite_70_30": 57.0814, "mention_gap_vs_overall": 3.3415, "r_gap_vs_overall": -0.4618, "composite_gap_vs_overall": 0.6792, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "机器运行一段时间后就不再吹冷风了。", "pain_code": "pain_cooling_unit_stopped_blowing_cold_air_after_some_time", "mention_pct": 15.1163, "r_value": 91.6667, "composite_70_30": 68.7016, "mention_gap_vs_overall": -3.5679, "r_gap_vs_overall": 1.5487, "composite_gap_vs_overall": 0.0137, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "宣传的 BTU（制冷量）/ 性能与实际使用体验不符。", "pain_code": "pain_cooling_advertised_btu_performance_did_not_match_actual_experience", "mention_pct": 9.3023, "r_value": 78.3333, "composite_70_30": 57.624, "mention_gap_vs_overall": -3.8556, "r_gap_vs_overall": 8.0636, "composite_gap_vs_overall": 4.4878, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "安装或窗户密封问题导致制冷性能下降。", "pain_code": "pain_cooling_installation_window_sealing_issues_reduced_cooling_performance", "mention_pct": 26.7442, "r_value": 77.9167, "composite_70_30": 62.5649, "mention_gap_vs_overall": -5.6242, "r_gap_vs_overall": 1.0157, "composite_gap_vs_overall": -0.9763, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "极端高温让降温变难 / 机器在非常炎热时力不从心。", "pain_code": "pain_cooling_extreme_heat_made_room_harder_cool_unit_not", "mention_pct": 44.186, "r_value": 80.3846, "composite_70_30": 69.525, "mention_gap_vs_overall": 3.9229, "r_gap_vs_overall": -6.7324, "composite_gap_vs_overall": -3.5358, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "房间的实际体感温度没有设定的温度那么凉快。", "pain_code": "pain_cooling_room_did_not_feel_cool_temperature_setting_suggested", "mention_pct": 34.8837, "r_value": 85.625, "composite_70_30": 70.4026, "mention_gap_vs_overall": -6.1689, "r_gap_vs_overall": 2.6986, "composite_gap_vs_overall": 0.0384, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "房间需要花太长时间才能让人感到凉快。", "pain_code": "pain_cooling_took_too_long_room_feel_cool", "mention_pct": 33.7209, "r_value": 73.0, "composite_70_30": 61.2163, "mention_gap_vs_overall": 1.3525, "r_gap_vs_overall": -6.6976, "composite_gap_vs_overall": -4.2826, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "即使机器一直在运行，但随着时间推移，感觉制冷效果变差了。", "pain_code": "pain_cooling_cooling_felt_less_effective_over_time_even_though", "mention_pct": 26.7442, "r_value": 88.6667, "composite_70_30": 70.0899, "mention_gap_vs_overall": -1.4137, "r_gap_vs_overall": 1.8906, "composite_gap_vs_overall": 0.8993, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "噪音太大导致无法开到强力制冷所需的档位（权衡）。", "pain_code": "pain_cooling_noise_tradeoff", "mention_pct": 25.5814, "r_value": 74.1667, "composite_70_30": 59.5911, "mention_gap_vs_overall": -7.5765, "r_gap_vs_overall": -5.9168, "composite_gap_vs_overall": -6.4147, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "用电或电路限制（例如：导致断路器跳闸）。", "pain_code": "pain_cooling_electrical_circuit_limitations_breaker_trips", "mention_pct": 11.6279, "r_value": 93.75, "composite_70_30": 69.1134, "mention_gap_vs_overall": 0.049, "r_gap_vs_overall": 6.6012, "composite_gap_vs_overall": 4.6355, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "制冷", "pain_desc": "维护问题降低了制冷效果（如：滤网堵塞、水箱已满等）。", "pain_code": "pain_cooling_maintenance_issues_reduced_cooling_effect_filter_clogged_water", "mention_pct": 11.6279, "r_value": 77.5, "composite_70_30": 57.7384, "mention_gap_vs_overall": -1.0037, "r_gap_vs_overall": 3.1584, "composite_gap_vs_overall": 1.9097, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "购买前不确定机器的尺寸是否合适。", "pain_code": "pain_install_was_unsure_whether_unit_size_fit_before_purchase", "mention_pct": 16.2791, "r_value": 63.75, "composite_70_30": 49.5087, "mention_gap_vs_overall": -1.0894, "r_gap_vs_overall": -7.6254, "composite_gap_vs_overall": -5.6646, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "担心会损坏窗户、墙壁或房屋结构。", "pain_code": "pain_install_was_concerned_damaging_window_wall_home_structure", "mention_pct": 26.7442, "r_value": 76.6667, "composite_70_30": 61.6899, "mention_gap_vs_overall": -3.7821, "r_gap_vs_overall": 2.2671, "composite_gap_vs_overall": 0.4523, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "说明书不清晰或令人困惑。", "pain_code": "pain_install_instructions_were_unclear_confusing", "mention_pct": 13.9535, "r_value": 75.0, "composite_70_30": 56.686, "mention_gap_vs_overall": 0.7956, "r_gap_vs_overall": 7.7221, "composite_gap_vs_overall": 5.6442, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "配件缺失或不匹配，增加了安装难度。", "pain_code": "pain_install_missing_unsuitable_parts_made_setup_harder", "mention_pct": 5.814, "r_value": 100.0, "composite_70_30": 71.7442, "mention_gap_vs_overall": -1.5545, "r_gap_vs_overall": 7.8276, "composite_gap_vs_overall": 5.013, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "安装时需要额外的工具。", "pain_code": "pain_install_extra_tools_were_needed_installation", "mention_pct": 16.2791, "r_value": 68.3333, "composite_70_30": 52.7171, "mention_gap_vs_overall": 2.3317, "r_gap_vs_overall": -5.4737, "composite_gap_vs_overall": -3.1321, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "安装后的外观与房间的美观度不协调。", "pain_code": "pain_install_setup_did_not_match_room_aesthetics", "mention_pct": 12.7907, "r_value": 62.5, "composite_70_30": 47.5872, "mention_gap_vs_overall": -5.3672, "r_gap_vs_overall": -10.3796, "composite_gap_vs_overall": -8.8759, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "窗户的类型或尺寸不兼容。", "pain_code": "pain_install_window_type_window_size_was_not_compatible", "mention_pct": 16.2791, "r_value": 83.3333, "composite_70_30": 63.2171, "mention_gap_vs_overall": 1.8054, "r_gap_vs_overall": 3.0496, "composite_gap_vs_overall": 2.6764, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "排气管或管道连接处很难安装。", "pain_code": "pain_install_exhaust_hose_hose_connection_was_difficult_install", "mention_pct": 17.4419, "r_value": 74.375, "composite_70_30": 57.2951, "mention_gap_vs_overall": 1.9155, "r_gap_vs_overall": -3.223, "composite_gap_vs_overall": -1.6815, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "机器太重或很难挪到合适的位置。", "pain_code": "pain_install_unit_was_too_heavy_difficult_position", "mention_pct": 13.9535, "r_value": 84.1667, "composite_70_30": 63.1027, "mention_gap_vs_overall": -6.0465, "r_gap_vs_overall": 1.716, "composite_gap_vs_overall": -0.6127, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "需要额外的密封措施或进行改装。", "pain_code": "pain_install_extra_sealing_modification_was_needed", "mention_pct": 41.8605, "r_value": 76.6667, "composite_70_30": 66.2248, "mention_gap_vs_overall": 5.5447, "r_gap_vs_overall": -1.2548, "composite_gap_vs_overall": 0.785, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "安装花费了太多时间。", "pain_code": "pain_install_installation_took_too_time", "mention_pct": 12.7907, "r_value": 56.0, "composite_70_30": 43.0372, "mention_gap_vs_overall": -2.7356, "r_gap_vs_overall": -13.4772, "composite_gap_vs_overall": -10.2547, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "即便移动机器，依然需要重复部分安装步骤。", "pain_code": "pain_install_moving_unit_still_required_setup_steps", "mention_pct": 8.1395, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -5.2815, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "安装", "pain_desc": "重新安装、拆卸或收纳机器非常不便。", "pain_code": "pain_install_reinstalling_removing_storing_unit_was_inconvenient", "mention_pct": 27.907, "r_value": 75.625, "composite_70_30": 61.3096, "mention_gap_vs_overall": -2.093, "r_gap_vs_overall": 2.7661, "composite_gap_vs_overall": 1.3084, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "噪音", "pain_desc": "机器在夜间或睡觉时干扰尤其严重。", "pain_code": "pain_noise_unit_was_especially_disruptive_night_during_sleep", "mention_pct": 16.2791, "r_value": 86.0, "composite_70_30": 65.0837, "mention_gap_vs_overall": -2.6683, "r_gap_vs_overall": 6.7672, "composite_gap_vs_overall": 3.9365, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "噪音", "pain_desc": "噪音干扰了接打电话、会议、打游戏或远程办公。", "pain_code": "pain_noise_noise_interfered_calls_meetings_gaming_remote_work", "mention_pct": 22.093, "r_value": 82.5, "composite_70_30": 64.3779, "mention_gap_vs_overall": 0.7772, "r_gap_vs_overall": -1.6076, "composite_gap_vs_overall": -0.8922, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "噪音", "pain_desc": "噪音让人很难听清电视、音乐或其他媒体的声音。", "pain_code": "pain_noise_noise_made_harder_hear_tv_music_other_media", "mention_pct": 43.0233, "r_value": 78.3333, "composite_70_30": 67.7403, "mention_gap_vs_overall": 4.339, "r_gap_vs_overall": 3.3752, "composite_gap_vs_overall": 3.6643, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "噪音", "pain_desc": "家庭聚会或家里招待客人时，噪音很煞风景。", "pain_code": "pain_noise_noise_was_disruptive_during_family_gatherings_hosting_home", "mention_pct": 4.6512, "r_value": 77.5, "composite_70_30": 55.6453, "mention_gap_vs_overall": -4.2962, "r_gap_vs_overall": 2.1841, "composite_gap_vs_overall": 0.24, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "噪音", "pain_desc": "风扇声或风流动的声音很大。", "pain_code": "pain_noise_fan_airflow_noise_was_loud", "mention_pct": 27.907, "r_value": 82.1429, "composite_70_30": 65.8721, "mention_gap_vs_overall": -0.7772, "r_gap_vs_overall": 3.9231, "composite_gap_vs_overall": 2.513, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "噪音", "pain_desc": "压缩机循环运行或启动/停机时的噪音很吵。", "pain_code": "pain_noise_compressor_cycling_startup_shutdown_noise_was_disruptive", "mention_pct": 16.2791, "r_value": 63.3333, "composite_70_30": 49.2171, "mention_gap_vs_overall": 2.0685, "r_gap_vs_overall": -9.6096, "composite_gap_vs_overall": -6.1062, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "噪音", "pain_desc": "咔哒声、震动声或机械音让人觉得很吵闹。", "pain_code": "pain_noise_rattling_vibration_mechanical_sounds_made_feel_noisy", "mention_pct": 19.7674, "r_value": 78.3333, "composite_70_30": 60.7636, "mention_gap_vs_overall": -0.2326, "r_gap_vs_overall": -1.4638, "composite_gap_vs_overall": -1.0944, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "噪音", "pain_desc": "为了减少噪音不得不调低档位，牺牲了制冷性能。", "pain_code": "pain_noise_had_use_lower_setting_reduce_noise_also_reduced", "mention_pct": 26.7442, "r_value": 81.25, "composite_70_30": 64.8983, "mention_gap_vs_overall": -0.0979, "r_gap_vs_overall": 2.719, "composite_gap_vs_overall": 1.8739, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "噪音", "pain_desc": "房间小或离机器太近，噪音听起来更明显。", "pain_code": "pain_noise_noise_felt_worse_because_room_was_small_unit", "mention_pct": 15.1163, "r_value": 70.0, "composite_70_30": 53.5349, "mention_gap_vs_overall": 1.1689, "r_gap_vs_overall": -5.8188, "composite_gap_vs_overall": -3.7225, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "排水", "pain_desc": "排水系统的安装/设置很不方便。", "pain_code": "pain_drain_drain_setup_was_inconvenient", "mention_pct": 10.4651, "r_value": 83.3333, "composite_70_30": 61.4729, "mention_gap_vs_overall": -0.0612, "r_gap_vs_overall": 11.0684, "composite_gap_vs_overall": 7.7295, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "排水", "pain_desc": "排水管感觉太短、质量太单薄或设计很差。", "pain_code": "pain_drain_drain_tube_felt_too_short_weak_poorly_designed", "mention_pct": 8.1395, "r_value": 62.5, "composite_70_30": 46.1919, "mention_gap_vs_overall": 2.0869, "r_gap_vs_overall": 7.4148, "composite_gap_vs_overall": 5.8164, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "排水", "pain_desc": "排水口的位置很难够到，操作别扭。", "pain_code": "pain_drain_drain_outlet_was_awkward_access", "mention_pct": 12.7907, "r_value": 67.0, "composite_70_30": 50.7372, "mention_gap_vs_overall": 0.6854, "r_gap_vs_overall": 16.4931, "composite_gap_vs_overall": 11.7508, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "排水", "pain_desc": "排水结构或水管连接不方便。", "pain_code": "pain_drain_drain_setup_hose_connection_was_inconvenient", "mention_pct": 10.4651, "r_value": 70.0, "composite_70_30": 52.1395, "mention_gap_vs_overall": 0.202, "r_gap_vs_overall": -11.2204, "composite_gap_vs_overall": -7.7937, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "排水", "pain_desc": "排水感觉成了一种额外的日常维护负担。", "pain_code": "pain_drain_drainage_felt_like_extra_maintenance_burden", "mention_pct": 22.093, "r_value": 67.1429, "composite_70_30": 53.6279, "mention_gap_vs_overall": 0.7772, "r_gap_vs_overall": -4.0338, "composite_gap_vs_overall": -2.5905, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "排水", "pain_desc": "机器存在漏水或滴水的情况。", "pain_code": "pain_drain_unit_leaked_dripped_water", "mention_pct": 16.2791, "r_value": 87.0, "composite_70_30": 65.7837, "mention_gap_vs_overall": -1.8788, "r_gap_vs_overall": 0.5211, "composite_gap_vs_overall": -0.1989, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "排水", "pain_desc": "不清楚什么时候该排水，或者该怎么排水。", "pain_code": "pain_drain_was_unclear_drain", "mention_pct": 10.4651, "r_value": 65.0, "composite_70_30": 48.6395, "mention_gap_vs_overall": -4.798, "r_gap_vs_overall": -7.2917, "composite_gap_vs_overall": -6.5436, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "排水", "pain_desc": "排水功能没有达到预期的效果。", "pain_code": "pain_drain_drain_feature_did_not_work_expected", "mention_pct": 9.3023, "r_value": 75.0, "composite_70_30": 55.2907, "mention_gap_vs_overall": 1.4076, "r_gap_vs_overall": 8.3759, "composite_gap_vs_overall": 6.2854, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "排水", "pain_desc": "机器需要排水的频率太高了。", "pain_code": "pain_drain_unit_needed_draining_too_often", "mention_pct": 11.6279, "r_value": 86.6667, "composite_70_30": 64.155, "mention_gap_vs_overall": -1.53, "r_gap_vs_overall": 2.5855, "composite_gap_vs_overall": 1.3509, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "排水", "pain_desc": "我必须经常检查以防满水溢出。", "pain_code": "pain_drain_had_keep_checking_overflow", "mention_pct": 16.2791, "r_value": 63.0, "composite_70_30": 48.9837, "mention_gap_vs_overall": -0.0367, "r_gap_vs_overall": -5.4259, "composite_gap_vs_overall": -3.8091, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "排水", "pain_desc": "担心水会弄坏房间或家里的财物。", "pain_code": "pain_drain_was_worried_water_damaging_room_belongings", "mention_pct": 12.7907, "r_value": 70.0, "composite_70_30": 52.8372, "mention_gap_vs_overall": -1.9461, "r_gap_vs_overall": -5.9726, "composite_gap_vs_overall": -4.7647, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "能耗", "pain_desc": "担心耗电量或电费单。", "pain_code": "pain_energy_was_concerned_electricity_use_utility_bills", "mention_pct": 53.4884, "r_value": 88.0, "composite_70_30": 77.6465, "mention_gap_vs_overall": 1.9094, "r_gap_vs_overall": 1.1698, "composite_gap_vs_overall": 1.3917, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "能耗", "pain_desc": "制冷效率差，让人觉得它不是很节能。", "pain_code": "pain_energy_poor_efficiency", "mention_pct": 16.2791, "r_value": 76.25, "composite_70_30": 58.2587, "mention_gap_vs_overall": -2.9315, "r_gap_vs_overall": -6.1135, "composite_gap_vs_overall": -5.1589, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "能耗", "pain_desc": "机器没有提供清晰的能耗信息。", "pain_code": "pain_energy_unit_did_not_provide_clear_information_energy_use", "mention_pct": 8.1395, "r_value": 65.0, "composite_70_30": 47.9419, "mention_gap_vs_overall": -0.5447, "r_gap_vs_overall": -4.1535, "composite_gap_vs_overall": -3.0708, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "能耗", "pain_desc": "机器必须运行很长时间才能保持空间凉爽。", "pain_code": "pain_energy_unit_had_run_too_long_keep_space_cool", "mention_pct": 23.2558, "r_value": 83.1818, "composite_70_30": 65.204, "mention_gap_vs_overall": -1.7442, "r_gap_vs_overall": -2.6764, "composite_gap_vs_overall": -2.3968, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "能耗", "pain_desc": "房间或空间太大，超出了机器的承载能力。", "pain_code": "pain_energy_room_space_was_too_large_unit", "mention_pct": 10.4651, "r_value": 78.3333, "composite_70_30": 57.9729, "mention_gap_vs_overall": -2.6928, "r_gap_vs_overall": -2.4526, "composite_gap_vs_overall": -2.5247, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "能耗", "pain_desc": "天气极热或房屋隔热差，导致机器工作得更吃力。", "pain_code": "pain_energy_very_hot_weather_poor_insulation_made_work_harder", "mention_pct": 32.5581, "r_value": 86.0, "composite_70_30": 69.9674, "mention_gap_vs_overall": 1.2424, "r_gap_vs_overall": -1.5043, "composite_gap_vs_overall": -0.6803, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "能耗", "pain_desc": "不合理的安装与排气降低运行性能，增加了能耗。", "pain_code": "pain_energy_inefficient_setup_venting_may_have_reduced_performance", "mention_pct": 10.4651, "r_value": 68.3333, "composite_70_30": 50.9729, "mention_gap_vs_overall": -3.2191, "r_gap_vs_overall": -8.4447, "composite_gap_vs_overall": -6.877, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "能耗", "pain_desc": "机器给电路或断路器带来了过大的负荷。", "pain_code": "pain_energy_unit_put_too_load_circuit_breaker", "mention_pct": 9.3023, "r_value": 95.0, "composite_70_30": 69.2907, "mention_gap_vs_overall": -3.8556, "r_gap_vs_overall": 9.8488, "composite_gap_vs_overall": 5.7375, "sample_size": 86}, {"cluster": "便捷安居实用型", "category": "能耗", "pain_desc": "滤网堵塞或排气不畅导致机器的能效变低。", "pain_code": "pain_energy_filter_venting_efficiency", "mention_pct": 2.3256, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -3.2007, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 86}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "机器附近感觉挺凉快，但无法覆盖到整个房间。", "pain_code": "pain_cooling_felt_cool_near_unit_but_not_across_whole", "mention_pct": 56.25, "r_value": 83.2692, "composite_70_30": 75.1635, "mention_gap_vs_overall": 11.25, "r_gap_vs_overall": 2.4751, "composite_gap_vs_overall": 5.1075, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "房间或空间太大，超出了机器的制冷能力。", "pain_code": "pain_cooling_room_space_was_too_large_unit", "mention_pct": 31.25, "r_value": 75.7143, "composite_70_30": 62.375, "mention_gap_vs_overall": 5.1974, "r_gap_vs_overall": -1.2836, "composite_gap_vs_overall": 0.6607, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "排气管散发的热量降低了制冷效果。", "pain_code": "pain_cooling_heat_exhaust_hose_reduced_cooling_effect", "mention_pct": 12.5, "r_value": 67.5, "composite_70_30": 51.0, "mention_gap_vs_overall": -2.7632, "r_gap_vs_overall": -6.5333, "composite_gap_vs_overall": -5.4022, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "机器运行一段时间后就不再吹冷风了。", "pain_code": "pain_cooling_unit_stopped_blowing_cold_air_after_some_time", "mention_pct": 25.0, "r_value": 85.0, "composite_70_30": 67.0, "mention_gap_vs_overall": 6.3158, "r_gap_vs_overall": -5.118, "composite_gap_vs_overall": -1.6879, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "宣传的 BTU（制冷量）/ 性能与实际使用体验不符。", "pain_code": "pain_cooling_advertised_btu_performance_did_not_match_actual_experience", "mention_pct": 14.0625, "r_value": 100.0, "composite_70_30": 74.2188, "mention_gap_vs_overall": 0.9046, "r_gap_vs_overall": 29.7303, "composite_gap_vs_overall": 21.0826, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "安装或窗户密封问题导致制冷性能下降。", "pain_code": "pain_cooling_installation_window_sealing_issues_reduced_cooling_performance", "mention_pct": 39.0625, "r_value": 80.0, "composite_70_30": 67.7188, "mention_gap_vs_overall": 6.6941, "r_gap_vs_overall": 3.099, "composite_gap_vs_overall": 4.1776, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "极端高温让降温变难 / 机器在非常炎热时力不从心。", "pain_code": "pain_cooling_extreme_heat_made_room_harder_cool_unit_not", "mention_pct": 32.8125, "r_value": 93.0769, "composite_70_30": 74.9976, "mention_gap_vs_overall": -7.4507, "r_gap_vs_overall": 5.9599, "composite_gap_vs_overall": 1.9368, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "房间的实际体感温度没有设定的温度那么凉快。", "pain_code": "pain_cooling_room_did_not_feel_cool_temperature_setting_suggested", "mention_pct": 48.4375, "r_value": 89.0625, "composite_70_30": 76.875, "mention_gap_vs_overall": 7.3849, "r_gap_vs_overall": 6.1361, "composite_gap_vs_overall": 6.5108, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "房间需要花太长时间才能让人感到凉快。", "pain_code": "pain_cooling_took_too_long_room_feel_cool", "mention_pct": 28.125, "r_value": 82.5, "composite_70_30": 66.1875, "mention_gap_vs_overall": -4.2434, "r_gap_vs_overall": 2.8024, "composite_gap_vs_overall": 0.6887, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "即使机器一直在运行，但随着时间推移，感觉制冷效果变差了。", "pain_code": "pain_cooling_cooling_felt_less_effective_over_time_even_though", "mention_pct": 29.6875, "r_value": 76.25, "composite_70_30": 62.2812, "mention_gap_vs_overall": 1.5296, "r_gap_vs_overall": -10.526, "composite_gap_vs_overall": -6.9093, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "噪音太大导致无法开到强力制冷所需的档位（权衡）。", "pain_code": "pain_cooling_noise_tradeoff", "mention_pct": 35.9375, "r_value": 89.2857, "composite_70_30": 73.2812, "mention_gap_vs_overall": 2.7796, "r_gap_vs_overall": 9.2023, "composite_gap_vs_overall": 7.2755, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "用电或电路限制（例如：导致断路器跳闸）。", "pain_code": "pain_cooling_electrical_circuit_limitations_breaker_trips", "mention_pct": 10.9375, "r_value": 85.0, "composite_70_30": 62.7812, "mention_gap_vs_overall": -0.6414, "r_gap_vs_overall": -2.1488, "composite_gap_vs_overall": -1.6966, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "制冷", "pain_desc": "维护问题降低了制冷效果（如：滤网堵塞、水箱已满等）。", "pain_code": "pain_cooling_maintenance_issues_reduced_cooling_effect_filter_clogged_water", "mention_pct": 14.0625, "r_value": 62.0, "composite_70_30": 47.6187, "mention_gap_vs_overall": 1.4309, "r_gap_vs_overall": -12.3416, "composite_gap_vs_overall": -8.2099, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "购买前不确定机器的尺寸是否合适。", "pain_code": "pain_install_was_unsure_whether_unit_size_fit_before_purchase", "mention_pct": 12.5, "r_value": 55.0, "composite_70_30": 42.25, "mention_gap_vs_overall": -4.8684, "r_gap_vs_overall": -16.3754, "composite_gap_vs_overall": -12.9233, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "担心会损坏窗户、墙壁或房屋结构。", "pain_code": "pain_install_was_concerned_damaging_window_wall_home_structure", "mention_pct": 23.4375, "r_value": 70.0, "composite_70_30": 56.0312, "mention_gap_vs_overall": -7.0888, "r_gap_vs_overall": -4.3996, "composite_gap_vs_overall": -5.2063, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "说明书不清晰或令人困惑。", "pain_code": "pain_install_instructions_were_unclear_confusing", "mention_pct": 14.0625, "r_value": 45.0, "composite_70_30": 35.7188, "mention_gap_vs_overall": 0.9046, "r_gap_vs_overall": -22.2779, "composite_gap_vs_overall": -15.3231, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "配件缺失或不匹配，增加了安装难度。", "pain_code": "pain_install_missing_unsuitable_parts_made_setup_harder", "mention_pct": 9.375, "r_value": 72.5, "composite_70_30": 53.5625, "mention_gap_vs_overall": 2.0066, "r_gap_vs_overall": -19.6724, "composite_gap_vs_overall": -13.1687, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "安装时需要额外的工具。", "pain_code": "pain_install_extra_tools_were_needed_installation", "mention_pct": 15.625, "r_value": 70.0, "composite_70_30": 53.6875, "mention_gap_vs_overall": 1.6776, "r_gap_vs_overall": -3.807, "composite_gap_vs_overall": -2.1616, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "安装后的外观与房间的美观度不协调。", "pain_code": "pain_install_setup_did_not_match_room_aesthetics", "mention_pct": 20.3125, "r_value": 72.0, "composite_70_30": 56.4937, "mention_gap_vs_overall": 2.1546, "r_gap_vs_overall": -0.8796, "composite_gap_vs_overall": 0.0307, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "窗户的类型或尺寸不兼容。", "pain_code": "pain_install_window_type_window_size_was_not_compatible", "mention_pct": 9.375, "r_value": 57.5, "composite_70_30": 43.0625, "mention_gap_vs_overall": -5.0987, "r_gap_vs_overall": -22.7837, "composite_gap_vs_overall": -17.4782, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "排气管或管道连接处很难安装。", "pain_code": "pain_install_exhaust_hose_hose_connection_was_difficult_install", "mention_pct": 12.5, "r_value": 100.0, "composite_70_30": 73.75, "mention_gap_vs_overall": -3.0263, "r_gap_vs_overall": 22.402, "composite_gap_vs_overall": 14.7735, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "机器太重或很难挪到合适的位置。", "pain_code": "pain_install_unit_was_too_heavy_difficult_position", "mention_pct": 18.75, "r_value": 91.6667, "composite_70_30": 69.7917, "mention_gap_vs_overall": -1.25, "r_gap_vs_overall": 9.216, "composite_gap_vs_overall": 6.0762, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "需要额外的密封措施或进行改装。", "pain_code": "pain_install_extra_sealing_modification_was_needed", "mention_pct": 45.3125, "r_value": 78.0, "composite_70_30": 68.1937, "mention_gap_vs_overall": 8.9967, "r_gap_vs_overall": 0.0785, "composite_gap_vs_overall": 2.754, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "安装花费了太多时间。", "pain_code": "pain_install_installation_took_too_time", "mention_pct": 7.8125, "r_value": 60.0, "composite_70_30": 44.3438, "mention_gap_vs_overall": -7.7138, "r_gap_vs_overall": -9.4772, "composite_gap_vs_overall": -8.9482, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "即便移动机器，依然需要重复部分安装步骤。", "pain_code": "pain_install_moving_unit_still_required_setup_steps", "mention_pct": 12.5, "r_value": 60.0, "composite_70_30": 45.75, "mention_gap_vs_overall": -0.9211, "r_gap_vs_overall": 0.9314, "composite_gap_vs_overall": 0.3756, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "安装", "pain_desc": "重新安装、拆卸或收纳机器非常不便。", "pain_code": "pain_install_reinstalling_removing_storing_unit_was_inconvenient", "mention_pct": 32.8125, "r_value": 65.5556, "composite_70_30": 55.7326, "mention_gap_vs_overall": 2.8125, "r_gap_vs_overall": -7.3034, "composite_gap_vs_overall": -4.2686, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "噪音", "pain_desc": "机器在夜间或睡觉时干扰尤其严重。", "pain_code": "pain_noise_unit_was_especially_disruptive_night_during_sleep", "mention_pct": 18.75, "r_value": 86.4286, "composite_70_30": 66.125, "mention_gap_vs_overall": -0.1974, "r_gap_vs_overall": 7.1958, "composite_gap_vs_overall": 4.9778, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "噪音", "pain_desc": "噪音干扰了接打电话、会议、打游戏或远程办公。", "pain_code": "pain_noise_noise_interfered_calls_meetings_gaming_remote_work", "mention_pct": 28.125, "r_value": 90.5, "composite_70_30": 71.7875, "mention_gap_vs_overall": 6.8092, "r_gap_vs_overall": 6.3924, "composite_gap_vs_overall": 6.5174, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "噪音", "pain_desc": "噪音让人很难听清电视、音乐或其他媒体的声音。", "pain_code": "pain_noise_noise_made_harder_hear_tv_music_other_media", "mention_pct": 48.4375, "r_value": 75.0, "composite_70_30": 67.0312, "mention_gap_vs_overall": 9.7533, "r_gap_vs_overall": 0.0418, "composite_gap_vs_overall": 2.9553, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "噪音", "pain_desc": "家庭聚会或家里招待客人时，噪音很煞风景。", "pain_code": "pain_noise_noise_was_disruptive_during_family_gatherings_hosting_home", "mention_pct": 3.125, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -5.8224, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "噪音", "pain_desc": "风扇声或风流动的声音很大。", "pain_code": "pain_noise_fan_airflow_noise_was_loud", "mention_pct": 32.8125, "r_value": 73.8889, "composite_70_30": 61.566, "mention_gap_vs_overall": 4.1283, "r_gap_vs_overall": -4.3309, "composite_gap_vs_overall": -1.7931, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "噪音", "pain_desc": "压缩机循环运行或启动/停机时的噪音很吵。", "pain_code": "pain_noise_compressor_cycling_startup_shutdown_noise_was_disruptive", "mention_pct": 15.625, "r_value": 55.0, "composite_70_30": 43.1875, "mention_gap_vs_overall": 1.4145, "r_gap_vs_overall": -17.943, "composite_gap_vs_overall": -12.1357, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "噪音", "pain_desc": "咔哒声、震动声或机械音让人觉得很吵闹。", "pain_code": "pain_noise_rattling_vibration_mechanical_sounds_made_feel_noisy", "mention_pct": 12.5, "r_value": 80.0, "composite_70_30": 59.75, "mention_gap_vs_overall": -7.5, "r_gap_vs_overall": 0.2029, "composite_gap_vs_overall": -2.108, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "噪音", "pain_desc": "为了减少噪音不得不调低档位，牺牲了制冷性能。", "pain_code": "pain_noise_had_use_lower_setting_reduce_noise_also_reduced", "mention_pct": 15.625, "r_value": 55.0, "composite_70_30": 43.1875, "mention_gap_vs_overall": -11.2171, "r_gap_vs_overall": -23.531, "composite_gap_vs_overall": -19.8368, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "噪音", "pain_desc": "房间小或离机器太近，噪音听起来更明显。", "pain_code": "pain_noise_noise_felt_worse_because_room_was_small_unit", "mention_pct": 4.6875, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -9.2599, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "排水", "pain_desc": "排水系统的安装/设置很不方便。", "pain_code": "pain_drain_drain_setup_was_inconvenient", "mention_pct": 9.375, "r_value": 80.0, "composite_70_30": 58.8125, "mention_gap_vs_overall": -1.1513, "r_gap_vs_overall": 7.7351, "composite_gap_vs_overall": 5.0692, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "排水", "pain_desc": "排水管感觉太短、质量太单薄或设计很差。", "pain_code": "pain_drain_drain_tube_felt_too_short_weak_poorly_designed", "mention_pct": 1.5625, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -4.4901, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "排水", "pain_desc": "排水口的位置很难够到，操作别扭。", "pain_code": "pain_drain_drain_outlet_was_awkward_access", "mention_pct": 6.25, "r_value": 40.0, "composite_70_30": 29.875, "mention_gap_vs_overall": -5.8553, "r_gap_vs_overall": -10.5069, "composite_gap_vs_overall": -9.1114, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "排水", "pain_desc": "排水结构或水管连接不方便。", "pain_code": "pain_drain_drain_setup_hose_connection_was_inconvenient", "mention_pct": 7.8125, "r_value": 90.0, "composite_70_30": 65.3438, "mention_gap_vs_overall": -2.4507, "r_gap_vs_overall": 8.7796, "composite_gap_vs_overall": 5.4105, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "排水", "pain_desc": "排水感觉成了一种额外的日常维护负担。", "pain_code": "pain_drain_drainage_felt_like_extra_maintenance_burden", "mention_pct": 17.1875, "r_value": 76.6667, "composite_70_30": 58.8229, "mention_gap_vs_overall": -4.1283, "r_gap_vs_overall": 5.49, "composite_gap_vs_overall": 2.6045, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "排水", "pain_desc": "机器存在漏水或滴水的情况。", "pain_code": "pain_drain_unit_leaked_dripped_water", "mention_pct": 17.1875, "r_value": 83.75, "composite_70_30": 63.7812, "mention_gap_vs_overall": -0.9704, "r_gap_vs_overall": -2.7289, "composite_gap_vs_overall": -2.2014, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "排水", "pain_desc": "不清楚什么时候该排水，或者该怎么排水。", "pain_code": "pain_drain_was_unclear_drain", "mention_pct": 20.3125, "r_value": 60.0, "composite_70_30": 48.0938, "mention_gap_vs_overall": 5.0493, "r_gap_vs_overall": -12.2917, "composite_gap_vs_overall": -7.0894, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "排水", "pain_desc": "排水功能没有达到预期的效果。", "pain_code": "pain_drain_drain_feature_did_not_work_expected", "mention_pct": 4.6875, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -3.2072, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "排水", "pain_desc": "机器需要排水的频率太高了。", "pain_code": "pain_drain_unit_needed_draining_too_often", "mention_pct": 14.0625, "r_value": 75.0, "composite_70_30": 56.7188, "mention_gap_vs_overall": 0.9046, "r_gap_vs_overall": -9.0811, "composite_gap_vs_overall": -6.0854, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "排水", "pain_desc": "我必须经常检查以防满水溢出。", "pain_code": "pain_drain_had_keep_checking_overflow", "mention_pct": 12.5, "r_value": 73.3333, "composite_70_30": 55.0833, "mention_gap_vs_overall": -3.8158, "r_gap_vs_overall": 4.9075, "composite_gap_vs_overall": 2.2905, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "排水", "pain_desc": "担心水会弄坏房间或家里的财物。", "pain_code": "pain_drain_was_worried_water_damaging_room_belongings", "mention_pct": 14.0625, "r_value": 83.75, "composite_70_30": 62.8437, "mention_gap_vs_overall": -0.6743, "r_gap_vs_overall": 7.7774, "composite_gap_vs_overall": 5.2419, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "能耗", "pain_desc": "担心耗电量或电费单。", "pain_code": "pain_energy_was_concerned_electricity_use_utility_bills", "mention_pct": 46.875, "r_value": 87.7083, "composite_70_30": 75.4583, "mention_gap_vs_overall": -4.7039, "r_gap_vs_overall": 0.8781, "composite_gap_vs_overall": -0.7965, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "能耗", "pain_desc": "制冷效率差，让人觉得它不是很节能。", "pain_code": "pain_energy_poor_efficiency", "mention_pct": 14.0625, "r_value": 85.0, "composite_70_30": 63.7187, "mention_gap_vs_overall": -5.148, "r_gap_vs_overall": 2.6365, "composite_gap_vs_overall": 0.3012, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "能耗", "pain_desc": "机器没有提供清晰的能耗信息。", "pain_code": "pain_energy_unit_did_not_provide_clear_information_energy_use", "mention_pct": 6.25, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -2.4342, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "能耗", "pain_desc": "机器必须运行很长时间才能保持空间凉爽。", "pain_code": "pain_energy_unit_had_run_too_long_keep_space_cool", "mention_pct": 25.0, "r_value": 93.75, "composite_70_30": 73.125, "mention_gap_vs_overall": 0.0, "r_gap_vs_overall": 7.8917, "composite_gap_vs_overall": 5.5242, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "能耗", "pain_desc": "房间或空间太大，超出了机器的承载能力。", "pain_code": "pain_energy_room_space_was_too_large_unit", "mention_pct": 17.1875, "r_value": 75.0, "composite_70_30": 57.6562, "mention_gap_vs_overall": 4.0296, "r_gap_vs_overall": -5.786, "composite_gap_vs_overall": -2.8413, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "能耗", "pain_desc": "天气极热或房屋隔热差，导致机器工作得更吃力。", "pain_code": "pain_energy_very_hot_weather_poor_insulation_made_work_harder", "mention_pct": 32.8125, "r_value": 86.5385, "composite_70_30": 70.4207, "mention_gap_vs_overall": 1.4967, "r_gap_vs_overall": -0.9659, "composite_gap_vs_overall": -0.2271, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "能耗", "pain_desc": "不合理的安装与排气降低运行性能，增加了能耗。", "pain_code": "pain_energy_inefficient_setup_venting_may_have_reduced_performance", "mention_pct": 17.1875, "r_value": 66.0, "composite_70_30": 51.3562, "mention_gap_vs_overall": 3.5033, "r_gap_vs_overall": -10.7781, "composite_gap_vs_overall": -6.4937, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "能耗", "pain_desc": "机器给电路或断路器带来了过大的负荷。", "pain_code": "pain_energy_unit_put_too_load_circuit_breaker", "mention_pct": 15.625, "r_value": 75.7143, "composite_70_30": 57.6875, "mention_gap_vs_overall": 2.4671, "r_gap_vs_overall": -9.4369, "composite_gap_vs_overall": -5.8657, "sample_size": 64}, {"cluster": "家庭健康守护型", "category": "能耗", "pain_desc": "滤网堵塞或排气不畅导致机器的能效变低。", "pain_code": "pain_energy_filter_venting_efficiency", "mention_pct": 9.375, "r_value": 85.0, "composite_70_30": 62.3125, "mention_gap_vs_overall": 3.8487, "r_gap_vs_overall": 7.7353, "composite_gap_vs_overall": 6.5693, "sample_size": 64}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "机器附近感觉挺凉快，但无法覆盖到整个房间。", "pain_code": "pain_cooling_felt_cool_near_unit_but_not_across_whole", "mention_pct": 50.9804, "r_value": 81.875, "composite_70_30": 72.6066, "mention_gap_vs_overall": 5.9804, "r_gap_vs_overall": 1.0808, "composite_gap_vs_overall": 2.5507, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "房间或空间太大，超出了机器的制冷能力。", "pain_code": "pain_cooling_room_space_was_too_large_unit", "mention_pct": 19.6078, "r_value": 66.6667, "composite_70_30": 52.549, "mention_gap_vs_overall": -6.4448, "r_gap_vs_overall": -10.3313, "composite_gap_vs_overall": -9.1653, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "排气管散发的热量降低了制冷效果。", "pain_code": "pain_cooling_heat_exhaust_hose_reduced_cooling_effect", "mention_pct": 21.5686, "r_value": 50.0, "composite_70_30": 41.4706, "mention_gap_vs_overall": 6.3055, "r_gap_vs_overall": -24.0333, "composite_gap_vs_overall": -14.9316, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "机器运行一段时间后就不再吹冷风了。", "pain_code": "pain_cooling_unit_stopped_blowing_cold_air_after_some_time", "mention_pct": 13.7255, "r_value": 100.0, "composite_70_30": 74.1176, "mention_gap_vs_overall": -4.9587, "r_gap_vs_overall": 9.882, "composite_gap_vs_overall": 5.4298, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "宣传的 BTU（制冷量）/ 性能与实际使用体验不符。", "pain_code": "pain_cooling_advertised_btu_performance_did_not_match_actual_experience", "mention_pct": 19.6078, "r_value": 37.5, "composite_70_30": 32.1324, "mention_gap_vs_overall": 6.4499, "r_gap_vs_overall": -32.7697, "composite_gap_vs_overall": -21.0038, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "安装或窗户密封问题导致制冷性能下降。", "pain_code": "pain_cooling_installation_window_sealing_issues_reduced_cooling_performance", "mention_pct": 35.2941, "r_value": 66.6667, "composite_70_30": 57.2549, "mention_gap_vs_overall": 2.9257, "r_gap_vs_overall": -10.2343, "composite_gap_vs_overall": -6.2863, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "极端高温让降温变难 / 机器在非常炎热时力不从心。", "pain_code": "pain_cooling_extreme_heat_made_room_harder_cool_unit_not", "mention_pct": 31.3725, "r_value": 96.1111, "composite_70_30": 76.6895, "mention_gap_vs_overall": -8.8906, "r_gap_vs_overall": 8.9941, "composite_gap_vs_overall": 3.6287, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "房间的实际体感温度没有设定的温度那么凉快。", "pain_code": "pain_cooling_room_did_not_feel_cool_temperature_setting_suggested", "mention_pct": 37.2549, "r_value": 73.75, "composite_70_30": 62.8015, "mention_gap_vs_overall": -3.7977, "r_gap_vs_overall": -9.1764, "composite_gap_vs_overall": -7.5628, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "房间需要花太长时间才能让人感到凉快。", "pain_code": "pain_cooling_took_too_long_room_feel_cool", "mention_pct": 31.3725, "r_value": 83.125, "composite_70_30": 67.5993, "mention_gap_vs_overall": -0.9959, "r_gap_vs_overall": 3.4274, "composite_gap_vs_overall": 2.1004, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "即使机器一直在运行，但随着时间推移，感觉制冷效果变差了。", "pain_code": "pain_cooling_cooling_felt_less_effective_over_time_even_though", "mention_pct": 27.451, "r_value": 95.0, "composite_70_30": 74.7353, "mention_gap_vs_overall": -0.7069, "r_gap_vs_overall": 8.224, "composite_gap_vs_overall": 5.5447, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "噪音太大导致无法开到强力制冷所需的档位（权衡）。", "pain_code": "pain_cooling_noise_tradeoff", "mention_pct": 41.1765, "r_value": 83.3333, "composite_70_30": 70.6863, "mention_gap_vs_overall": 8.0186, "r_gap_vs_overall": 3.2499, "composite_gap_vs_overall": 4.6805, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "用电或电路限制（例如：导致断路器跳闸）。", "pain_code": "pain_cooling_electrical_circuit_limitations_breaker_trips", "mention_pct": 15.6863, "r_value": 74.0, "composite_70_30": 56.5059, "mention_gap_vs_overall": 4.1073, "r_gap_vs_overall": -13.1488, "composite_gap_vs_overall": -7.972, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "制冷", "pain_desc": "维护问题降低了制冷效果（如：滤网堵塞、水箱已满等）。", "pain_code": "pain_cooling_maintenance_issues_reduced_cooling_effect_filter_clogged_water", "mention_pct": 15.6863, "r_value": 78.3333, "composite_70_30": 59.5392, "mention_gap_vs_overall": 3.0547, "r_gap_vs_overall": 3.9917, "composite_gap_vs_overall": 3.7106, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "购买前不确定机器的尺寸是否合适。", "pain_code": "pain_install_was_unsure_whether_unit_size_fit_before_purchase", "mention_pct": 27.451, "r_value": 77.5, "composite_70_30": 62.4853, "mention_gap_vs_overall": 10.0826, "r_gap_vs_overall": 6.1246, "composite_gap_vs_overall": 7.312, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "担心会损坏窗户、墙壁或房屋结构。", "pain_code": "pain_install_was_concerned_damaging_window_wall_home_structure", "mention_pct": 39.2157, "r_value": 86.6667, "composite_70_30": 72.4314, "mention_gap_vs_overall": 8.6894, "r_gap_vs_overall": 12.2671, "composite_gap_vs_overall": 11.1938, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "说明书不清晰或令人困惑。", "pain_code": "pain_install_instructions_were_unclear_confusing", "mention_pct": 21.5686, "r_value": 63.75, "composite_70_30": 51.0956, "mention_gap_vs_overall": 8.4107, "r_gap_vs_overall": -3.5279, "composite_gap_vs_overall": 0.0537, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "配件缺失或不匹配，增加了安装难度。", "pain_code": "pain_install_missing_unsuitable_parts_made_setup_harder", "mention_pct": 11.7647, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": 4.3963, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "安装时需要额外的工具。", "pain_code": "pain_install_extra_tools_were_needed_installation", "mention_pct": 15.6863, "r_value": 50.0, "composite_70_30": 39.7059, "mention_gap_vs_overall": 1.7389, "r_gap_vs_overall": -23.807, "composite_gap_vs_overall": -16.1432, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "安装后的外观与房间的美观度不协调。", "pain_code": "pain_install_setup_did_not_match_room_aesthetics", "mention_pct": 21.5686, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": 3.4107, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "窗户的类型或尺寸不兼容。", "pain_code": "pain_install_window_type_window_size_was_not_compatible", "mention_pct": 13.7255, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -0.7482, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "排气管或管道连接处很难安装。", "pain_code": "pain_install_exhaust_hose_hose_connection_was_difficult_install", "mention_pct": 15.6863, "r_value": 71.6667, "composite_70_30": 54.8725, "mention_gap_vs_overall": 0.16, "r_gap_vs_overall": -5.9314, "composite_gap_vs_overall": -4.104, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "机器太重或很难挪到合适的位置。", "pain_code": "pain_install_unit_was_too_heavy_difficult_position", "mention_pct": 31.3725, "r_value": 72.5, "composite_70_30": 60.1618, "mention_gap_vs_overall": 11.3725, "r_gap_vs_overall": -9.9507, "composite_gap_vs_overall": -3.5537, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "需要额外的密封措施或进行改装。", "pain_code": "pain_install_extra_sealing_modification_was_needed", "mention_pct": 35.2941, "r_value": 87.5, "composite_70_30": 71.8382, "mention_gap_vs_overall": -1.0217, "r_gap_vs_overall": 9.5785, "composite_gap_vs_overall": 6.3985, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "安装花费了太多时间。", "pain_code": "pain_install_installation_took_too_time", "mention_pct": 25.4902, "r_value": 62.0, "composite_70_30": 51.0471, "mention_gap_vs_overall": 9.9639, "r_gap_vs_overall": -7.4772, "composite_gap_vs_overall": -2.2449, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "即便移动机器，依然需要重复部分安装步骤。", "pain_code": "pain_install_moving_unit_still_required_setup_steps", "mention_pct": 13.7255, "r_value": 32.5, "composite_70_30": 26.8676, "mention_gap_vs_overall": 0.3044, "r_gap_vs_overall": -26.5686, "composite_gap_vs_overall": -18.5067, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "安装", "pain_desc": "重新安装、拆卸或收纳机器非常不便。", "pain_code": "pain_install_reinstalling_removing_storing_unit_was_inconvenient", "mention_pct": 27.451, "r_value": 77.5, "composite_70_30": 62.4853, "mention_gap_vs_overall": -2.549, "r_gap_vs_overall": 4.6411, "composite_gap_vs_overall": 2.4841, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "噪音", "pain_desc": "机器在夜间或睡觉时干扰尤其严重。", "pain_code": "pain_noise_unit_was_especially_disruptive_night_during_sleep", "mention_pct": 27.451, "r_value": 78.0, "composite_70_30": 62.8353, "mention_gap_vs_overall": 8.5036, "r_gap_vs_overall": -1.2328, "composite_gap_vs_overall": 1.6881, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "噪音", "pain_desc": "噪音干扰了接打电话、会议、打游戏或远程办公。", "pain_code": "pain_noise_noise_interfered_calls_meetings_gaming_remote_work", "mention_pct": 17.6471, "r_value": 81.6667, "composite_70_30": 62.4608, "mention_gap_vs_overall": -3.6687, "r_gap_vs_overall": -2.4409, "composite_gap_vs_overall": -2.8093, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "噪音", "pain_desc": "噪音让人很难听清电视、音乐或其他媒体的声音。", "pain_code": "pain_noise_noise_made_harder_hear_tv_music_other_media", "mention_pct": 31.3725, "r_value": 79.375, "composite_70_30": 64.9743, "mention_gap_vs_overall": -7.3117, "r_gap_vs_overall": 4.4168, "composite_gap_vs_overall": 0.8983, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "噪音", "pain_desc": "家庭聚会或家里招待客人时，噪音很煞风景。", "pain_code": "pain_noise_noise_was_disruptive_during_family_gatherings_hosting_home", "mention_pct": 9.8039, "r_value": 70.0, "composite_70_30": 51.9412, "mention_gap_vs_overall": 0.8566, "r_gap_vs_overall": -5.3159, "composite_gap_vs_overall": -3.4642, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "噪音", "pain_desc": "风扇声或风流动的声音很大。", "pain_code": "pain_noise_fan_airflow_noise_was_loud", "mention_pct": 21.5686, "r_value": 73.3333, "composite_70_30": 57.8039, "mention_gap_vs_overall": -7.1156, "r_gap_vs_overall": -4.8864, "composite_gap_vs_overall": -5.5552, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "噪音", "pain_desc": "压缩机循环运行或启动/停机时的噪音很吵。", "pain_code": "pain_noise_compressor_cycling_startup_shutdown_noise_was_disruptive", "mention_pct": 17.6471, "r_value": 91.6667, "composite_70_30": 69.4608, "mention_gap_vs_overall": 3.4365, "r_gap_vs_overall": 18.7237, "composite_gap_vs_overall": 14.1375, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "噪音", "pain_desc": "咔哒声、震动声或机械音让人觉得很吵闹。", "pain_code": "pain_noise_rattling_vibration_mechanical_sounds_made_feel_noisy", "mention_pct": 29.4118, "r_value": 80.0, "composite_70_30": 64.8235, "mention_gap_vs_overall": 9.4118, "r_gap_vs_overall": 0.2029, "composite_gap_vs_overall": 2.9655, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "噪音", "pain_desc": "为了减少噪音不得不调低档位，牺牲了制冷性能。", "pain_code": "pain_noise_had_use_lower_setting_reduce_noise_also_reduced", "mention_pct": 27.451, "r_value": 95.0, "composite_70_30": 74.7353, "mention_gap_vs_overall": 0.6089, "r_gap_vs_overall": 16.469, "composite_gap_vs_overall": 11.711, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "噪音", "pain_desc": "房间小或离机器太近，噪音听起来更明显。", "pain_code": "pain_noise_noise_felt_worse_because_room_was_small_unit", "mention_pct": 21.5686, "r_value": 70.0, "composite_70_30": 55.4706, "mention_gap_vs_overall": 7.6213, "r_gap_vs_overall": -5.8188, "composite_gap_vs_overall": -1.7868, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "排水", "pain_desc": "排水系统的安装/设置很不方便。", "pain_code": "pain_drain_drain_setup_was_inconvenient", "mention_pct": 13.7255, "r_value": 84.0, "composite_70_30": 62.9176, "mention_gap_vs_overall": 3.1992, "r_gap_vs_overall": 11.7351, "composite_gap_vs_overall": 9.1743, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "排水", "pain_desc": "排水管感觉太短、质量太单薄或设计很差。", "pain_code": "pain_drain_drain_tube_felt_too_short_weak_poorly_designed", "mention_pct": 7.8431, "r_value": 35.0, "composite_70_30": 26.8529, "mention_gap_vs_overall": 1.7905, "r_gap_vs_overall": -20.0852, "composite_gap_vs_overall": -13.5225, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "排水", "pain_desc": "排水口的位置很难够到，操作别扭。", "pain_code": "pain_drain_drain_outlet_was_awkward_access", "mention_pct": 21.5686, "r_value": 71.6667, "composite_70_30": 56.6373, "mention_gap_vs_overall": 9.4634, "r_gap_vs_overall": 21.1598, "composite_gap_vs_overall": 17.6508, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "排水", "pain_desc": "排水结构或水管连接不方便。", "pain_code": "pain_drain_drain_setup_hose_connection_was_inconvenient", "mention_pct": 9.8039, "r_value": 100.0, "composite_70_30": 72.9412, "mention_gap_vs_overall": -0.4592, "r_gap_vs_overall": 18.7796, "composite_gap_vs_overall": 13.008, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "排水", "pain_desc": "排水感觉成了一种额外的日常维护负担。", "pain_code": "pain_drain_drainage_felt_like_extra_maintenance_burden", "mention_pct": 27.451, "r_value": 68.0, "composite_70_30": 55.8353, "mention_gap_vs_overall": 6.1352, "r_gap_vs_overall": -3.1766, "composite_gap_vs_overall": -0.3831, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "排水", "pain_desc": "机器存在漏水或滴水的情况。", "pain_code": "pain_drain_unit_leaked_dripped_water", "mention_pct": 19.6078, "r_value": 92.5, "composite_70_30": 70.6324, "mention_gap_vs_overall": 1.4499, "r_gap_vs_overall": 6.0211, "composite_gap_vs_overall": 4.6497, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "排水", "pain_desc": "不清楚什么时候该排水，或者该怎么排水。", "pain_code": "pain_drain_was_unclear_drain", "mention_pct": 13.7255, "r_value": 87.5, "composite_70_30": 65.3676, "mention_gap_vs_overall": -1.5377, "r_gap_vs_overall": 15.2083, "composite_gap_vs_overall": 10.1845, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "排水", "pain_desc": "排水功能没有达到预期的效果。", "pain_code": "pain_drain_drain_feature_did_not_work_expected", "mention_pct": 5.8824, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -2.0124, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "排水", "pain_desc": "机器需要排水的频率太高了。", "pain_code": "pain_drain_unit_needed_draining_too_often", "mention_pct": 13.7255, "r_value": 90.0, "composite_70_30": 67.1176, "mention_gap_vs_overall": 0.5676, "r_gap_vs_overall": 5.9189, "composite_gap_vs_overall": 4.3135, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "排水", "pain_desc": "我必须经常检查以防满水溢出。", "pain_code": "pain_drain_had_keep_checking_overflow", "mention_pct": 21.5686, "r_value": 62.5, "composite_70_30": 50.2206, "mention_gap_vs_overall": 5.2528, "r_gap_vs_overall": -5.9259, "composite_gap_vs_overall": -2.5723, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "排水", "pain_desc": "担心水会弄坏房间或家里的财物。", "pain_code": "pain_drain_was_worried_water_damaging_room_belongings", "mention_pct": 19.6078, "r_value": 62.5, "composite_70_30": 49.6324, "mention_gap_vs_overall": 4.871, "r_gap_vs_overall": -13.4726, "composite_gap_vs_overall": -7.9695, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "能耗", "pain_desc": "担心耗电量或电费单。", "pain_code": "pain_energy_was_concerned_electricity_use_utility_bills", "mention_pct": 45.098, "r_value": 88.3333, "composite_70_30": 75.3627, "mention_gap_vs_overall": -6.4809, "r_gap_vs_overall": 1.5031, "composite_gap_vs_overall": -0.8921, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "能耗", "pain_desc": "制冷效率差，让人觉得它不是很节能。", "pain_code": "pain_energy_poor_efficiency", "mention_pct": 21.5686, "r_value": 89.1667, "composite_70_30": 68.8873, "mention_gap_vs_overall": 2.3581, "r_gap_vs_overall": 6.8032, "composite_gap_vs_overall": 5.4697, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "能耗", "pain_desc": "机器没有提供清晰的能耗信息。", "pain_code": "pain_energy_unit_did_not_provide_clear_information_energy_use", "mention_pct": 13.7255, "r_value": 63.3333, "composite_70_30": 48.451, "mention_gap_vs_overall": 5.0413, "r_gap_vs_overall": -5.8201, "composite_gap_vs_overall": -2.5617, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "能耗", "pain_desc": "机器必须运行很长时间才能保持空间凉爽。", "pain_code": "pain_energy_unit_had_run_too_long_keep_space_cool", "mention_pct": 29.4118, "r_value": 89.0, "composite_70_30": 71.1235, "mention_gap_vs_overall": 4.4118, "r_gap_vs_overall": 3.1417, "composite_gap_vs_overall": 3.5228, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "能耗", "pain_desc": "房间或空间太大，超出了机器的承载能力。", "pain_code": "pain_energy_room_space_was_too_large_unit", "mention_pct": 13.7255, "r_value": 100.0, "composite_70_30": 74.1176, "mention_gap_vs_overall": 0.5676, "r_gap_vs_overall": 19.214, "composite_gap_vs_overall": 13.6201, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "能耗", "pain_desc": "天气极热或房屋隔热差，导致机器工作得更吃力。", "pain_code": "pain_energy_very_hot_weather_poor_insulation_made_work_harder", "mention_pct": 31.3725, "r_value": 88.3333, "composite_70_30": 71.2451, "mention_gap_vs_overall": 0.0568, "r_gap_vs_overall": 0.829, "composite_gap_vs_overall": 0.5973, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "能耗", "pain_desc": "不合理的安装与排气降低运行性能，增加了能耗。", "pain_code": "pain_energy_inefficient_setup_venting_may_have_reduced_performance", "mention_pct": 17.6471, "r_value": 80.0, "composite_70_30": 61.2941, "mention_gap_vs_overall": 3.9628, "r_gap_vs_overall": 3.2219, "composite_gap_vs_overall": 3.4442, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "能耗", "pain_desc": "机器给电路或断路器带来了过大的负荷。", "pain_code": "pain_energy_unit_put_too_load_circuit_breaker", "mention_pct": 17.6471, "r_value": 64.1667, "composite_70_30": 50.2108, "mention_gap_vs_overall": 4.4892, "r_gap_vs_overall": -20.9845, "composite_gap_vs_overall": -13.3424, "sample_size": 51}, {"cluster": "局部速冷控温型", "category": "能耗", "pain_desc": "滤网堵塞或排气不畅导致机器的能效变低。", "pain_code": "pain_energy_filter_venting_efficiency", "mention_pct": 7.8431, "r_value": 75.0, "composite_70_30": 54.8529, "mention_gap_vs_overall": 2.3168, "r_gap_vs_overall": -2.2647, "composite_gap_vs_overall": -0.8902, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "机器附近感觉挺凉快，但无法覆盖到整个房间。", "pain_code": "pain_cooling_felt_cool_near_unit_but_not_across_whole", "mention_pct": 41.1765, "r_value": 82.0, "composite_70_30": 69.7529, "mention_gap_vs_overall": -3.8235, "r_gap_vs_overall": 1.2058, "composite_gap_vs_overall": -0.303, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "房间或空间太大，超出了机器的制冷能力。", "pain_code": "pain_cooling_room_space_was_too_large_unit", "mention_pct": 27.451, "r_value": 85.0, "composite_70_30": 67.7353, "mention_gap_vs_overall": 1.3983, "r_gap_vs_overall": 8.0021, "composite_gap_vs_overall": 6.021, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "排气管散发的热量降低了制冷效果。", "pain_code": "pain_cooling_heat_exhaust_hose_reduced_cooling_effect", "mention_pct": 13.7255, "r_value": 86.6667, "composite_70_30": 64.7843, "mention_gap_vs_overall": -1.5377, "r_gap_vs_overall": 12.6334, "composite_gap_vs_overall": 8.3821, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "机器运行一段时间后就不再吹冷风了。", "pain_code": "pain_cooling_unit_stopped_blowing_cold_air_after_some_time", "mention_pct": 23.5294, "r_value": 94.0, "composite_70_30": 72.8588, "mention_gap_vs_overall": 4.8452, "r_gap_vs_overall": 3.882, "composite_gap_vs_overall": 4.171, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "宣传的 BTU（制冷量）/ 性能与实际使用体验不符。", "pain_code": "pain_cooling_advertised_btu_performance_did_not_match_actual_experience", "mention_pct": 13.7255, "r_value": 45.0, "composite_70_30": 35.6176, "mention_gap_vs_overall": 0.5676, "r_gap_vs_overall": -25.2697, "composite_gap_vs_overall": -17.5185, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "安装或窗户密封问题导致制冷性能下降。", "pain_code": "pain_cooling_installation_window_sealing_issues_reduced_cooling_performance", "mention_pct": 35.2941, "r_value": 70.0, "composite_70_30": 59.5882, "mention_gap_vs_overall": 2.9257, "r_gap_vs_overall": -6.901, "composite_gap_vs_overall": -3.953, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "极端高温让降温变难 / 机器在非常炎热时力不从心。", "pain_code": "pain_cooling_extreme_heat_made_room_harder_cool_unit_not", "mention_pct": 41.1765, "r_value": 87.0, "composite_70_30": 73.2529, "mention_gap_vs_overall": 0.9133, "r_gap_vs_overall": -0.117, "composite_gap_vs_overall": 0.1921, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "房间的实际体感温度没有设定的温度那么凉快。", "pain_code": "pain_cooling_room_did_not_feel_cool_temperature_setting_suggested", "mention_pct": 45.098, "r_value": 80.0, "composite_70_30": 69.5294, "mention_gap_vs_overall": 4.0454, "r_gap_vs_overall": -2.9264, "composite_gap_vs_overall": -0.8348, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "房间需要花太长时间才能让人感到凉快。", "pain_code": "pain_cooling_took_too_long_room_feel_cool", "mention_pct": 43.1373, "r_value": 82.7778, "composite_70_30": 70.8856, "mention_gap_vs_overall": 10.7688, "r_gap_vs_overall": 3.0802, "composite_gap_vs_overall": 5.3868, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "即使机器一直在运行，但随着时间推移，感觉制冷效果变差了。", "pain_code": "pain_cooling_cooling_felt_less_effective_over_time_even_though", "mention_pct": 39.2157, "r_value": 94.0, "composite_70_30": 77.5647, "mention_gap_vs_overall": 11.0578, "r_gap_vs_overall": 7.224, "composite_gap_vs_overall": 8.3741, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "噪音太大导致无法开到强力制冷所需的档位（权衡）。", "pain_code": "pain_cooling_noise_tradeoff", "mention_pct": 37.2549, "r_value": 80.625, "composite_70_30": 67.614, "mention_gap_vs_overall": 4.097, "r_gap_vs_overall": 0.5415, "composite_gap_vs_overall": 1.6082, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "用电或电路限制（例如：导致断路器跳闸）。", "pain_code": "pain_cooling_electrical_circuit_limitations_breaker_trips", "mention_pct": 15.6863, "r_value": 91.25, "composite_70_30": 68.5809, "mention_gap_vs_overall": 4.1073, "r_gap_vs_overall": 4.1012, "composite_gap_vs_overall": 4.103, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "制冷", "pain_desc": "维护问题降低了制冷效果（如：滤网堵塞、水箱已满等）。", "pain_code": "pain_cooling_maintenance_issues_reduced_cooling_effect_filter_clogged_water", "mention_pct": 11.7647, "r_value": 75.0, "composite_70_30": 56.0294, "mention_gap_vs_overall": -0.8669, "r_gap_vs_overall": 0.6584, "composite_gap_vs_overall": 0.2008, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "购买前不确定机器的尺寸是否合适。", "pain_code": "pain_install_was_unsure_whether_unit_size_fit_before_purchase", "mention_pct": 15.6863, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -1.6821, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "担心会损坏窗户、墙壁或房屋结构。", "pain_code": "pain_install_was_concerned_damaging_window_wall_home_structure", "mention_pct": 41.1765, "r_value": 69.1667, "composite_70_30": 60.7696, "mention_gap_vs_overall": 10.6502, "r_gap_vs_overall": -5.2329, "composite_gap_vs_overall": -0.468, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "说明书不清晰或令人困惑。", "pain_code": "pain_install_instructions_were_unclear_confusing", "mention_pct": 11.7647, "r_value": 77.5, "composite_70_30": 57.7794, "mention_gap_vs_overall": -1.3932, "r_gap_vs_overall": 10.2221, "composite_gap_vs_overall": 6.7375, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "配件缺失或不匹配，增加了安装难度。", "pain_code": "pain_install_missing_unsuitable_parts_made_setup_harder", "mention_pct": 7.8431, "r_value": 90.0, "composite_70_30": 65.3529, "mention_gap_vs_overall": 0.4747, "r_gap_vs_overall": -2.1724, "composite_gap_vs_overall": -1.3783, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "安装时需要额外的工具。", "pain_code": "pain_install_extra_tools_were_needed_installation", "mention_pct": 15.6863, "r_value": 65.0, "composite_70_30": 50.2059, "mention_gap_vs_overall": 1.7389, "r_gap_vs_overall": -8.807, "composite_gap_vs_overall": -5.6432, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "安装后的外观与房间的美观度不协调。", "pain_code": "pain_install_setup_did_not_match_room_aesthetics", "mention_pct": 23.5294, "r_value": 72.5, "composite_70_30": 57.8088, "mention_gap_vs_overall": 5.3715, "r_gap_vs_overall": -0.3796, "composite_gap_vs_overall": 1.3458, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "窗户的类型或尺寸不兼容。", "pain_code": "pain_install_window_type_window_size_was_not_compatible", "mention_pct": 19.6078, "r_value": 83.3333, "composite_70_30": 64.2157, "mention_gap_vs_overall": 5.1342, "r_gap_vs_overall": 3.0496, "composite_gap_vs_overall": 3.675, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "排气管或管道连接处很难安装。", "pain_code": "pain_install_exhaust_hose_hose_connection_was_difficult_install", "mention_pct": 19.6078, "r_value": 81.0, "composite_70_30": 62.5824, "mention_gap_vs_overall": 4.0815, "r_gap_vs_overall": 3.402, "composite_gap_vs_overall": 3.6058, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "机器太重或很难挪到合适的位置。", "pain_code": "pain_install_unit_was_too_heavy_difficult_position", "mention_pct": 21.5686, "r_value": 80.0, "composite_70_30": 62.4706, "mention_gap_vs_overall": 1.5686, "r_gap_vs_overall": -2.4507, "composite_gap_vs_overall": -1.2449, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "需要额外的密封措施或进行改装。", "pain_code": "pain_install_extra_sealing_modification_was_needed", "mention_pct": 19.6078, "r_value": 76.6667, "composite_70_30": 59.549, "mention_gap_vs_overall": -16.7079, "r_gap_vs_overall": -1.2548, "composite_gap_vs_overall": -5.8908, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "安装花费了太多时间。", "pain_code": "pain_install_installation_took_too_time", "mention_pct": 19.6078, "r_value": 83.3333, "composite_70_30": 64.2157, "mention_gap_vs_overall": 4.0815, "r_gap_vs_overall": 13.8561, "composite_gap_vs_overall": 10.9238, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "即便移动机器，依然需要重复部分安装步骤。", "pain_code": "pain_install_moving_unit_still_required_setup_steps", "mention_pct": 19.6078, "r_value": 56.6667, "composite_70_30": 45.549, "mention_gap_vs_overall": 6.1868, "r_gap_vs_overall": -2.402, "composite_gap_vs_overall": 0.1747, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "安装", "pain_desc": "重新安装、拆卸或收纳机器非常不便。", "pain_code": "pain_install_reinstalling_removing_storing_unit_was_inconvenient", "mention_pct": 25.4902, "r_value": 71.25, "composite_70_30": 57.5221, "mention_gap_vs_overall": -4.5098, "r_gap_vs_overall": -1.6089, "composite_gap_vs_overall": -2.4792, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "噪音", "pain_desc": "机器在夜间或睡觉时干扰尤其严重。", "pain_code": "pain_noise_unit_was_especially_disruptive_night_during_sleep", "mention_pct": 23.5294, "r_value": 72.1429, "composite_70_30": 57.5588, "mention_gap_vs_overall": 4.582, "r_gap_vs_overall": -7.0899, "composite_gap_vs_overall": -3.5883, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "噪音", "pain_desc": "噪音干扰了接打电话、会议、打游戏或远程办公。", "pain_code": "pain_noise_noise_interfered_calls_meetings_gaming_remote_work", "mention_pct": 25.4902, "r_value": 100.0, "composite_70_30": 77.6471, "mention_gap_vs_overall": 4.1744, "r_gap_vs_overall": 15.8924, "composite_gap_vs_overall": 12.377, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "噪音", "pain_desc": "噪音让人很难听清电视、音乐或其他媒体的声音。", "pain_code": "pain_noise_noise_made_harder_hear_tv_music_other_media", "mention_pct": 43.1373, "r_value": 78.6364, "composite_70_30": 67.9866, "mention_gap_vs_overall": 4.453, "r_gap_vs_overall": 3.6782, "composite_gap_vs_overall": 3.9107, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "噪音", "pain_desc": "家庭聚会或家里招待客人时，噪音很煞风景。", "pain_code": "pain_noise_noise_was_disruptive_during_family_gatherings_hosting_home", "mention_pct": 15.6863, "r_value": 77.5, "composite_70_30": 58.9559, "mention_gap_vs_overall": 6.7389, "r_gap_vs_overall": 2.1841, "composite_gap_vs_overall": 3.5506, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "噪音", "pain_desc": "风扇声或风流动的声音很大。", "pain_code": "pain_noise_fan_airflow_noise_was_loud", "mention_pct": 29.4118, "r_value": 82.0, "composite_70_30": 66.2235, "mention_gap_vs_overall": 0.7276, "r_gap_vs_overall": 3.7802, "composite_gap_vs_overall": 2.8644, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "噪音", "pain_desc": "压缩机循环运行或启动/停机时的噪音很吵。", "pain_code": "pain_noise_compressor_cycling_startup_shutdown_noise_was_disruptive", "mention_pct": 5.8824, "r_value": 100.0, "composite_70_30": 71.7647, "mention_gap_vs_overall": -8.3282, "r_gap_vs_overall": 27.057, "composite_gap_vs_overall": 16.4415, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "噪音", "pain_desc": "咔哒声、震动声或机械音让人觉得很吵闹。", "pain_code": "pain_noise_rattling_vibration_mechanical_sounds_made_feel_noisy", "mention_pct": 25.4902, "r_value": 86.0, "composite_70_30": 67.8471, "mention_gap_vs_overall": 5.4902, "r_gap_vs_overall": 6.2029, "composite_gap_vs_overall": 5.9891, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "噪音", "pain_desc": "为了减少噪音不得不调低档位，牺牲了制冷性能。", "pain_code": "pain_noise_had_use_lower_setting_reduce_noise_also_reduced", "mention_pct": 37.2549, "r_value": 77.1429, "composite_70_30": 65.1765, "mention_gap_vs_overall": 10.4128, "r_gap_vs_overall": -1.3882, "composite_gap_vs_overall": 2.1521, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "噪音", "pain_desc": "房间小或离机器太近，噪音听起来更明显。", "pain_code": "pain_noise_noise_felt_worse_because_room_was_small_unit", "mention_pct": 15.6863, "r_value": 65.0, "composite_70_30": 50.2059, "mention_gap_vs_overall": 1.7389, "r_gap_vs_overall": -10.8188, "composite_gap_vs_overall": -7.0515, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "排水", "pain_desc": "排水系统的安装/设置很不方便。", "pain_code": "pain_drain_drain_setup_was_inconvenient", "mention_pct": 9.8039, "r_value": 100.0, "composite_70_30": 72.9412, "mention_gap_vs_overall": -0.7224, "r_gap_vs_overall": 27.7351, "composite_gap_vs_overall": 19.1978, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "排水", "pain_desc": "排水管感觉太短、质量太单薄或设计很差。", "pain_code": "pain_drain_drain_tube_felt_too_short_weak_poorly_designed", "mention_pct": 1.9608, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -4.0918, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "排水", "pain_desc": "排水口的位置很难够到，操作别扭。", "pain_code": "pain_drain_drain_outlet_was_awkward_access", "mention_pct": 7.8431, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -4.2621, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "排水", "pain_desc": "排水结构或水管连接不方便。", "pain_code": "pain_drain_drain_setup_hose_connection_was_inconvenient", "mention_pct": 11.7647, "r_value": 85.0, "composite_70_30": 63.0294, "mention_gap_vs_overall": 1.5015, "r_gap_vs_overall": 3.7796, "composite_gap_vs_overall": 3.0962, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "排水", "pain_desc": "排水感觉成了一种额外的日常维护负担。", "pain_code": "pain_drain_drainage_felt_like_extra_maintenance_burden", "mention_pct": 19.6078, "r_value": 75.0, "composite_70_30": 58.3824, "mention_gap_vs_overall": -1.7079, "r_gap_vs_overall": 3.8234, "composite_gap_vs_overall": 2.164, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "排水", "pain_desc": "机器存在漏水或滴水的情况。", "pain_code": "pain_drain_unit_leaked_dripped_water", "mention_pct": 15.6863, "r_value": 90.0, "composite_70_30": 67.7059, "mention_gap_vs_overall": -2.4716, "r_gap_vs_overall": 3.5211, "composite_gap_vs_overall": 1.7233, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "排水", "pain_desc": "不清楚什么时候该排水，或者该怎么排水。", "pain_code": "pain_drain_was_unclear_drain", "mention_pct": 13.7255, "r_value": 65.0, "composite_70_30": 49.6176, "mention_gap_vs_overall": -1.5377, "r_gap_vs_overall": -7.2917, "composite_gap_vs_overall": -5.5655, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "排水", "pain_desc": "排水功能没有达到预期的效果。", "pain_code": "pain_drain_drain_feature_did_not_work_expected", "mention_pct": 5.8824, "r_value": 52.5, "composite_70_30": 38.5147, "mention_gap_vs_overall": -2.0124, "r_gap_vs_overall": -14.1241, "composite_gap_vs_overall": -10.4906, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "排水", "pain_desc": "机器需要排水的频率太高了。", "pain_code": "pain_drain_unit_needed_draining_too_often", "mention_pct": 9.8039, "r_value": 90.0, "composite_70_30": 65.9412, "mention_gap_vs_overall": -3.354, "r_gap_vs_overall": 5.9189, "composite_gap_vs_overall": 3.137, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "排水", "pain_desc": "我必须经常检查以防满水溢出。", "pain_code": "pain_drain_had_keep_checking_overflow", "mention_pct": 15.6863, "r_value": 65.0, "composite_70_30": 50.2059, "mention_gap_vs_overall": -0.6295, "r_gap_vs_overall": -3.4259, "composite_gap_vs_overall": -2.587, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "排水", "pain_desc": "担心水会弄坏房间或家里的财物。", "pain_code": "pain_drain_was_worried_water_damaging_room_belongings", "mention_pct": 7.8431, "r_value": 90.0, "composite_70_30": 65.3529, "mention_gap_vs_overall": -6.8937, "r_gap_vs_overall": 14.0274, "composite_gap_vs_overall": 7.751, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "能耗", "pain_desc": "担心耗电量或电费单。", "pain_code": "pain_energy_was_concerned_electricity_use_utility_bills", "mention_pct": 45.098, "r_value": 82.5, "composite_70_30": 71.2794, "mention_gap_vs_overall": -6.4809, "r_gap_vs_overall": -4.3302, "composite_gap_vs_overall": -4.9754, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "能耗", "pain_desc": "制冷效率差，让人觉得它不是很节能。", "pain_code": "pain_energy_poor_efficiency", "mention_pct": 25.4902, "r_value": 83.75, "composite_70_30": 66.2721, "mention_gap_vs_overall": 6.2797, "r_gap_vs_overall": 1.3865, "composite_gap_vs_overall": 2.8545, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "能耗", "pain_desc": "机器没有提供清晰的能耗信息。", "pain_code": "pain_energy_unit_did_not_provide_clear_information_energy_use", "mention_pct": 7.8431, "r_value": 87.5, "composite_70_30": 63.6029, "mention_gap_vs_overall": -0.8411, "r_gap_vs_overall": 18.3465, "composite_gap_vs_overall": 12.5902, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "能耗", "pain_desc": "机器必须运行很长时间才能保持空间凉爽。", "pain_code": "pain_energy_unit_had_run_too_long_keep_space_cool", "mention_pct": 25.4902, "r_value": 77.0, "composite_70_30": 61.5471, "mention_gap_vs_overall": 0.4902, "r_gap_vs_overall": -8.8583, "composite_gap_vs_overall": -6.0537, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "能耗", "pain_desc": "房间或空间太大，超出了机器的承载能力。", "pain_code": "pain_energy_room_space_was_too_large_unit", "mention_pct": 9.8039, "r_value": 85.0, "composite_70_30": 62.4412, "mention_gap_vs_overall": -3.354, "r_gap_vs_overall": 4.214, "composite_gap_vs_overall": 1.9436, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "能耗", "pain_desc": "天气极热或房屋隔热差，导致机器工作得更吃力。", "pain_code": "pain_energy_very_hot_weather_poor_insulation_made_work_harder", "mention_pct": 23.5294, "r_value": 97.0, "composite_70_30": 74.9588, "mention_gap_vs_overall": -7.7864, "r_gap_vs_overall": 9.4957, "composite_gap_vs_overall": 4.3111, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "能耗", "pain_desc": "不合理的安装与排气降低运行性能，增加了能耗。", "pain_code": "pain_energy_inefficient_setup_venting_may_have_reduced_performance", "mention_pct": 11.7647, "r_value": 86.6667, "composite_70_30": 64.1961, "mention_gap_vs_overall": -1.9195, "r_gap_vs_overall": 9.8886, "composite_gap_vs_overall": 6.3462, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "能耗", "pain_desc": "机器给电路或断路器带来了过大的负荷。", "pain_code": "pain_energy_unit_put_too_load_circuit_breaker", "mention_pct": 15.6863, "r_value": 90.0, "composite_70_30": 67.7059, "mention_gap_vs_overall": 2.5284, "r_gap_vs_overall": 4.8488, "composite_gap_vs_overall": 4.1527, "sample_size": 51}, {"cluster": "有限空间平衡型", "category": "能耗", "pain_desc": "滤网堵塞或排气不畅导致机器的能效变低。", "pain_code": "pain_energy_filter_venting_efficiency", "mention_pct": 5.8824, "r_value": 82.5, "composite_70_30": 59.5147, "mention_gap_vs_overall": 0.356, "r_gap_vs_overall": 5.2353, "composite_gap_vs_overall": 3.7715, "sample_size": 51}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "机器附近感觉挺凉快，但无法覆盖到整个房间。", "pain_code": "pain_cooling_felt_cool_near_unit_but_not_across_whole", "mention_pct": 30.7692, "r_value": 76.25, "composite_70_30": 62.6058, "mention_gap_vs_overall": -14.2308, "r_gap_vs_overall": -4.5442, "composite_gap_vs_overall": -7.4502, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "房间或空间太大，超出了机器的制冷能力。", "pain_code": "pain_cooling_room_space_was_too_large_unit", "mention_pct": 28.2051, "r_value": 75.0, "composite_70_30": 60.9615, "mention_gap_vs_overall": 2.1525, "r_gap_vs_overall": -1.9979, "composite_gap_vs_overall": -0.7528, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "排气管散发的热量降低了制冷效果。", "pain_code": "pain_cooling_heat_exhaust_hose_reduced_cooling_effect", "mention_pct": 12.8205, "r_value": 82.5, "composite_70_30": 61.5962, "mention_gap_vs_overall": -2.4426, "r_gap_vs_overall": 8.4667, "composite_gap_vs_overall": 5.1939, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "机器运行一段时间后就不再吹冷风了。", "pain_code": "pain_cooling_unit_stopped_blowing_cold_air_after_some_time", "mention_pct": 20.5128, "r_value": 71.6667, "composite_70_30": 56.3205, "mention_gap_vs_overall": 1.8286, "r_gap_vs_overall": -18.4513, "composite_gap_vs_overall": -12.3673, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "宣传的 BTU（制冷量）/ 性能与实际使用体验不符。", "pain_code": "pain_cooling_advertised_btu_performance_did_not_match_actual_experience", "mention_pct": 10.2564, "r_value": 65.0, "composite_70_30": 48.5769, "mention_gap_vs_overall": -2.9015, "r_gap_vs_overall": -5.2697, "composite_gap_vs_overall": -4.5593, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "安装或窗户密封问题导致制冷性能下降。", "pain_code": "pain_cooling_installation_window_sealing_issues_reduced_cooling_performance", "mention_pct": 25.641, "r_value": 91.25, "composite_70_30": 71.5673, "mention_gap_vs_overall": -6.7274, "r_gap_vs_overall": 14.349, "composite_gap_vs_overall": 8.0261, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "极端高温让降温变难 / 机器在非常炎热时力不从心。", "pain_code": "pain_cooling_extreme_heat_made_room_harder_cool_unit_not", "mention_pct": 30.7692, "r_value": 86.25, "composite_70_30": 69.6058, "mention_gap_vs_overall": -9.4939, "r_gap_vs_overall": -0.867, "composite_gap_vs_overall": -3.4551, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "房间的实际体感温度没有设定的温度那么凉快。", "pain_code": "pain_cooling_room_did_not_feel_cool_temperature_setting_suggested", "mention_pct": 30.7692, "r_value": 86.875, "composite_70_30": 70.0433, "mention_gap_vs_overall": -10.2834, "r_gap_vs_overall": 3.9486, "composite_gap_vs_overall": -0.321, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "房间需要花太长时间才能让人感到凉快。", "pain_code": "pain_cooling_took_too_long_room_feel_cool", "mention_pct": 33.3333, "r_value": 81.4286, "composite_70_30": 67.0, "mention_gap_vs_overall": 0.9649, "r_gap_vs_overall": 1.731, "composite_gap_vs_overall": 1.5012, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "即使机器一直在运行，但随着时间推移，感觉制冷效果变差了。", "pain_code": "pain_cooling_cooling_felt_less_effective_over_time_even_though", "mention_pct": 17.9487, "r_value": 85.0, "composite_70_30": 64.8846, "mention_gap_vs_overall": -10.2092, "r_gap_vs_overall": -1.776, "composite_gap_vs_overall": -4.306, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "噪音太大导致无法开到强力制冷所需的档位（权衡）。", "pain_code": "pain_cooling_noise_tradeoff", "mention_pct": 43.5897, "r_value": 78.3333, "composite_70_30": 67.9103, "mention_gap_vs_overall": 10.4318, "r_gap_vs_overall": -1.7501, "composite_gap_vs_overall": 1.9045, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "用电或电路限制（例如：导致断路器跳闸）。", "pain_code": "pain_cooling_electrical_circuit_limitations_breaker_trips", "mention_pct": 0.0, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -11.5789, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "制冷", "pain_desc": "维护问题降低了制冷效果（如：滤网堵塞、水箱已满等）。", "pain_code": "pain_cooling_maintenance_issues_reduced_cooling_effect_filter_clogged_water", "mention_pct": 7.6923, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -4.9393, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "购买前不确定机器的尺寸是否合适。", "pain_code": "pain_install_was_unsure_whether_unit_size_fit_before_purchase", "mention_pct": 17.9487, "r_value": 81.6667, "composite_70_30": 62.5513, "mention_gap_vs_overall": 0.5803, "r_gap_vs_overall": 10.2913, "composite_gap_vs_overall": 7.378, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "担心会损坏窗户、墙壁或房屋结构。", "pain_code": "pain_install_was_concerned_damaging_window_wall_home_structure", "mention_pct": 23.0769, "r_value": 68.3333, "composite_70_30": 54.7564, "mention_gap_vs_overall": -7.4494, "r_gap_vs_overall": -6.0662, "composite_gap_vs_overall": -6.4812, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "说明书不清晰或令人困惑。", "pain_code": "pain_install_instructions_were_unclear_confusing", "mention_pct": 5.1282, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -8.0297, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "配件缺失或不匹配，增加了安装难度。", "pain_code": "pain_install_missing_unsuitable_parts_made_setup_harder", "mention_pct": 2.5641, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -4.8043, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "安装时需要额外的工具。", "pain_code": "pain_install_extra_tools_were_needed_installation", "mention_pct": 5.1282, "r_value": 75.0, "composite_70_30": 54.0385, "mention_gap_vs_overall": -8.8192, "r_gap_vs_overall": 1.193, "composite_gap_vs_overall": -1.8107, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "安装后的外观与房间的美观度不协调。", "pain_code": "pain_install_setup_did_not_match_room_aesthetics", "mention_pct": 5.1282, "r_value": 100.0, "composite_70_30": 71.5385, "mention_gap_vs_overall": -13.0297, "r_gap_vs_overall": 27.1204, "composite_gap_vs_overall": 15.0754, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "窗户的类型或尺寸不兼容。", "pain_code": "pain_install_window_type_window_size_was_not_compatible", "mention_pct": 10.2564, "r_value": 100.0, "composite_70_30": 73.0769, "mention_gap_vs_overall": -4.2173, "r_gap_vs_overall": 19.7163, "composite_gap_vs_overall": 12.5362, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "排气管或管道连接处很难安装。", "pain_code": "pain_install_exhaust_hose_hose_connection_was_difficult_install", "mention_pct": 17.9487, "r_value": 80.0, "composite_70_30": 61.3846, "mention_gap_vs_overall": 2.4224, "r_gap_vs_overall": 2.402, "composite_gap_vs_overall": 2.4081, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "机器太重或很难挪到合适的位置。", "pain_code": "pain_install_unit_was_too_heavy_difficult_position", "mention_pct": 10.2564, "r_value": 82.5, "composite_70_30": 60.8269, "mention_gap_vs_overall": -9.7436, "r_gap_vs_overall": 0.0493, "composite_gap_vs_overall": -2.8885, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "需要额外的密封措施或进行改装。", "pain_code": "pain_install_extra_sealing_modification_was_needed", "mention_pct": 25.641, "r_value": 81.6667, "composite_70_30": 64.859, "mention_gap_vs_overall": -10.6748, "r_gap_vs_overall": 3.7452, "composite_gap_vs_overall": -0.5808, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "安装花费了太多时间。", "pain_code": "pain_install_installation_took_too_time", "mention_pct": 10.2564, "r_value": 90.0, "composite_70_30": 66.0769, "mention_gap_vs_overall": -5.2699, "r_gap_vs_overall": 20.5228, "composite_gap_vs_overall": 12.785, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "即便移动机器，依然需要重复部分安装步骤。", "pain_code": "pain_install_moving_unit_still_required_setup_steps", "mention_pct": 7.6923, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -5.7287, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "安装", "pain_desc": "重新安装、拆卸或收纳机器非常不便。", "pain_code": "pain_install_reinstalling_removing_storing_unit_was_inconvenient", "mention_pct": 38.4615, "r_value": 77.5, "composite_70_30": 65.7885, "mention_gap_vs_overall": 8.4615, "r_gap_vs_overall": 4.6411, "composite_gap_vs_overall": 5.7872, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "噪音", "pain_desc": "机器在夜间或睡觉时干扰尤其严重。", "pain_code": "pain_noise_unit_was_especially_disruptive_night_during_sleep", "mention_pct": 17.9487, "r_value": 78.75, "composite_70_30": 60.5096, "mention_gap_vs_overall": -0.9987, "r_gap_vs_overall": -0.4828, "composite_gap_vs_overall": -0.6376, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "噪音", "pain_desc": "噪音干扰了接打电话、会议、打游戏或远程办公。", "pain_code": "pain_noise_noise_interfered_calls_meetings_gaming_remote_work", "mention_pct": 10.2564, "r_value": 55.0, "composite_70_30": 41.5769, "mention_gap_vs_overall": -11.0594, "r_gap_vs_overall": -29.1076, "composite_gap_vs_overall": -23.6931, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "噪音", "pain_desc": "噪音让人很难听清电视、音乐或其他媒体的声音。", "pain_code": "pain_noise_noise_made_harder_hear_tv_music_other_media", "mention_pct": 30.7692, "r_value": 68.8889, "composite_70_30": 57.453, "mention_gap_vs_overall": -7.915, "r_gap_vs_overall": -6.0693, "composite_gap_vs_overall": -6.623, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "噪音", "pain_desc": "家庭聚会或家里招待客人时，噪音很煞风景。", "pain_code": "pain_noise_noise_was_disruptive_during_family_gatherings_hosting_home", "mention_pct": 2.5641, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -6.3833, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "噪音", "pain_desc": "风扇声或风流动的声音很大。", "pain_code": "pain_noise_fan_airflow_noise_was_loud", "mention_pct": 23.0769, "r_value": 81.6667, "composite_70_30": 64.0897, "mention_gap_vs_overall": -5.6073, "r_gap_vs_overall": 3.4469, "composite_gap_vs_overall": 0.7307, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "噪音", "pain_desc": "压缩机循环运行或启动/停机时的噪音很吵。", "pain_code": "pain_noise_compressor_cycling_startup_shutdown_noise_was_disruptive", "mention_pct": 10.2564, "r_value": 40.0, "composite_70_30": 31.0769, "mention_gap_vs_overall": -3.9541, "r_gap_vs_overall": -32.943, "composite_gap_vs_overall": -24.2463, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "噪音", "pain_desc": "咔哒声、震动声或机械音让人觉得很吵闹。", "pain_code": "pain_noise_rattling_vibration_mechanical_sounds_made_feel_noisy", "mention_pct": 17.9487, "r_value": 71.0, "composite_70_30": 55.0846, "mention_gap_vs_overall": -2.0513, "r_gap_vs_overall": -8.7971, "composite_gap_vs_overall": -6.7734, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "噪音", "pain_desc": "为了减少噪音不得不调低档位，牺牲了制冷性能。", "pain_code": "pain_noise_had_use_lower_setting_reduce_noise_also_reduced", "mention_pct": 20.5128, "r_value": 76.6667, "composite_70_30": 59.8205, "mention_gap_vs_overall": -6.3293, "r_gap_vs_overall": -1.8643, "composite_gap_vs_overall": -3.2038, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "噪音", "pain_desc": "房间小或离机器太近，噪音听起来更明显。", "pain_code": "pain_noise_noise_felt_worse_because_room_was_small_unit", "mention_pct": 20.5128, "r_value": 83.75, "composite_70_30": 64.7788, "mention_gap_vs_overall": 6.5655, "r_gap_vs_overall": 7.9312, "composite_gap_vs_overall": 7.5215, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "排水", "pain_desc": "排水系统的安装/设置很不方便。", "pain_code": "pain_drain_drain_setup_was_inconvenient", "mention_pct": 5.1282, "r_value": 80.0, "composite_70_30": 57.5385, "mention_gap_vs_overall": -5.3981, "r_gap_vs_overall": 7.7351, "composite_gap_vs_overall": 3.7951, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "排水", "pain_desc": "排水管感觉太短、质量太单薄或设计很差。", "pain_code": "pain_drain_drain_tube_felt_too_short_weak_poorly_designed", "mention_pct": 12.8205, "r_value": 65.0, "composite_70_30": 49.3462, "mention_gap_vs_overall": 6.7679, "r_gap_vs_overall": 9.9148, "composite_gap_vs_overall": 8.9707, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "排水", "pain_desc": "排水口的位置很难够到，操作别扭。", "pain_code": "pain_drain_drain_outlet_was_awkward_access", "mention_pct": 10.2564, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -1.8489, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "排水", "pain_desc": "排水结构或水管连接不方便。", "pain_code": "pain_drain_drain_setup_hose_connection_was_inconvenient", "mention_pct": 12.8205, "r_value": 76.25, "composite_70_30": 57.2212, "mention_gap_vs_overall": 2.5574, "r_gap_vs_overall": -4.9704, "composite_gap_vs_overall": -2.7121, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "排水", "pain_desc": "排水感觉成了一种额外的日常维护负担。", "pain_code": "pain_drain_drainage_felt_like_extra_maintenance_burden", "mention_pct": 25.641, "r_value": 71.0, "composite_70_30": 57.3923, "mention_gap_vs_overall": 4.3252, "r_gap_vs_overall": -0.1766, "composite_gap_vs_overall": 1.1739, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "排水", "pain_desc": "机器存在漏水或滴水的情况。", "pain_code": "pain_drain_unit_leaked_dripped_water", "mention_pct": 10.2564, "r_value": 75.0, "composite_70_30": 55.5769, "mention_gap_vs_overall": -7.9015, "r_gap_vs_overall": -11.4789, "composite_gap_vs_overall": -10.4057, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "排水", "pain_desc": "不清楚什么时候该排水，或者该怎么排水。", "pain_code": "pain_drain_was_unclear_drain", "mention_pct": 12.8205, "r_value": 82.5, "composite_70_30": 61.5962, "mention_gap_vs_overall": -2.4426, "r_gap_vs_overall": 10.2083, "composite_gap_vs_overall": 6.413, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "排水", "pain_desc": "排水功能没有达到预期的效果。", "pain_code": "pain_drain_drain_feature_did_not_work_expected", "mention_pct": 12.8205, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": 4.9258, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "排水", "pain_desc": "机器需要排水的频率太高了。", "pain_code": "pain_drain_unit_needed_draining_too_often", "mention_pct": 12.8205, "r_value": 70.0, "composite_70_30": 52.8462, "mention_gap_vs_overall": -0.3374, "r_gap_vs_overall": -14.0811, "composite_gap_vs_overall": -9.958, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "排水", "pain_desc": "我必须经常检查以防满水溢出。", "pain_code": "pain_drain_had_keep_checking_overflow", "mention_pct": 15.3846, "r_value": 65.0, "composite_70_30": 50.1154, "mention_gap_vs_overall": -0.9312, "r_gap_vs_overall": -3.4259, "composite_gap_vs_overall": -2.6775, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "排水", "pain_desc": "担心水会弄坏房间或家里的财物。", "pain_code": "pain_drain_was_worried_water_damaging_room_belongings", "mention_pct": 12.8205, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -1.9163, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "能耗", "pain_desc": "担心耗电量或电费单。", "pain_code": "pain_energy_was_concerned_electricity_use_utility_bills", "mention_pct": 56.4103, "r_value": 91.0, "composite_70_30": 80.6231, "mention_gap_vs_overall": 4.8313, "r_gap_vs_overall": 4.1698, "composite_gap_vs_overall": 4.3683, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "能耗", "pain_desc": "制冷效率差，让人觉得它不是很节能。", "pain_code": "pain_energy_poor_efficiency", "mention_pct": 23.0769, "r_value": 93.3333, "composite_70_30": 72.2564, "mention_gap_vs_overall": 3.8664, "r_gap_vs_overall": 10.9698, "composite_gap_vs_overall": 8.8388, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "能耗", "pain_desc": "机器没有提供清晰的能耗信息。", "pain_code": "pain_energy_unit_did_not_provide_clear_information_energy_use", "mention_pct": 5.1282, "r_value": 60.0, "composite_70_30": 43.5385, "mention_gap_vs_overall": -3.556, "r_gap_vs_overall": -9.1535, "composite_gap_vs_overall": -7.4742, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "能耗", "pain_desc": "机器必须运行很长时间才能保持空间凉爽。", "pain_code": "pain_energy_unit_had_run_too_long_keep_space_cool", "mention_pct": 17.9487, "r_value": 91.6667, "composite_70_30": 69.5513, "mention_gap_vs_overall": -7.0513, "r_gap_vs_overall": 5.8084, "composite_gap_vs_overall": 1.9505, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "能耗", "pain_desc": "房间或空间太大，超出了机器的承载能力。", "pain_code": "pain_energy_room_space_was_too_large_unit", "mention_pct": 15.3846, "r_value": 60.0, "composite_70_30": 46.6154, "mention_gap_vs_overall": 2.2267, "r_gap_vs_overall": -20.786, "composite_gap_vs_overall": -13.8822, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "能耗", "pain_desc": "天气极热或房屋隔热差，导致机器工作得更吃力。", "pain_code": "pain_energy_very_hot_weather_poor_insulation_made_work_harder", "mention_pct": 28.2051, "r_value": 86.25, "composite_70_30": 68.8365, "mention_gap_vs_overall": -3.1107, "r_gap_vs_overall": -1.2543, "composite_gap_vs_overall": -1.8112, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "能耗", "pain_desc": "不合理的安装与排气降低运行性能，增加了能耗。", "pain_code": "pain_energy_inefficient_setup_venting_may_have_reduced_performance", "mention_pct": 10.2564, "r_value": 100.0, "composite_70_30": 73.0769, "mention_gap_vs_overall": -3.4278, "r_gap_vs_overall": 23.2219, "composite_gap_vs_overall": 15.227, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "能耗", "pain_desc": "机器给电路或断路器带来了过大的负荷。", "pain_code": "pain_energy_unit_put_too_load_circuit_breaker", "mention_pct": 2.5641, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -10.5938, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 39}, {"cluster": "理性应急准备型", "category": "能耗", "pain_desc": "滤网堵塞或排气不畅导致机器的能效变低。", "pain_code": "pain_energy_filter_venting_efficiency", "mention_pct": 0.0, "r_value": null, "composite_70_30": null, "mention_gap_vs_overall": -5.5263, "r_gap_vs_overall": null, "composite_gap_vs_overall": null, "sample_size": 39}], "heatmap": [{"cluster": "便捷安居实用型", "category": "制冷", "mention_pct_avg": 25.1342, "r_value_avg": 81.6146, "composite_avg": 64.6705, "item_count": 13}, {"cluster": "便捷安居实用型", "category": "能耗", "mention_pct_avg": 18.4755, "r_value_avg": 80.0123, "composite_avg": 62.1569, "item_count": 9}, {"cluster": "便捷安居实用型", "category": "噪音", "mention_pct_avg": 21.3178, "r_value_avg": 77.7103, "composite_avg": 60.7926, "item_count": 9}, {"cluster": "便捷安居实用型", "category": "安装", "mention_pct_avg": 17.7102, "r_value_avg": 74.7014, "composite_avg": 57.8433, "item_count": 13}, {"cluster": "便捷安居实用型", "category": "排水", "mention_pct_avg": 12.7907, "r_value_avg": 72.4221, "composite_avg": 54.5327, "item_count": 11}, {"cluster": "家庭健康守护型", "category": "制冷", "mention_pct_avg": 29.0865, "r_value_avg": 82.2045, "composite_avg": 66.2691, "item_count": 13}, {"cluster": "家庭健康守护型", "category": "能耗", "mention_pct_avg": 20.4861, "r_value_avg": 81.8389, "composite_avg": 63.9669, "item_count": 9}, {"cluster": "家庭健康守护型", "category": "噪音", "mention_pct_avg": 19.9653, "r_value_avg": 73.6882, "composite_avg": 58.9478, "item_count": 9}, {"cluster": "家庭健康守护型", "category": "排水", "mention_pct_avg": 11.3636, "r_value_avg": 73.6111, "composite_avg": 55.4861, "item_count": 11}, {"cluster": "家庭健康守护型", "category": "安装", "mention_pct_avg": 18.0288, "r_value_avg": 69.0171, "composite_avg": 53.7206, "item_count": 13}, {"cluster": "局部速冷控温型", "category": "能耗", "mention_pct_avg": 22.0044, "r_value_avg": 81.9259, "composite_avg": 63.9495, "item_count": 9}, {"cluster": "局部速冷控温型", "category": "噪音", "mention_pct_avg": 22.658, "r_value_avg": 79.8935, "composite_avg": 62.7228, "item_count": 9}, {"cluster": "局部速冷控温型", "category": "制冷", "mention_pct_avg": 27.7526, "r_value_avg": 75.8739, "composite_avg": 61.4375, "item_count": 13}, {"cluster": "局部速冷控温型", "category": "排水", "mention_pct_avg": 15.8645, "r_value_avg": 75.3667, "composite_avg": 57.8155, "item_count": 11}, {"cluster": "局部速冷控温型", "category": "安装", "mention_pct_avg": 23.0769, "r_value_avg": 68.1583, "composite_avg": 55.2991, "item_count": 13}, {"cluster": "理性应急准备型", "category": "能耗", "mention_pct_avg": 17.6638, "r_value_avg": 83.1786, "composite_avg": 64.9283, "item_count": 9}, {"cluster": "理性应急准备型", "category": "制冷", "mention_pct_avg": 22.4852, "r_value_avg": 79.9594, "composite_avg": 63.7338, "item_count": 13}, {"cluster": "理性应急准备型", "category": "安装", "mention_pct_avg": 13.8067, "r_value_avg": 83.6667, "composite_avg": 63.4897, "item_count": 13}, {"cluster": "理性应急准备型", "category": "排水", "mention_pct_avg": 13.0536, "r_value_avg": 73.0938, "composite_avg": 55.2041, "item_count": 11}, {"cluster": "理性应急准备型", "category": "噪音", "mention_pct_avg": 17.094, "r_value_avg": 69.4653, "composite_avg": 54.2988, "item_count": 9}, {"cluster": "空间自主掌控型", "category": "制冷", "mention_pct_avg": 26.7934, "r_value_avg": 80.963, "composite_avg": 64.7121, "item_count": 13}, {"cluster": "空间自主掌控型", "category": "能耗", "mention_pct_avg": 22.2222, "r_value_avg": 79.9098, "composite_avg": 62.6035, "item_count": 9}, {"cluster": "空间自主掌控型", "category": "噪音", "mention_pct_avg": 21.3483, "r_value_avg": 79.6721, "composite_avg": 62.1749, "item_count": 9}, {"cluster": "空间自主掌控型", "category": "安装", "mention_pct_avg": 19.879, "r_value_avg": 78.9199, "composite_avg": 61.2076, "item_count": 13}, {"cluster": "空间自主掌控型", "category": "排水", "mention_pct_avg": 15.0153, "r_value_avg": 68.0926, "composite_avg": 52.6835, "item_count": 11}, {"cluster": "有限空间平衡型", "category": "能耗", "mention_pct_avg": 18.9542, "r_value_avg": 85.7685, "composite_avg": 65.7242, "item_count": 9}, {"cluster": "有限空间平衡型", "category": "制冷", "mention_pct_avg": 29.8643, "r_value_avg": 81.0246, "composite_avg": 65.6765, "item_count": 13}, {"cluster": "有限空间平衡型", "category": "噪音", "mention_pct_avg": 24.6187, "r_value_avg": 82.0469, "composite_avg": 64.8184, "item_count": 9}, {"cluster": "有限空间平衡型", "category": "排水", "mention_pct_avg": 10.8734, "r_value_avg": 79.1667, "composite_avg": 59.0768, "item_count": 11}, {"cluster": "有限空间平衡型", "category": "安装", "mention_pct_avg": 20.0603, "r_value_avg": 75.5347, "composite_avg": 59.0018, "item_count": 13}], "metricLabels": {"r_value": "R值", "composite_70_30": "综合分"}};
+
+const state = {
+  selectedClusters: DATA.clusterMeta.slice(0, 2).map(item => item.name),
+  metric: 'r_value',
+  range: 'top5',
+  category: '全部',
+};
+
+const clusterMetaMap = Object.fromEntries(DATA.clusterMeta.map(item => [item.name, item]));
+const allCategories = Array.from(new Set(DATA.heatmap.map(item => item.category)));
+const allRowsByCluster = DATA.rows.reduce((acc, row) => {
+  if (!acc[row.cluster]) acc[row.cluster] = [];
+  acc[row.cluster].push(row);
+  return acc;
+}, {});
+
+function fmtNum(value, digits = 1) {
+  return value == null || Number.isNaN(value) ? '—' : value.toFixed(digits);
+}
+
+function fmtPct(value, digits = 1) {
+  return value == null || Number.isNaN(value) ? '—' : value.toFixed(digits) + '%';
+}
+
+function rangeLabel(metric, range) {
+  if (range === 'top5') return 'TOP5';
+  if (range === 'all') return '全部';
+  if (metric === 'r_value') return range === 'gt30' ? 'R值＞70' : 'R值＞90';
+  return range === 'gt30' ? '综合分＞60' : '综合分＞70';
+}
+
+function valueColor(metric, value) {
+  const safe = value == null || Number.isNaN(value) ? 0 : value;
+  const alpha = Math.max(0.14, Math.min(0.92, safe / 100));
+  return `rgba(47, 111, 237, ${alpha})`;
+}
+
+function textColor(value) {
+  const safe = value == null || Number.isNaN(value) ? 0 : value;
+  return safe >= 64 ? '#ffffff' : '#1f405a';
+}
+
+function sortRows(rows, metric) {
+  return [...rows].sort((a, b) => {
+    const av = a[metric] == null ? -Infinity : a[metric];
+    const bv = b[metric] == null ? -Infinity : b[metric];
+    return bv - av;
+  });
+}
+
+function filterRows(rows, metric, range) {
+  const sorted = sortRows(rows.filter(row => row[metric] != null), metric);
+  if (range === 'top5') return sorted.slice(0, 5);
+  if (metric === 'r_value') {
+    if (range === 'gt30') return sorted.filter(row => row[metric] > 70);
+    if (range === 'gt50') return sorted.filter(row => row[metric] > 90);
+  }
+  if (range === 'gt30') return sorted.filter(row => row[metric] > 60);
+  if (range === 'gt50') return sorted.filter(row => row[metric] > 70);
+  return sorted;
+}
+
+function buildMetricButtons(containerId, activeMetric, onClick) {
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = ['r_value', 'composite_70_30'].map(metric => `
+    <button class="metric-btn ${metric === activeMetric ? 'active' : ''}" data-metric="${metric}">
+      ${DATA.metricLabels[metric]}
+    </button>
+  `).join('');
+  wrap.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => onClick(btn.dataset.metric));
+  });
+}
+
+function buildRangeButtons() {
+  const wrap = document.getElementById('compare-range-buttons');
+  const options = ['top5', 'gt30', 'gt50', 'all'];
+  wrap.innerHTML = options.map(range => `
+    <button class="selector-btn ${range === state.range ? 'active' : ''}" data-range="${range}">
+      ${rangeLabel(state.metric, range)}
+    </button>
+  `).join('');
+  wrap.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.range = btn.dataset.range;
+      renderCompare();
+    });
+  });
+}
+
+function buildCategoryButtons() {
+  const wrap = document.getElementById('compare-category-buttons');
+  const options = ['全部', '制冷', '安装', '噪音', '排水', '能耗'];
+  wrap.innerHTML = options.map(category => `
+    <button class="selector-btn ${category === state.category ? 'active' : ''}" data-category="${category}">
+      ${category}
+    </button>
+  `).join('');
+  wrap.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.category = btn.dataset.category;
+      renderCompare();
+    });
+  });
+}
+
+function renderHeatmap() {
+  buildMetricButtons('heatmap-metric-buttons', state.metric, metric => {
+    state.metric = metric;
+    renderHeatmap();
+    renderCompare();
+  });
+
+  const metricKey = state.metric === 'r_value' ? 'r_value_avg' : 'composite_avg';
+  const clusters = DATA.clusterMeta.map(item => item.name);
+
+  const rows = allCategories.map(category => {
+    const cells = clusters.map(cluster => {
+      return DATA.heatmap.find(item => item.category === category && item.cluster === cluster) || null;
+    });
+    return { category, cells };
+  });
+
+  document.getElementById('heatmap-wrap').innerHTML = `
+    <table class="heatmap-table">
+      <thead>
+        <tr>
+          <th>类目</th>
+          ${clusters.map(cluster => `<th>${cluster}<div class="heat-sub">n=${clusterMetaMap[cluster].sample_size}</div></th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(row => `
+          <tr>
+            <th>${row.category}</th>
+            ${row.cells.map(cell => {
+              const value = cell ? cell[metricKey] : null;
+              const bg = valueColor(state.metric, value);
+              const fg = textColor(value);
+              return `
+                <td>
+                  <div class="heat-cell" style="background:${bg};color:${fg};">
+                    <div class="heat-main">${fmtNum(value)}</div>
+                    <div class="heat-sub" style="color:${fg === '#ffffff' ? 'rgba(255,255,255,.88)' : '#587084'};">
+                      平均${state.metric === 'r_value' ? 'R值' : '综合分'} | ${cell ? cell.item_count : 0} 个细项
+                    </div>
+                  </div>
+                </td>
+              `;
+            }).join('')}
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderClusterSelector() {
+  const wrap = document.getElementById('cluster-selector');
+  wrap.innerHTML = DATA.clusterMeta.map(item => {
+    const active = state.selectedClusters.includes(item.name);
+    return `
+      <button class="cluster-chip ${active ? 'active' : ''}" data-cluster="${item.name}" style="border-color:${active ? item.color : ''}; box-shadow:${active ? `inset 0 0 0 1px ${item.color}` : 'none'};">
+        <span style="color:${item.color}; font-weight:900;">${item.name}</span>
+        <small>n=${item.sample_size}</small>
+      </button>
+    `;
+  }).join('');
+
+  wrap.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cluster = btn.dataset.cluster;
+      const exists = state.selectedClusters.includes(cluster);
+      if (exists) {
+        if (state.selectedClusters.length === 1) return;
+        state.selectedClusters = state.selectedClusters.filter(item => item !== cluster);
+      } else {
+        state.selectedClusters = [...state.selectedClusters, cluster];
+      }
+      renderClusterSelector();
+      renderCompare();
+    });
+  });
+}
+
+function buildAnchorRows() {
+  const anchorCluster = state.selectedClusters[0];
+  const anchorRows = allRowsByCluster[anchorCluster] || [];
+  const categoryRows = state.category === '全部'
+    ? anchorRows
+    : anchorRows.filter(row => row.category === state.category);
+  return filterRows(categoryRows, state.metric, state.range);
+}
+
+function renderCompare() {
+  buildMetricButtons('compare-metric-buttons', state.metric, metric => {
+    state.metric = metric;
+    renderHeatmap();
+    renderCompare();
+  });
+  buildRangeButtons();
+  buildCategoryButtons();
+
+  const anchorRows = buildAnchorRows();
+  const anchorCluster = state.selectedClusters[0];
+  document.getElementById('compare-anchor-note').innerHTML = `
+    <strong>锚点人群：${anchorCluster}</strong>
+    <span>当前展示的是 ${anchorCluster} 在 ${DATA.metricLabels[state.metric]} 下的 ${rangeLabel(state.metric, state.range)} 清单；痛点标签：${state.category}。</span>
+    <span>其他人群不再展示自己的 Top 清单，而是在同一批痛点上展示各自数值，确保对比是一一对应的。</span>
+  `;
+
+  const charts = state.selectedClusters.map(cluster => {
+    const meta = clusterMetaMap[cluster];
+    const clusterRows = allRowsByCluster[cluster] || [];
+    const valueMap = Object.fromEntries(clusterRows.map(row => [row.pain_desc, row]));
+    const bars = anchorRows.map(anchorRow => {
+      const row = valueMap[anchorRow.pain_desc];
+      const value = row ? row[state.metric] : null;
+      const mentionPct = row ? row.mention_pct : null;
+      const rValue = row ? row.r_value : null;
+      const width = value == null || Number.isNaN(value) ? 12 : Math.max(4, Math.min(100, value));
+      return `
+        <div class="bar-row">
+          <div class="bar-meta">
+            <div class="bar-name">${anchorRow.pain_desc}</div>
+            <div class="bar-value">${fmtNum(value)}</div>
+          </div>
+          <div class="track">
+            <div class="fill ${value == null || Number.isNaN(value) ? 'missing' : ''}" style="--cluster-color:${meta.color}; width:${width}%"></div>
+          </div>
+          <div class="bar-sub">${row ? `${row.category} | 提及率 ${fmtPct(mentionPct)} | R值 ${fmtNum(rValue)}` : '该人群该题缺失'}</div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <article class="chart-card">
+        <div class="chart-head">
+          <div>
+            <h3 style="color:${meta.color};">${cluster}</h3>
+          </div>
+          <span class="sample-pill">n=${meta.sample_size}</span>
+        </div>
+        <div class="chart-note">${cluster === anchorCluster ? '这是当前锚点人群本身的榜单。' : `这是 ${cluster} 在同一批锚点痛点上的对应表现。`}</div>
+        <div class="bar-stack">${bars || '<div class="empty-note">当前筛选没有可展示项。</div>'}</div>
+      </article>
+    `;
+  }).join('');
+
+  document.getElementById('compare-chart-list').innerHTML = charts || '<div class="empty-note">请至少保留一个人群。</div>';
+}
+
+renderClusterSelector();
+renderHeatmap();
+renderCompare();
+</script>
+
+<script>
+  document.querySelectorAll('.overview-tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.overviewTab;
+      document.querySelectorAll('.overview-tab-btn').forEach(item => item.classList.toggle('active', item === btn));
+      document.querySelectorAll('.overview-tab-panel').forEach(panel => panel.classList.toggle('active', panel.dataset.overviewPanel === key));
+    });
+  });
+</script>
+</body>
+</html>
