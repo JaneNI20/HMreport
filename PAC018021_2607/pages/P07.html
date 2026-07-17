@@ -900,6 +900,7 @@
       selectedClustersByPage: Object.fromEntries(report.pages.map(page => [page.id, new Set([report.clusters[0].name])])),
       selectedFieldsByPage: Object.fromEntries(report.pages.map(page => [page.id, new Set(page.default_fields)])),
       expandedThemesByPage: {},
+      sortModeByField: {},
     };
 
     const els = {
@@ -967,6 +968,20 @@
       return `${pageId}::${fieldKey}`;
     }
 
+    function fieldSortStateKey(pageId, fieldKey) {
+      return `${pageId}::${fieldKey}`;
+    }
+
+    function fieldSortMode(pageId, fieldKey) {
+      return state.sortModeByField[fieldSortStateKey(pageId, fieldKey)] || 'natural';
+    }
+
+    function toggleFieldSort(pageId, fieldKey) {
+      const key = fieldSortStateKey(pageId, fieldKey);
+      state.sortModeByField[key] = fieldSortMode(pageId, fieldKey) === 'value' ? 'natural' : 'value';
+      render();
+    }
+
     function setExpandedTheme(pageId, fieldKey, themeKey) {
       const key = themeStateKey(pageId, fieldKey);
       state.expandedThemesByPage[key] = state.expandedThemesByPage[key] === themeKey ? null : themeKey;
@@ -976,23 +991,21 @@
 
     function orderedPlainOptions(field, clusters) {
       let options = (field.options || []).slice();
-      if (field.sort === 'fixed' && Array.isArray(field.order) && field.order.length) {
+      if (Array.isArray(field.order) && field.order.length) {
         const rank = label => {
           const index = field.order.indexOf(label);
           return index === -1 ? 999 : index;
         };
-        options.sort((a, b) => rank(a.label) - rank(b.label) || avgAcrossClusters(b.values, clusters) - avgAcrossClusters(a.values, clusters));
-      } else {
-        options.sort((a, b) => avgAcrossClusters(b.values, clusters) - avgAcrossClusters(a.values, clusters));
+        options.sort((a, b) => rank(a.label) - rank(b.label));
       }
       if (field.limit) options = options.slice(0, field.limit);
       return options;
     }
 
     function orderedThemes(field, clusters) {
-      return (field.themes || []).slice().sort((a, b) => avgAcrossClusters(b.avgValues, clusters) - avgAcrossClusters(a.avgValues, clusters)).map(theme => ({
+      return (field.themes || []).slice().map(theme => ({
         ...theme,
-        items: theme.items.slice().sort((a, b) => avgAcrossClusters(b.values, clusters) - avgAcrossClusters(a.values, clusters)),
+        items: theme.items.slice(),
       }));
     }
 
@@ -1035,15 +1048,19 @@
       return `<p>${intro}</p>`;
     }
 
-    function barRowsHtml(items, clusters, valueKey = 'values', fieldKey = '') {
+    function barRowsHtml(items, clusters, valueKey = 'values', fieldKey = '', sortClustersByValue = false) {
       const max = Math.max(...items.flatMap(item => clusters.map(cluster => ((item[valueKey] || {})[cluster] || 0))), 0.01);
       return `
         <div class="rows">
-          ${items.map(item => `
+          ${items.map(item => {
+            const rowClusters = sortClustersByValue
+              ? clusters.slice().sort((a, b) => ((item[valueKey] || {})[b] || 0) - ((item[valueKey] || {})[a] || 0))
+              : clusters;
+            return `
             <div class="row">
               <div class="row-label">${escapeHtml(item.label)}</div>
               <div class="bar-stack">
-                ${clusters.map(cluster => `
+                ${rowClusters.map(cluster => `
                   <div class="bar-line">
                     <div class="bar-name">${userTypeTgiBadge(fieldKey, item.label, cluster)}${escapeHtml(clusterMetaMap[cluster].shortLabel || cluster)}</div>
                     <div class="bar-track"><div class="bar-fill" style="width:${(((item[valueKey] || {})[cluster] || 0) / max) * 100}%; background:${clusterColor(cluster)}"></div></div>
@@ -1052,14 +1069,15 @@
                 `).join('')}
               </div>
             </div>
-          `).join('')}
+          `}).join('')}
         </div>
       `;
     }
 
-    function renderPlainField(fieldKey, clusters) {
+    function renderPlainField(pageId, fieldKey, clusters) {
       const field = fieldMap[fieldKey];
       const options = orderedPlainOptions(field, clusters);
+      const isSorted = fieldSortMode(pageId, fieldKey) === 'value';
       return `
         <section class="chart-card">
           <div class="chart-head">
@@ -1067,11 +1085,14 @@
               <h4>${escapeHtml(field.title)}</h4>
               ${plainFieldIntroHtml(fieldKey, field)}
             </div>
+            <div class="chart-head-actions">
+              <button class="ghost-btn chart-sort-btn ${isSorted ? 'is-active' : ''}" type="button" data-sort-page="${escapeHtml(pageId)}" data-sort-field="${escapeHtml(fieldKey)}">${isSorted ? '恢复顺序' : '排序'}</button>
+            </div>
           </div>
           <div class="legend">
             ${clusters.map(cluster => `<span class="legend-item"><span class="swatch" style="background:${clusterColor(cluster)}"></span>${escapeHtml(clusterMetaMap[cluster].shortLabel || cluster)}</span>`).join('')}
           </div>
-          ${barRowsHtml(options, clusters, 'values', fieldKey)}
+          ${barRowsHtml(options, clusters, 'values', fieldKey, isSorted)}
         </section>
       `;
     }
@@ -1156,6 +1177,7 @@
     function renderThemeField(pageId, fieldKey, clusters) {
       const field = fieldMap[fieldKey];
       const themes = orderedThemes(field, clusters);
+      const isSorted = fieldSortMode(pageId, fieldKey) === 'value';
       const key = themeStateKey(pageId, fieldKey);
       const expandedKey = state.expandedThemesByPage[key] && themes.some(theme => theme.key === state.expandedThemesByPage[key])
         ? state.expandedThemesByPage[key]
@@ -1167,7 +1189,9 @@
               <h4>${escapeHtml(field.title)}</h4>
               ${themeFieldIntroHtml(fieldKey)}
             </div>
-            ${fieldKey === '使用场景' ? '' : `<div class="module-badge">${themes.length} 个 theme</div>`}
+            <div class="chart-head-actions">
+              <button class="ghost-btn chart-sort-btn ${isSorted ? 'is-active' : ''}" type="button" data-sort-page="${escapeHtml(pageId)}" data-sort-field="${escapeHtml(fieldKey)}">${isSorted ? '恢复顺序' : '排序'}</button>
+            </div>
           </div>
           <div class="legend">
             ${clusters.map(cluster => `<span class="legend-item"><span class="swatch" style="background:${clusterColor(cluster)}"></span>${escapeHtml(clusterMetaMap[cluster].shortLabel || cluster)}</span>`).join('')}
@@ -1181,7 +1205,7 @@
                     <div class="theme-summary-meta">${theme.items.length} 个细分项 / 平均值</div>
                   </div>
                   <div class="theme-summary-desc">${escapeHtml(theme.description || '点击当前 theme 后，可展开查看细分项在不同人群中的选择率。')}</div>
-                  ${barRowsHtml([{ label: 'Theme 平均值', avgValues: theme.avgValues }], clusters, 'avgValues')}
+                  ${barRowsHtml([{ label: 'Theme 平均值', avgValues: theme.avgValues }], clusters, 'avgValues', '', isSorted)}
                 </button>
                 ${themeInsightHtml(fieldKey, theme.key)}
                 ${theme.key === expandedKey ? `
@@ -1193,7 +1217,7 @@
                       </div>
                       <div class="detail-badge">${theme.items.length} 个细分项</div>
                     </div>
-                    ${barRowsHtml(theme.items, clusters)}
+                    ${barRowsHtml(theme.items, clusters, 'values', '', isSorted)}
                   </div>
                 ` : ''}
               </div>
@@ -1209,7 +1233,7 @@
       const fields = selectedFields(page);
       const boardHtml = (!clusters.length || !fields.length)
         ? `<div class="empty">${!clusters.length ? '还没有选中任何人群' : '还没有选中任何字段'}</div>`
-        : fields.map(fieldKey => fieldMap[fieldKey].mode === 'theme' ? renderThemeField(page.id, fieldKey, clusters) : renderPlainField(fieldKey, clusters)).join('');
+        : fields.map(fieldKey => fieldMap[fieldKey].mode === 'theme' ? renderThemeField(page.id, fieldKey, clusters) : renderPlainField(page.id, fieldKey, clusters)).join('');
       return `
         <section class="panel module-page-panel" id="${escapeHtml(meta.anchor)}">
           <div class="section-head">
@@ -1264,7 +1288,7 @@
                   </div>
                 </div>
                 ${boardHtml}
-                <div class="footnote">说明：默认按字段自然顺序展示，点击每张图右上角“排序”可切换为按当前选中人群平均占比降序；教育程度、职业领域、所在州默认只显示前 10 项。</div>
+                <div class="footnote">说明：默认按字段自然顺序展示，点击每张图右上角“排序”后，每个类目内的人群条形按占比从大到小展示。</div>
               </div>
             </div>
           </div>
@@ -1301,6 +1325,9 @@
       });
       Array.from(els.modulePages.querySelectorAll('.theme-summary')).forEach(button => {
         button.addEventListener('click', () => setExpandedTheme(button.getAttribute('data-page'), button.getAttribute('data-field'), button.getAttribute('data-theme')));
+      });
+      Array.from(els.modulePages.querySelectorAll('button[data-sort-page]')).forEach(button => {
+        button.addEventListener('click', () => toggleFieldSort(button.getAttribute('data-sort-page'), button.getAttribute('data-sort-field')));
       });
     }
 
