@@ -1081,10 +1081,7 @@
     }
     function orderedPlainOptions(pageId, field, clusters) {
       let options = (field.options || []).slice();
-      const mode = fieldSortMode(pageId, field.key);
-      if (mode === 'value') {
-        options.sort((a, b) => avgAcrossClusters(b.values, clusters) - avgAcrossClusters(a.values, clusters));
-      } else if (Array.isArray(field.order) && field.order.length) {
+      if (Array.isArray(field.order) && field.order.length) {
         const rank = label => {
           const index = field.order.indexOf(label);
           return index === -1 ? 999 : index;
@@ -1176,22 +1173,22 @@
       ],
       gender: [
         '💡性别分布最明显的是：<strong>空间自主掌控型</strong>女性占比最高，<strong>便捷安居实用型</strong>男性占比最高；其他几类整体性别差异不算极端，但多偏女性略高。',
-        '一句话：女性更容易落在“空间自主掌控”和舒适感知更强的人群里，男性更容易落在“<strong>便捷实用型</strong>”里。'
+        '一句话：女性更容易落在“空间自主掌控”和舒适感知更强的人群里，男性更容易落在“便捷实用型”里。'
       ],
       household_income: [
-        '💡一句话：<strong>应急准备型</strong>更偏中等收入、需要理性做风险管理；小空间和<strong>平衡型</strong>更容易出现在预算更敏感的人群里。'
+        '💡一句话：<strong>应急准备型</strong>更偏中等收入、需要理性做风险管理；<strong>小空间</strong>和<strong>平衡型</strong>更容易出现在预算更敏感的人群里。'
       ],
       household_size: [
         '💡家庭人口差异较为明显。<strong>家庭健康守护型</strong>最明显偏 3–4人及以上；<strong>空间自主掌控型</strong>、<strong>便捷安居实用型</strong>更偏 2人或3–4人；<strong>理性应急准备型</strong>也偏2–4人；<strong>有限空间平衡型</strong>和<strong>局部速冷控温型</strong>更容易落在1人或2人。',
-        '一句话：<strong>家庭守护型</strong>最像典型家庭用户，<strong>平衡型</strong>和<strong>速冷型</strong>更像小家庭或单人生活场景。'
+        '一句话：家庭守护型最像典型家庭用户，平衡型和速冷型更像小家庭或单人生活场景。'
       ],
       Education: [
         '💡教育上没有特别极端的断裂，但有两个值得提的点：<strong>空间自主掌控型</strong>和<strong>便捷安居实用型</strong>里，本科及以上占比更稳；<strong>有限空间平衡型</strong>在 Some college / 高中后未拿学位 这类中间学历层更容易出现。',
-        '一句话：<strong>掌控型</strong>和<strong>实用型</strong>更偏教育程度较稳定的人群，而<strong>有限空间型</strong>更容易落在生活条件约束更强的教育层。'
+        '一句话：掌控型和实用型更偏教育程度较稳定的人群，而有限空间型更容易落在生活条件约束更强的教育层。'
       ],
       'Occupation Field': [
         '💡职业领域不适合每个小项展开，但有几个可讲方向：<strong>空间自主掌控型</strong>更容易出现在需要居家办公、个人专注空间要求更强的职业；<strong>便捷安居实用型</strong>更偏广谱、泛职业人群；<strong>家庭健康守护型</strong>更像家庭责任更重、对生活安排更敏感的人群；<strong>理性应急准备型</strong>更像风险意识更强、生活组织性较高的人群。',
-        '一句话：职业领域不是最强分化维度，但它强化了“<strong>掌控型</strong>偏个人工作空间、<strong>守护型</strong>偏家庭责任、<strong>应急型</strong>偏风险管理”的解释。'
+        '一句话：职业领域不是最强分化维度，但它强化了“掌控型偏个人工作空间、守护型偏家庭责任、应急型偏风险管理”的解释。'
       ],
       Race: [
         '💡种族不做过度阐释。当前数据里最明显的是：多数人群里 White 占比都最高；<strong>有限空间平衡型</strong>、<strong>局部速冷控温型</strong>的分布相对更多元一些。',
@@ -1221,15 +1218,19 @@
       return fieldInsightHtml(fieldKey);
     }
 
-    function barRowsHtml(items, clusters, valueKey = 'values', fieldKey = '') {
+    function barRowsHtml(items, clusters, valueKey = 'values', fieldKey = '', sortClustersByValue = false) {
       const max = Math.max(...items.flatMap(item => clusters.map(cluster => ((item[valueKey] || {})[cluster] || 0))), 0.01);
       return `
         <div class="rows">
-          ${items.map(item => `
+          ${items.map(item => {
+            const rowClusters = sortClustersByValue
+              ? clusters.slice().sort((a, b) => ((item[valueKey] || {})[b] || 0) - ((item[valueKey] || {})[a] || 0))
+              : clusters;
+            return `
             <div class="row">
               <div class="row-label">${escapeHtml(item.label)}</div>
               <div class="bar-stack">
-                ${clusters.map(cluster => `
+                ${rowClusters.map(cluster => `
                   <div class="bar-line">
                     <div class="bar-name">${userTypeTgiBadge(fieldKey, item.label, cluster)}${escapeHtml(clusterMetaMap[cluster].shortLabel || cluster)}</div>
                     <div class="bar-track"><div class="bar-fill" style="width:${(((item[valueKey] || {})[cluster] || 0) / max) * 100}%; background:${clusterColor(cluster)}"></div></div>
@@ -1238,7 +1239,7 @@
                 `).join('')}
               </div>
             </div>
-          `).join('')}
+          `}).join('')}
         </div>
       `;
     }
@@ -1261,7 +1262,7 @@
           <div class="legend">
             ${clusters.map(cluster => `<span class="legend-item"><span class="swatch" style="background:${clusterColor(cluster)}"></span>${escapeHtml(clusterMetaMap[cluster].shortLabel || cluster)}</span>`).join('')}
           </div>
-          ${barRowsHtml(options, clusters, 'values', fieldKey)}
+          ${barRowsHtml(options, clusters, 'values', fieldKey, isSorted)}
         </section>
       `;
     }
