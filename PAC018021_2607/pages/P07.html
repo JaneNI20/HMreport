@@ -494,6 +494,9 @@
       display:grid;
       gap:14px;
     }
+    .field-instruction-card {
+      background:linear-gradient(180deg,#ffffff 0%,#f7fbff 100%);
+    }
     .cluster-inline-list {
       display:grid;
       grid-template-columns:repeat(3, minmax(0, 1fr));
@@ -1287,8 +1290,8 @@
                     `).join('')}
                   </div>
                 </div>
+                <div class="control-card field-instruction-card"><div class="control-title">排序说明</div><div class="field-help">默认按固定人群顺序展示，右上角“排序”可使人群条形按占比从大到小展示</div></div>
                 ${boardHtml}
-                <div class="footnote">说明：默认按字段自然顺序展示，点击每张图右上角“排序”后，每个类目内的人群条形按占比从大到小展示。</div>
               </div>
             </div>
           </div>
