@@ -1048,6 +1048,15 @@
         .replace(/'/g, '&#39;');
     }
 
+
+    function formatInsightLine(value) {
+      return escapeHtml(value)
+        .replace(/&lt;strong&gt;/g, '<strong>')
+        .replace(/&lt;\/strong&gt;/g, '</strong>')
+        .replace(/&lt;br&gt;/g, '<br>')
+        .replace(/&lt;br\s*\/&gt;/g, '<br>');
+    }
+
     function toggleOverviewCluster(name) {
       state.overviewSelected = state.overviewSelected === name ? null : name;
       render();
@@ -1264,7 +1273,7 @@
               <details class="field-insight" open>
                 <summary>图表结论</summary>
                 <div class="field-insight-body">
-                  ${lines.map(line => `<p>${escapeHtml(line)}</p>`).join('')}
+                  ${lines.map(line => `<p>${formatInsightLine(line)}</p>`).join('')}
                 </div>
               </details>
       `;
