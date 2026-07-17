@@ -1081,10 +1081,7 @@
     }
     function orderedPlainOptions(pageId, field, clusters) {
       let options = (field.options || []).slice();
-      const mode = fieldSortMode(pageId, field.key);
-      if (mode === 'value') {
-        options.sort((a, b) => avgAcrossClusters(b.values, clusters) - avgAcrossClusters(a.values, clusters));
-      } else if (Array.isArray(field.order) && field.order.length) {
+      if (Array.isArray(field.order) && field.order.length) {
         const rank = label => {
           const index = field.order.indexOf(label);
           return index === -1 ? 999 : index;
@@ -1139,7 +1136,7 @@
         '一句话：主卧是共同主场景，客厅更偏生活型人群，次卧更偏照护和补位型人群。'
       ],
       primary_room_size: [
-        '💡<strong>家庭健康守护型</strong>更偏 251–350 sq. ft.，说明它更容易处理家庭关键房间的中等偏大空间舒适问题。<strong>局部速冷控温型</strong>和<strong>有限空间平衡型</strong>更偏 151–250 sq. ft.，说明它们更像在处理中小空间里的快速舒适和代价平衡。整体上看，251–350 sq. ft. 更像家庭照护场景带，151–250 sq. ft. 更像速冷和<strong>平衡型</strong>的核心带。',
+        '💡<strong>家庭健康守护型</strong>更偏 251–350 sq. ft.，说明它更容易处理家庭关键房间的中等偏大空间舒适问题。<strong>局部速冷控温型</strong>和<strong>有限空间平衡型</strong>更偏 151–250 sq. ft.，说明它们更像在处理中小空间里的快速舒适和代价平衡。整体上看，251–350 sq. ft. 更像家庭照护场景带，151–250 sq. ft. 更像<strong>速冷</strong>和<strong>平衡型</strong>的核心带。',
         '一句话：251–350 sq. ft. 更偏家庭照护，151–250 sq. ft. 更偏速冷与有限空间平衡。'
       ],
       portable_ac_count: [
@@ -1168,7 +1165,7 @@
       ],
       pac_experience_length: [
         '💡<strong>家庭健康守护型</strong>和<strong>便捷安居实用型</strong>的使用年限相对更长，说明它们更接近成熟存量用户；<strong>局部速冷控温型</strong>和<strong>有限空间平衡型</strong>更容易出现在中短年限群体里，说明它们更像仍在发展中的增长机会；<strong>理性应急准备型</strong>则介于成熟与增长之间，更像一个偏大户型但以关键时刻可靠为主的中间型人群。',
-        '一句话：家庭守护和便捷实用更成熟，速冷和<strong>平衡型</strong>更像新机会。'
+        '一句话：家庭守护和便捷实用更成熟，速冷和平衡型更像新机会。'
       ],
       age: [
         '💡年龄结构上，<strong>有限空间平衡型</strong>最明显偏年轻，25–34占比最高，而且比其他人群更集中；<strong>家庭健康守护型</strong>更偏 45–54；<strong>理性应急准备型</strong>更偏 55–64；<strong>便捷安居实用型</strong>则相对更偏年长，>64 更高。',
@@ -1221,15 +1218,19 @@
       return fieldInsightHtml(fieldKey);
     }
 
-    function barRowsHtml(items, clusters, valueKey = 'values', fieldKey = '') {
+    function barRowsHtml(items, clusters, valueKey = 'values', fieldKey = '', sortClustersByValue = false) {
       const max = Math.max(...items.flatMap(item => clusters.map(cluster => ((item[valueKey] || {})[cluster] || 0))), 0.01);
       return `
         <div class="rows">
-          ${items.map(item => `
+          ${items.map(item => {
+            const rowClusters = sortClustersByValue
+              ? clusters.slice().sort((a, b) => ((item[valueKey] || {})[b] || 0) - ((item[valueKey] || {})[a] || 0))
+              : clusters;
+            return `
             <div class="row">
               <div class="row-label">${escapeHtml(item.label)}</div>
               <div class="bar-stack">
-                ${clusters.map(cluster => `
+                ${rowClusters.map(cluster => `
                   <div class="bar-line">
                     <div class="bar-name">${userTypeTgiBadge(fieldKey, item.label, cluster)}${escapeHtml(clusterMetaMap[cluster].shortLabel || cluster)}</div>
                     <div class="bar-track"><div class="bar-fill" style="width:${(((item[valueKey] || {})[cluster] || 0) / max) * 100}%; background:${clusterColor(cluster)}"></div></div>
@@ -1238,7 +1239,7 @@
                 `).join('')}
               </div>
             </div>
-          `).join('')}
+          `}).join('')}
         </div>
       `;
     }
@@ -1261,7 +1262,7 @@
           <div class="legend">
             ${clusters.map(cluster => `<span class="legend-item"><span class="swatch" style="background:${clusterColor(cluster)}"></span>${escapeHtml(clusterMetaMap[cluster].shortLabel || cluster)}</span>`).join('')}
           </div>
-          ${barRowsHtml(options, clusters, 'values', fieldKey)}
+          ${barRowsHtml(options, clusters, 'values', fieldKey, isSorted)}
         </section>
       `;
     }
