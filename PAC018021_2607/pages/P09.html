@@ -1377,7 +1377,7 @@
                     `).join('')}
                   </div>
                 </div>
-                ${['page-usage', 'page-demo'].includes(page.id) ? `<div class="control-card field-instruction-card"><div class="control-title">排序说明</div><div class="field-help">按字段本身的自然顺序展示，右上角“排序”可根据占比大小顺序展示</div></div>` : ''}
+                ${['page-usage', 'page-demo'].includes(page.id) ? `<div class="control-card field-instruction-card"><div class="control-title">排序说明</div><div class="field-help">默认按固定人群顺序展示，右上角“排序”可使人群条形按占比从大到小展示</div></div>` : ''}
                 ${boardHtml}
                 ${['page-usage', 'page-demo'].includes(page.id) ? '' : `<div class="footnote">说明：默认按字段自然顺序展示，点击每张图右上角“排序”可切换为按当前选中人群平均占比降序；教育程度、职业领域、所在州默认只显示前 10 项。</div>`}
               </div>
