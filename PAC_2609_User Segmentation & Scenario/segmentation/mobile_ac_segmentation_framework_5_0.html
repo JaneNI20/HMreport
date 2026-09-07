@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>移动空调用户分群与场景框架 5.0</title>
+  <style>
+    :root {
+      --bg: #f4f7f8;
+      --surface: #ffffff;
+      --surface-soft: #edf3f4;
+      --ink: #162832;
+      --muted: #62747d;
+      --line: #d5e0e3;
+      --navy: #234456;
+      --teal: #187875;
+      --amber: #a86c1e;
+      --rose: #9a5965;
+      --green: #43765a;
+      --blue: #4f7188;
+      --brown: #8d6542;
+      --evidence-bg: #e4f3ef;
+      --evidence-fg: #1d695d;
+      --synthesis-bg: #eaf0f6;
+      --synthesis-fg: #46637f;
+      --hypothesis-bg: #fff1dc;
+      --hypothesis-fg: #865516;
+      --quote-bg: #f8fbfb;
+      --shadow: 0 8px 22px rgba(22, 40, 50, .07);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      font-size: 17px;
+      line-height: 1.65;
+    }
+    a { color: inherit; }
+    button { font: inherit; }
+    h1, h2, h3, h4, p { margin-top: 0; }
+    .wrap { max-width: 1460px; margin: 0 auto; padding: 0 32px 80px; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(244, 247, 248, .96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+    }
+    .topbar-inner {
+      max-width: 1460px;
+      margin: 0 auto;
+      padding: 13px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; min-width: 300px; }
+    .brand-mark {
+      width: 31px; height: 31px; display: grid; place-items: center;
+      border-radius: 6px; background: var(--navy); color: #fff;
+      font-size: 14px; font-weight: 700; letter-spacing: .35px;
+    }
+    .brand strong { display: block; font-size: 16px; letter-spacing: 0; }
+    .brand span { display: block; color: var(--muted); font-size: 13px; line-height: 1.25; }
+    .nav { display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav a {
+      color: var(--muted); text-decoration: none; padding: 8px 10px;
+      border-radius: 6px; font-size: 13px;
+    }
+    .nav a:hover, .nav a:focus-visible { color: var(--navy); background: var(--surface-soft); outline: none; }
+
+    .hero {
+      padding: 52px 0 30px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(355px, .75fr);
+      gap: 48px;
+      align-items: end;
+    }
+    .eyebrow, .section-kicker {
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 900px;
+      margin: 10px 0 17px;
+      font-size: clamp(39px, 4.3vw, 62px);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    .hero-lede { max-width: 800px; color: var(--muted); font-size: 19px; margin-bottom: 18px; }
+    .hero-note {
+      display: inline-flex; align-items: center; gap: 9px;
+      color: var(--navy); font-size: 14px; font-weight: 600;
+    }
+    .hero-note::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); }
+    .hero-side { border-left: 3px solid var(--teal); padding: 12px 0 12px 21px; }
+    .hero-side strong { display: block; font-size: 19px; margin-bottom: 8px; }
+    .hero-side p { color: var(--muted); font-size: 15px; margin: 0; }
+
+    .section { padding-top: 48px; scroll-margin-top: 80px; }
+    .section-head {
+      display: flex; justify-content: space-between; align-items: end;
+      gap: 24px; margin-bottom: 20px;
+    }
+    .section-head h2 { margin: 5px 0 7px; font-size: 31px; line-height: 1.2; letter-spacing: 0; }
+    .section-head p { max-width: 900px; margin: 0; color: var(--muted); font-size: 16px; }
+    .section-index { color: var(--muted); font-size: 13px; white-space: nowrap; }
+
+    .legend-row, .tag-row, .meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
+    .legend-row { margin: 15px 0 21px; }
+    .legend { display: inline-flex; gap: 7px; align-items: center; color: var(--muted); font-size: 14px; }
+    .dot { width: 10px; height: 10px; display: inline-block; border-radius: 50%; }
+    .dot.evidence { background: var(--evidence-fg); }
+    .dot.synthesis { background: var(--synthesis-fg); }
+    .dot.hypothesis { background: var(--hypothesis-fg); }
+    .state-chip, .source-chip, .task-chip {
+      min-height: 26px; display: inline-flex; align-items: center; border-radius: 999px;
+      padding: 3px 9px; font-size: 12px; line-height: 1.3;
+    }
+    .state-chip.evidence { background: var(--evidence-bg); color: var(--evidence-fg); }
+    .state-chip.synthesis { background: var(--synthesis-bg); color: var(--synthesis-fg); }
+    .state-chip.hypothesis { background: var(--hypothesis-bg); color: var(--hypothesis-fg); }
+    .state-chip.strategy { background: #edf3f4; color: var(--navy); }
+    .source-chip { background: var(--surface-soft); color: var(--muted); }
+    .task-chip {
+      background: color-mix(in srgb, var(--task-color) 10%, white);
+      color: var(--task-color);
+      border: 1px solid color-mix(in srgb, var(--task-color) 21%, white);
+    }
+
+    .task-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 13px; }
+    .task {
+      min-height: 187px; padding: 18px 17px; background: var(--surface);
+      border-top: 4px solid var(--task-color); border-radius: 7px; box-shadow: var(--shadow);
+    }
+    .task-num { color: var(--task-color); font-size: 13px; font-weight: 700; }
+    .task h3 { margin: 8px 0 10px; font-size: 18px; line-height: 1.32; }
+    .task p { margin-bottom: 13px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .task-types { color: var(--ink); font-size: 13px; font-weight: 600; }
+    .task-types span { color: var(--muted); font-weight: 400; }
+
+    .framework-flow {
+      display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+      align-items: stretch; gap: 8px; margin-top: 22px;
+    }
+    .flow-step {
+      position: relative; min-height: 99px; padding: 13px 11px; background: var(--surface);
+      border: 1px solid var(--line); border-radius: 6px;
+    }
+    .flow-step:not(:last-child)::after {
+      position: absolute; top: 37px; right: -15px; z-index: 2;
+      content: "→"; color: var(--amber); font-size: 19px; font-weight: 700;
+    }
+    .flow-step small { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; }
+    .flow-step strong { display: block; font-size: 14px; line-height: 1.35; }
+    .flow-step.research { border-top: 3px solid var(--teal); }
+    .flow-step.bridge { border-top: 3px solid var(--blue); }
+    .flow-step.outcome { border-top: 3px solid var(--amber); }
+    .principles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+    .principle { padding: 15px 17px; border-left: 3px solid var(--line); background: rgba(255,255,255,.55); }
+    .principle strong { display: block; margin-bottom: 5px; font-size: 15px; }
+    .principle p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .quadrant-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 295px;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .quadrant {
+      position: relative;
+      min-height: 530px;
+      overflow: hidden;
+      background:
+        linear-gradient(to right, transparent calc(50% - .5px), var(--line) calc(50% - .5px), var(--line) calc(50% + .5px), transparent calc(50% + .5px)),
+        linear-gradient(to bottom, transparent calc(50% - .5px), var(--line) calc(50% - .5px), var(--line) calc(50% + .5px), transparent calc(50% + .5px)),
+        var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      box-shadow: var(--shadow);
+    }
+    .quadrant-title {
+      position: absolute;
+      z-index: 1;
+      padding: 4px 8px;
+      color: var(--muted);
+      background: rgba(255,255,255,.86);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+    .quadrant-title.top { top: 9px; left: 50%; transform: translateX(-50%); }
+    .quadrant-title.bottom { bottom: 9px; left: 50%; transform: translateX(-50%); }
+    .quadrant-title.left { left: 9px; top: 50%; transform: translateY(-50%) rotate(-90deg); transform-origin: left top; }
+    .quadrant-title.right { right: 9px; top: 50%; transform: translateY(-50%) rotate(90deg); transform-origin: right top; }
+    .quadrant-corner {
+      position: absolute;
+      max-width: 175px;
+      color: #91a0a6;
+      font-size: 12px;
+      line-height: 1.35;
+      pointer-events: none;
+    }
+    .quadrant-corner.tl { top: 42px; left: 18px; }
+    .quadrant-corner.tr { top: 42px; right: 18px; text-align: right; }
+    .quadrant-corner.bl { bottom: 40px; left: 18px; }
+    .quadrant-corner.br { right: 18px; bottom: 40px; text-align: right; }
+    .quadrant-point {
+      position: absolute;
+      z-index: 2;
+      width: 132px;
+      padding: 9px 10px;
+      transform: translate(-50%, -50%);
+      border: 1px solid color-mix(in srgb, var(--point-color) 55%, white);
+      border-left: 4px solid var(--point-color);
+      border-radius: 5px;
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 5px 14px rgba(22, 40, 50, .11);
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+    }
+    .quadrant-point:hover, .quadrant-point:focus-visible { outline: 2px solid var(--point-color); outline-offset: 2px; }
+    .quadrant-point strong { display: block; font-size: 13px; line-height: 1.28; }
+    .quadrant-point span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.25; }
+    .quadrant-aside {
+      padding: 19px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+    }
+    .quadrant-aside h3 { margin-bottom: 10px; font-size: 19px; }
+    .quadrant-aside p { margin-bottom: 12px; color: var(--muted); font-size: 14px; }
+    .quadrant-aside ul { margin: 0; padding-left: 19px; }
+    .quadrant-aside li { margin: 6px 0; color: var(--muted); font-size: 14px; }
+    .quadrant-note { margin-top: 14px; padding: 11px 12px; background: #fffaf2; border-left: 3px solid var(--amber); color: #76501e; font-size: 13px; }
+
+    .foundation-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+    .foundation-card {
+      padding: 19px; background: var(--surface); border: 1px solid var(--line); border-radius: 7px;
+    }
+    .foundation-card h3 { margin-bottom: 10px; font-size: 19px; }
+    .foundation-card p { margin-bottom: 11px; color: var(--muted); font-size: 15px; }
+    .foundation-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .foundation-item { padding: 11px 12px; background: var(--surface-soft); border-left: 3px solid var(--teal); }
+    .foundation-item strong { display: block; font-size: 14px; }
+    .foundation-item span { display: block; margin-top: 3px; color: var(--muted); font-size: 13px; line-height: 1.48; }
+    .caution {
+      padding: 13px 15px; border-left: 3px solid var(--amber); background: #fffaf2;
+      color: #76501e; font-size: 14px;
+    }
+
+    .strategy-intro {
+      display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+      gap: 20px; margin-bottom: 16px; padding: 19px 21px;
+      border-left: 4px solid var(--teal); border-radius: 7px;
+      background: var(--surface); box-shadow: var(--shadow);
+    }
+    .strategy-intro h3 { margin: 7px 0 0; color: var(--navy); font-size: 22px; line-height: 1.35; }
+    .strategy-intro p { margin: 0; color: var(--muted); font-size: 15px; }
+    .strategy-caveat {
+      align-self: center; padding-left: 18px; border-left: 1px solid var(--line);
+      color: var(--muted); font-size: 14px; line-height: 1.55;
+    }
+    .strategy-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .strategy-card {
+      padding: 18px; background: var(--surface); border-top: 4px solid var(--trend-color);
+      border-radius: 7px; box-shadow: var(--shadow);
+    }
+    .strategy-card h3 { margin: 9px 0 10px; color: var(--navy); font-size: 20px; line-height: 1.28; }
+    .strategy-card > p { margin-bottom: 13px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .strategy-row { padding: 11px 0; border-top: 1px solid var(--line); }
+    .strategy-row:first-of-type { border-top: 0; }
+    .strategy-row strong { display: block; margin-bottom: 4px; color: var(--navy); font-size: 13px; }
+    .strategy-row span { display: block; color: var(--muted); font-size: 13px; line-height: 1.52; }
+    .strategy-note {
+      margin-top: 16px; padding: 15px 17px; border-left: 3px solid var(--amber);
+      background: #fffaf2; color: #76501e; font-size: 15px;
+    }
+
+    .type-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    .type-filter {
+      padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px;
+      background: var(--surface); color: var(--muted); cursor: pointer; font-size: 14px;
+    }
+    .type-filter[aria-pressed="true"], .type-filter:hover, .type-filter:focus-visible {
+      color: var(--navy); border-color: var(--navy); background: var(--surface-soft); outline: none;
+    }
+    .type-filter[aria-pressed="true"] { font-weight: 700; }
+    .type-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px; }
+    .type-card {
+      display: none; overflow: hidden; background: var(--surface);
+      border-left: 5px solid var(--type-color); border-radius: 7px; box-shadow: var(--shadow);
+    }
+    .type-card.visible { display: block; }
+    .type-card-head { padding: 18px 19px 13px; border-bottom: 1px solid var(--line); }
+    .type-card-head-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+    .type-card h3 { margin: 0 0 8px; font-size: 22px; line-height: 1.22; }
+    .type-task { margin-bottom: 9px; color: var(--navy); font-size: 15px; font-weight: 600; }
+    .share {
+      min-width: 75px; color: var(--type-color); text-align: right;
+      font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
+    }
+    .share b { display: block; font-size: 23px; line-height: 1.1; }
+    .type-card-body { padding: 14px 19px 18px; }
+    .type-row {
+      display: grid; grid-template-columns: 126px minmax(0, 1fr); gap: 13px;
+      padding: 10px 0; border-bottom: 1px solid #edf0f1;
+    }
+    .type-row:last-child { border-bottom: 0; }
+    .type-row-label { color: var(--muted); font-size: 13px; font-weight: 700; }
+    .type-row-value { font-size: 14px; line-height: 1.58; }
+    .type-row-value .state-chip { margin-bottom: 5px; }
+    .demographic-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--surface-soft);
+      color: var(--navy);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: left;
+    }
+    .demographic-button:hover, .demographic-button:focus-visible { border-color: var(--type-color); outline: none; }
+    .demographic-button::after { content: "→"; color: var(--amber); font-size: 15px; }
+    .evidence-line { margin-top: 5px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .evidence-line strong { color: var(--ink); }
+    .qual-note {
+      margin-top: 11px; padding: 10px 12px; background: var(--quote-bg);
+      border-left: 3px solid var(--type-color); color: var(--muted); font-size: 13px;
+    }
+    .qual-note strong { color: var(--ink); }
+
+    .boundary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
+    .boundary { padding: 17px; background: var(--surface); border: 1px solid var(--line); border-radius: 7px; }
+    .boundary h3 { margin-bottom: 10px; font-size: 18px; line-height: 1.3; }
+    .boundary p { margin-bottom: 11px; color: var(--muted); font-size: 14px; }
+    .boundary .decision { padding-top: 10px; border-top: 1px solid var(--line); color: var(--navy); font-size: 14px; font-weight: 600; }
+    .boundary .decision span { color: var(--amber); }
+
+    .matrix-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 7px; }
+    table { width: 100%; border-collapse: collapse; min-width: 1130px; }
+    th, td { padding: 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+    th { background: var(--surface-soft); color: var(--navy); font-size: 13px; white-space: nowrap; }
+    td { font-size: 14px; line-height: 1.52; }
+    tr:last-child td { border-bottom: 0; }
+    .matrix-name { min-width: 164px; color: var(--navy); font-weight: 700; }
+    .matrix-sub { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; font-weight: 400; }
+    .matrix-evidence { margin-top: 7px; color: var(--muted); font-size: 12px; }
+
+    .market-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin-bottom: 16px; }
+    .market-metric {
+      min-height: 142px; padding: 16px; border-top: 3px solid var(--metric-color);
+      border-radius: 7px; background: var(--surface); box-shadow: var(--shadow);
+    }
+    .market-metric .metric-number { color: var(--metric-color); font-size: 29px; font-weight: 700; line-height: 1.1; }
+    .market-metric strong { display: block; margin: 8px 0 5px; font-size: 16px; line-height: 1.35; }
+    .market-metric p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .market-grid { display: grid; grid-template-columns: 1.06fr .94fr; gap: 16px; }
+    .market-card { padding: 19px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+    .market-card h3 { margin-bottom: 7px; font-size: 20px; }
+    .market-card > p { margin-bottom: 13px; color: var(--muted); font-size: 14px; }
+    .conversion-ladder { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .conversion-step { min-height: 236px; padding: 13px; border-radius: 6px; background: var(--surface-soft); border-top: 3px solid var(--step-color); }
+    .conversion-step .step-score { color: var(--step-color); font-size: 17px; font-weight: 700; }
+    .conversion-step h4 { margin: 5px 0 8px; font-size: 16px; line-height: 1.35; }
+    .conversion-step p { margin: 0 0 9px; color: var(--muted); font-size: 13px; line-height: 1.48; }
+    .conversion-step .barrier { padding-top: 9px; border-top: 1px solid #dce7e9; color: var(--ink); font-size: 13px; line-height: 1.45; }
+    .conversion-step .barrier strong { color: var(--step-color); }
+    .device-strip { margin-top: 14px; padding: 13px; border-left: 3px solid var(--blue); background: #f4f8fb; }
+    .device-strip strong { display: block; margin-bottom: 4px; color: var(--navy); font-size: 15px; }
+    .device-strip p { margin: 0; color: var(--muted); font-size: 13px; }
+    .tgi-list { display: grid; gap: 12px; }
+    .tgi-row { display: grid; grid-template-columns: 155px minmax(0, 1fr) 78px; gap: 12px; align-items: center; }
+    .tgi-label strong { display: block; font-size: 14px; }
+    .tgi-label span { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+    .tgi-axis { position: relative; height: 28px; }
+    .tgi-axis::before {
+      position: absolute; top: 13px; right: 0; left: 0; content: "";
+      height: 2px; background: #d8e3e6;
+    }
+    .tgi-axis::after {
+      position: absolute; top: 4px; left: 62.5%; content: "100";
+      color: #97a5aa; font-size: 10px;
+    }
+    .tgi-dot { position: absolute; top: 8px; width: 11px; height: 11px; border-radius: 50%; transform: translateX(-50%); }
+    .tgi-dot.current { left: calc(var(--current) / 160 * 100%); background: var(--blue); }
+    .tgi-dot.future { left: calc(var(--future) / 160 * 100%); background: var(--teal); }
+    .tgi-values { color: var(--navy); font-size: 13px; font-weight: 700; text-align: right; }
+    .tgi-values span { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; font-weight: 400; }
+    .tgi-legend { display: flex; flex-wrap: wrap; gap: 13px; margin-bottom: 13px; color: var(--muted); font-size: 12px; }
+    .tgi-legend i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; }
+    .tgi-legend .current { background: var(--blue); }
+    .tgi-legend .future { background: var(--teal); }
+    .market-decision { margin-top: 16px; padding: 15px 17px; border-left: 3px solid var(--amber); background: #fffaf2; color: #76501e; font-size: 14px; }
+
+    .journey-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px; }
+    .journey-card {
+      overflow: hidden; background: var(--surface); border-top: 4px solid var(--journey-color);
+      border-radius: 7px; box-shadow: var(--shadow);
+    }
+    .journey-head { padding: 18px 19px 13px; border-bottom: 1px solid var(--line); }
+    .journey-head h3 { margin-bottom: 5px; font-size: 23px; }
+    .journey-head p { margin: 0; color: var(--muted); font-size: 14px; }
+    .quote {
+      margin: 14px 19px 0; padding: 12px 13px; background: var(--quote-bg);
+      border-left: 3px solid var(--journey-color); color: var(--navy); font-size: 15px; line-height: 1.58;
+    }
+    .quote small { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
+    .journey-stages { padding: 13px 19px 18px; }
+    .stage { display: grid; grid-template-columns: 108px minmax(0, 1fr); gap: 11px; padding: 10px 0; border-bottom: 1px solid #edf0f1; }
+    .stage:last-child { border-bottom: 0; }
+    .stage strong { color: var(--journey-color); font-size: 14px; }
+    .stage p { margin: 0; color: var(--muted); font-size: 14px; }
+    .journey-opportunity { margin: 0 19px 19px; padding: 12px 13px; background: #fffaf2; border-left: 3px solid var(--amber); color: #76501e; font-size: 14px; }
+
+    .journey-hypothesis {
+      margin-top: 16px; padding: 16px 17px; background: var(--surface);
+      border: 1px dashed #cbd8dc; border-radius: 7px;
+    }
+    .journey-hypothesis h3 { margin-bottom: 8px; font-size: 18px; }
+    .journey-hypothesis p { margin: 0; color: var(--muted); font-size: 14px; }
+    .journey-hypothesis .tag-row { margin-top: 11px; }
+
+    .opportunity-flow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: center; gap: 8px; margin-bottom: 18px; }
+    .opportunity-flow div {
+      min-height: 80px; display: flex; flex-direction: column; justify-content: center;
+      padding: 11px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); font-size: 13px;
+    }
+    .opportunity-flow div strong { margin-bottom: 3px; font-size: 14px; }
+    .opportunity-flow .arrow { align-items: center; border: 0; background: transparent; color: var(--amber); font-size: 20px; padding: 0; }
+    .opportunity-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .opportunity-row {
+      display: grid; grid-template-columns: 182px minmax(0, 1fr); gap: 14px; padding: 15px 17px;
+      background: var(--surface); border-left: 4px solid var(--type-color); border-radius: 6px;
+    }
+    .opportunity-row strong { font-size: 15px; }
+    .opportunity-row p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+    .planning-note { margin-top: 16px; padding: 15px 17px; border-left: 3px solid var(--amber); background: #fffaf2; color: #76501e; font-size: 15px; }
+
+    .review-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .review-card { padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 7px; }
+    .review-card h3 { margin-bottom: 8px; font-size: 19px; }
+    .review-card p { margin-bottom: 12px; color: var(--muted); font-size: 14px; }
+    .review-card ol { margin: 0; padding-left: 20px; }
+    .review-card li { margin: 5px 0; font-size: 14px; }
+    .score-table { margin-top: 16px; }
+    .score-table table { min-width: 780px; }
+    .score-table th, .score-table td { padding: 11px 12px; }
+    .score-table td:first-child { color: var(--navy); font-weight: 700; }
+    .decision-strip {
+      display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 18px; align-items: center;
+      margin-top: 17px; padding: 17px; border-radius: 7px; background: var(--navy); color: #fff;
+    }
+    .decision-strip strong { font-size: 16px; }
+    .decision-strip p { margin: 0; color: #dce8ed; font-size: 14px; }
+
+    .deliverable-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .deliverable {
+      min-height: 168px; padding: 16px; background: var(--surface); border-top: 3px solid var(--blue); border-radius: 7px; box-shadow: var(--shadow);
+    }
+    .deliverable h3 { margin-bottom: 8px; font-size: 17px; }
+    .deliverable p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .gap-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
+    .gap-card { padding: 18px; background: var(--surface); border-top: 3px solid var(--gap-color); border-radius: 7px; box-shadow: var(--shadow); }
+    .gap-card h3 { margin-bottom: 8px; font-size: 19px; }
+    .gap-card p { margin-bottom: 11px; color: var(--muted); font-size: 14px; }
+    .gap-card ul { margin: 0; padding-left: 19px; }
+    .gap-card li { margin: 5px 0; font-size: 14px; }
+    .base-note { margin-top: 22px; padding: 16px 18px; background: var(--surface-soft); border-left: 3px solid var(--blue); color: var(--muted); font-size: 13px; }
+    .base-note strong { color: var(--ink); }
+    .footer { display: flex; justify-content: space-between; gap: 18px; margin-top: 50px; padding-top: 19px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+    .modal[hidden] { display: none; }
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      background: rgba(18, 36, 46, .45);
+    }
+    .modal-dialog {
+      width: min(900px, 100%);
+      max-height: min(820px, calc(100vh - 44px));
+      overflow: auto;
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: 0 24px 68px rgba(8, 25, 34, .27);
+    }
+    .modal-header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 19px 21px 15px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .modal-header h2 { margin: 5px 0 0; font-size: 25px; line-height: 1.25; }
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--surface-soft);
+      color: var(--navy);
+      cursor: pointer;
+      font-size: 23px;
+      line-height: 1;
+    }
+    .modal-body { padding: 18px 21px 22px; }
+    .modal-intro { margin-bottom: 15px; color: var(--muted); font-size: 14px; }
+    .demo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .demo-group { padding: 14px; background: var(--surface-soft); border-radius: 6px; }
+    .demo-group h3 { margin-bottom: 8px; color: var(--navy); font-size: 16px; }
+    .demo-row { padding: 8px 0; border-bottom: 1px solid #dce7e9; }
+    .demo-row:last-child { border-bottom: 0; }
+    .demo-row strong { display: block; font-size: 13px; }
+    .demo-row span { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .modal-footnote { margin: 16px 0 0; padding: 11px 12px; border-left: 3px solid var(--blue); background: #f4f8fb; color: var(--muted); font-size: 13px; }
+
+    @media (max-width: 1120px) {
+      .task-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .framework-flow { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .framework-flow .flow-step:nth-child(4)::after { display: none; }
+      .opportunity-flow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .opportunity-flow .arrow { display: none; }
+      .deliverable-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .market-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 840px) {
+      .wrap, .topbar-inner { padding-left: 19px; padding-right: 19px; }
+      .brand { min-width: 0; }
+      .brand span { display: none; }
+      .hero { grid-template-columns: 1fr; gap: 23px; padding-top: 36px; }
+      .hero-side { padding: 14px 0 0; border-top: 3px solid var(--teal); border-left: 0; }
+      .task-grid, .type-grid, .boundary-grid, .foundation-grid, .strategy-grid, .journey-grid, .opportunity-grid, .review-grid, .gap-grid, .quadrant-shell, .market-grid { grid-template-columns: 1fr; }
+      .strategy-intro { grid-template-columns: 1fr; }
+      .strategy-caveat { padding: 14px 0 0; border-top: 1px solid var(--line); border-left: 0; }
+      .framework-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .framework-flow .flow-step:nth-child(2)::after, .framework-flow .flow-step:nth-child(4)::after, .framework-flow .flow-step:nth-child(6)::after { display: none; }
+      .section-head { align-items: flex-start; flex-direction: column; gap: 6px; }
+      .decision-strip { grid-template-columns: 1fr; gap: 7px; }
+    }
+    @media (max-width: 560px) {
+      body { font-size: 16px; }
+      h1 { font-size: 39px; }
+      .foundation-list, .deliverable-grid { grid-template-columns: 1fr; }
+      .market-metrics, .conversion-ladder { grid-template-columns: 1fr; }
+      .framework-flow, .opportunity-flow { grid-template-columns: 1fr; }
+      .flow-step::after { display: none !important; }
+      .type-row, .stage, .opportunity-row { grid-template-columns: 1fr; gap: 5px; }
+      .share { text-align: left; }
+      .type-card-head-top { flex-direction: column; }
+      .footer { flex-direction: column; }
+      .quadrant { min-height: 600px; }
+      .quadrant-point { width: 116px; padding: 8px; }
+      .quadrant-point strong { font-size: 12px; }
+      .demo-grid { grid-template-columns: 1fr; }
+      .tgi-row { grid-template-columns: 116px minmax(0, 1fr) 66px; gap: 8px; }
+    }
+    @media print {
+      .topbar { position: static; }
+      .type-filter { display: none; }
+      .type-card { display: block !important; break-inside: avoid; }
+      .section, .journey-card, .gap-card { break-inside: avoid; }
+      body { background: #fff; }
+      .wrap { max-width: none; padding: 0 18px 32px; }
+      .hero { padding-top: 24px; }
+      .task, .type-card, .journey-card, .gap-card, .deliverable { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">AC</div>
+        <div>
+          <strong>移动空调用户分群</strong>
+          <span>用户研究 × PM 研讨框架 5.0</span>
+        </div>
+      </div>
+      <nav class="nav" aria-label="页面导航">
+        <a href="#overview">概览</a>
+        <a href="#quadrant">人群地图</a>
+        <a href="#strategy">长期空间</a>
+        <a href="#types">六类人群</a>
+        <a href="#boundaries">关键边界</a>
+        <a href="#matrix">需求矩阵</a>
+        <a href="#market-lens">市场视角</a>
+        <a href="#journeys">用户旅程</a>
+        <a href="#opportunity">产品机会</a>
+        <a href="#review">PM 评审</a>
+        <a href="#gaps">证据与研究缺口</a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">研讨版 5.0 · 以研究为基础，可讨论校准</div>
+        <h1>移动空调用户分群与场景框架</h1>
+        <p class="hero-lede">把六类用户从“画像标签”还原为可评审的购买任务、具体场景与旅程摩擦：他们为什么买、在什么条件下被触发、现有方案哪里失效，以及这些证据可能指向哪些产品机会。</p>
+        <div class="hero-note">本页用于校准与讨论；研究证据、综合推论与待验证假设明确分开。</div>
+      </div>
+      <aside class="hero-side">
+        <strong>会议不是要立刻定六条产品线</strong>
+        <p>先确认购买任务是否成立、边界是否清楚、痛点是否重要；再讨论哪些需求应该由平台、系列、SKU、配件、服务或传播表达承接。用户分群 → 产品机会，不等于 用户分群 → 产品线。</p>
+      </aside>
+    </header>
+
+    <section class="section" id="overview">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">01 / 分群概览</div>
+          <h2>五个首要购买任务，承接六类用户类型</h2>
+          <p>当前将六类研究人群放入五个主要购买任务。空间自主掌控型与局部速冷控温型暂时共享购买任务 01，但各自保留不同的需求模式，不将其称为“二级分群”。</p>
+        </div>
+        <div class="section-index">一级任务层</div>
+      </div>
+      <div class="legend-row">
+        <span class="legend"><i class="dot evidence"></i>研究证据</span>
+        <span class="legend"><i class="dot synthesis"></i>基于研究的综合推论</span>
+        <span class="legend"><i class="dot hypothesis"></i>假设 / 待验证</span>
+      </div>
+      <div class="task-grid">
+        <article class="task" style="--task-color:var(--navy)">
+          <div class="task-num">购买任务 01</div>
+          <h3>独立空间温度控制</h3>
+          <p>处理一个关键房间的局部舒适问题，包含稳定控制与快速见效两种 需求模式。</p>
+          <div class="task-types"><span>包含：</span>空间自主掌控型、局部速冷控温型</div>
+        </article>
+        <article class="task" style="--task-color:var(--brown)">
+          <div class="task-num">购买任务 02</div>
+          <h3>便捷灵活实用</h3>
+          <p>用较低的安装、移动、收纳和维护负担，获得一个马上能用的方案。</p>
+          <div class="task-types"><span>对应：</span>便捷安居实用型</div>
+        </article>
+        <article class="task" style="--task-color:var(--green)">
+          <div class="task-num">购买任务 03</div>
+          <h3>家庭睡眠与舒适守护</h3>
+          <p>让家人、儿童、老人或宠物在关键房间中持续舒适，尤其是夜间。</p>
+          <div class="task-types"><span>对应：</span>家庭健康守护型</div>
+        </article>
+        <article class="task" style="--task-color:var(--blue)">
+          <div class="task-num">购买任务 04</div>
+          <h3>受限空间平衡</h3>
+          <p>在有限的生活空间中平衡制冷、噪音、占地、排水、能耗与预算。</p>
+          <div class="task-types"><span>对应：</span>有限空间平衡型</div>
+        </article>
+        <article class="task" style="--task-color:var(--amber)">
+          <div class="task-num">购买任务 05</div>
+          <h3>应急备用保障</h3>
+          <p>在热浪、故障、维修期或极端情况到来时，拿出可靠可用的备用方案。</p>
+          <div class="task-types"><span>对应：</span>理性应急准备型</div>
+        </article>
+      </div>
+
+      <div class="framework-flow" aria-label="框架层级">
+        <div class="flow-step research"><small>第一层</small><strong>首要购买任务</strong></div>
+        <div class="flow-step bridge"><small>第二层</small><strong>需求模式 / 子任务</strong></div>
+        <div class="flow-step research"><small>研究证据</small><strong>购买动机</strong></div>
+        <div class="flow-step research"><small>研究证据</small><strong>场景 / 触发条件</strong></div>
+        <div class="flow-step research"><small>研究证据</small><strong>痛点</strong></div>
+        <div class="flow-step bridge"><small>综合推论</small><strong>未满足需求</strong></div>
+        <div class="flow-step outcome"><small>待验证</small><strong>产品机会</strong></div>
+      </div>
+      <div class="principles">
+        <div class="principle"><strong>先判断任务，再讨论人群</strong><p>人群标签是识别和讨论的入口；购买任务才是跨场景、跨生命周期可复用的组织方式。</p></div>
+        <div class="principle"><strong>同一人可以跨任务迁移</strong><p>一个用户可能今天是独立空间温度控制，热浪时成为应急备用，家庭阶段变化后又转向守护需求。</p></div>
+        <div class="principle"><strong>产品机会不等于产品线</strong><p>一个平台或一个 SKU 可以覆盖多个任务；不同需求也可能通过配件、引导、渠道或服务来解决。</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="quadrant">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">02 / 人群地图</div>
+          <h2>六类用户的概念象限：看清共同点、差异与尚未覆盖的空间</h2>
+          <p>这是基于购买动机、使用节奏和场景的研究综合定位，用于比较，不是统计分析或精确坐标。点击任一人群可查看该类样本的人口学与家庭背景分布。</p>
+        </div>
+        <div class="section-index">方向性综合推论</div>
+      </div>
+      <div class="quadrant-shell">
+        <div class="quadrant" id="quadrantCanvas" aria-label="六类用户概念象限">
+          <span class="quadrant-title top">更日常 / 持续的使用关系</span>
+          <span class="quadrant-title bottom">更事件触发 / 需要时使用</span>
+          <span class="quadrant-title left">个人舒适与自主</span>
+          <span class="quadrant-title right">家庭保障与生活约束</span>
+          <span class="quadrant-corner tl">个人温控、工作与睡眠状态</span>
+          <span class="quadrant-corner tr">照护、共处与居住现实</span>
+          <span class="quadrant-corner bl">即时缓解、局部快速见效</span>
+          <span class="quadrant-corner br">故障、热浪与风险兜底</span>
+        </div>
+        <aside class="quadrant-aside">
+          <h3>如何解读</h3>
+          <p>纵轴看用户与产品的使用关系：是长期持续的舒适管理，还是由热浪、故障或特定高温事件触发。</p>
+          <p>横轴看价值重心：是个人对体感的掌控，还是家庭照护、共同生活或空间条件带来的约束。</p>
+          <ul>
+            <li>同一人可能因家庭阶段或天气，在象限间迁移。</li>
+            <li>相近位置不代表可以合并；仍需回到任务、需求模式 与痛点判断。</li>
+            <li>若未来出现明显的空白区域，可能提示尚未被当前六类覆盖的购买任务。</li>
+          </ul>
+          <div class="quadrant-note">各点位置来自 基于研究的综合推论；点的大小不代表市场规模，颜色与六类人群卡一致。</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="foundation">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">03 / 共同体验底线</div>
+          <h2>画像与旅程先聚焦“为何重要”，不以人口学替代分群</h2>
+          <p>参考框架中的“谁、何时何地、痛点与目标”已被纳入本页；但人口学只作为辅助描述，不作为六类定义或产品规划的直接依据。</p>
+        </div>
+        <div class="section-index">阅读说明</div>
+      </div>
+      <div class="foundation-grid">
+        <article class="foundation-card">
+          <h3>大户型卧室访谈提出的四项共性体验底线</h3>
+          <div class="foundation-list">
+            <div class="foundation-item"><strong>好装</strong><span>非标窗、排气与密封不能把“开箱即用”变成被迫 DIY。</span></div>
+            <div class="foundation-item"><strong>好养</strong><span>排水、滤网、收纳和搬动一旦麻烦，就会成为持续性负担。</span></div>
+            <div class="foundation-item"><strong>好睡</strong><span>夜间噪音、灯光、盲操与温度波动影响睡眠或专注。</span></div>
+            <div class="foundation-item"><strong>能耗可控</strong><span>用户需要省电策略、可理解的能耗反馈，或至少降低账单不确定性。</span></div>
+          </div>
+        </article>
+        <aside class="foundation-card">
+          <h3>证据使用边界</h3>
+          <p><span class="state-chip evidence">研究证据</span> 定量报告中的比例、痛点分数、场景和动机；访谈中明确出现的人物、行为、原话与旅程摩擦。</p>
+          <p><span class="state-chip synthesis">基于研究的综合推论</span> 把跨材料的动机、场景和痛点整理为“未满足需求”。</p>
+          <p><span class="state-chip hypothesis">假设 / 待验证</span> 产品能力、付费意愿、战略价值、系列或 SKU 规划，均需 PM 与后续研究共同验证。</p>
+          <div class="caution">小户型访谈材料被用作“受限空间平衡型”的补充定性参照，不新增第七类人群，也不改变六类的定量定义。</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="strategy">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">04 / 品牌长期空间</div>
+          <h2>从移动空调，走向个人睡眠与工作舒适解决方案</h2>
+          <p>以下三项来自品牌长期方向，用于把当前的购买任务放到更长周期的价值空间中。它们不是本轮六类人群研究直接验证出的新结论。</p>
+        </div>
+        <div class="section-index">品牌长期方向</div>
+      </div>
+      <div class="strategy-intro">
+        <div>
+          <span class="state-chip strategy">品牌长期方向 · 非本轮研究证据</span>
+          <h3>不只销售一台制冷设备，而是在关键房间、关键时段帮助用户获得更可控的睡眠与工作舒适。</h3>
+        </div>
+        <div class="strategy-caveat">这里的作用是提出未来值得验证的价值方向，并连接既有用户任务；不能据此新增人群、重定义六类分群，或直接推出产品线结论。</div>
+      </div>
+      <div class="strategy-grid">
+        <article class="strategy-card" style="--trend-color:var(--green)">
+          <span class="state-chip strategy">长期方向</span>
+          <h3>睡眠科技（SleepTech）</h3>
+          <p>把“能降温”升级为对深睡眠和夜间安心的可感知支持，温度、湿度、静谧感等体验都值得进入未来验证。</p>
+          <div class="strategy-row">
+            <strong><span class="state-chip evidence">当前研究锚点</span></strong>
+            <span>家庭健康守护型中，改善炎热环境下睡眠为 71.9%，夜间睡眠场景为 70.3%；Sarah 的访谈也将“让孩子整夜安睡”呈现为核心结果。</span>
+          </div>
+        </article>
+        <article class="strategy-card" style="--trend-color:var(--navy)">
+          <span class="state-chip strategy">长期方向</span>
+          <h3>居家办公（WFH / Home Office）</h3>
+          <p>当工作与居住交叠，关键房间的舒适度会影响专注与生产力；局部、低干扰的舒适管理可能成为长期价值场景。</p>
+          <div class="strategy-row">
+            <strong><span class="state-chip evidence">当前研究锚点</span></strong>
+            <span>空间自主掌控型中，特定房间控制权为 52.8%，居家办公舒适为 40.4%；David 的访谈显示，高温会直接影响工作与睡眠。</span>
+          </div>
+        </article>
+        <article class="strategy-card" style="--trend-color:var(--teal)">
+          <span class="state-chip strategy">长期方向</span>
+          <h3>个性化室内微气候（Personal Micro-Climate）</h3>
+          <p>从“一人开机、全屋降温”转向按人、按房间、按时段提供更贴合体感的局部舒适，是智能家庭中的潜在平台方向。</p>
+          <div class="strategy-row">
+            <strong><span class="state-chip evidence">当前研究锚点</span></strong>
+            <span>特定房间控制权为 52.8%，只冷目标空间为 54.9%；P22 显示移动空调常被放在既有中央空调或窗机未覆盖好的关键空间中补位。</span>
+          </div>
+        </article>
+      </div>
+      <div class="strategy-note"><strong>重要原则：</strong>三大趋势不等于三条产品线。它们是跨人群、跨购买任务的长期价值方向；产品平台、系列、SKU 的承接方式，仍要经过任务真实性、技术可行性、价格与支付意愿验证。</div>
+    </section>
+
+    <section class="section" id="types">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">05 / 六类用户</div>
+          <h2>六类定义：每类都从购买任务走到未满足需求</h2>
+          <p>每张卡均采用统一结构：首要购买任务 → 需求模式 → 购买动机 → 场景 / 触发条件 → 痛点 → 未满足需求 → 产品机会。前五项保留原始研究证据口径。</p>
+        </div>
+        <div class="section-index">约 n=380 的聚类样本</div>
+      </div>
+      <div class="type-toolbar" aria-label="筛选用户类型">
+        <button class="type-filter" data-filter="all" aria-pressed="true">全部六类</button>
+        <button class="type-filter" data-filter="空间自主掌控型" aria-pressed="false">空间自主掌控型</button>
+        <button class="type-filter" data-filter="便捷安居实用型" aria-pressed="false">便捷安居实用型</button>
+        <button class="type-filter" data-filter="家庭健康守护型" aria-pressed="false">家庭健康守护型</button>
+        <button class="type-filter" data-filter="局部速冷控温型" aria-pressed="false">局部速冷控温型</button>
+        <button class="type-filter" data-filter="有限空间平衡型" aria-pressed="false">有限空间平衡型</button>
+        <button class="type-filter" data-filter="理性应急准备型" aria-pressed="false">理性应急准备型</button>
+      </div>
+      <div class="type-grid" id="typeGrid"></div>
+    </section>
+
+    <section class="section" id="boundaries">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">06 / 关键边界</div>
+          <h2>六类不是六个互不相交的“人”，而是有边界的购买任务组合</h2>
+          <p>PM 重点不是判断名字好不好听，而是判断任务、动机、场景、关键痛点与预期结果是否足够不同，值得保留为独立的讨论单元。</p>
+        </div>
+        <div class="section-index">建议重点讨论</div>
+      </div>
+      <div class="boundary-grid">
+        <article class="boundary">
+          <h3>空间自主掌控型 vs 局部速冷控温型</h3>
+          <p><strong>共同：</strong>都在解决关键房间补冷，尤其是强日晒或主空调覆盖不足。</p>
+          <p><strong>区分：</strong>前者追求长期、可掌控的个人舒适；后者更强调“现在很热，尽快有效”的即时结果。</p>
+          <div class="decision"><span>当前判断：</span>保留为购买任务 01 下的两个需求模式，验证是否存在不同技术、价格或传播需求。</div>
+        </article>
+        <article class="boundary">
+          <h3>便捷安居实用型 vs 有限空间平衡型</h3>
+          <p><strong>共同：</strong>都重视低操作成本、安装便利与现实居住约束。</p>
+          <p><strong>区分：</strong>前者核心是“少麻烦、灵活可用”；后者核心是设备进入生活空间后的持续共处，包括噪音、占地、排水与电路压力。</p>
+          <div class="decision"><span>当前判断：</span>前者偏体验流程，后者偏空间约束；是否需要独立平台尚未确认。</div>
+        </article>
+        <article class="boundary">
+          <h3>家庭健康守护型 vs 理性应急准备型</h3>
+          <p><strong>共同：</strong>都可能是为家人买单，也都会强调安心和可靠。</p>
+          <p><strong>区分：</strong>前者是日常、高频的照护与睡眠任务；后者是低频、极端场景的风险管理与备用保障。</p>
+          <div class="decision"><span>当前判断：</span>使用频率、触发机制、性能容忍与长期价值不同，建议保留为独立任务。</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="matrix">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">07 / 人群 × 场景 × 需求</div>
+          <h2>把人群放回场景：每类到底要完成什么事</h2>
+          <p>矩阵用于会议中快速检查：同一痛点是否因动机、发生时机和期待结果不同，而构成不同的购买任务。</p>
+        </div>
+        <div class="section-index">以证据为主的矩阵</div>
+      </div>
+      <div class="matrix-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>用户类型</th>
+              <th>主要场景 / 触发条件</th>
+              <th>核心动机</th>
+              <th>高优先级痛点</th>
+              <th>基于研究的未满足需求</th>
+              <th>待验证的机会形式</th>
+            </tr>
+          </thead>
+          <tbody id="matrixBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="market-lens">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">08 / 市场机会视角</div>
+          <h2>从“谁需要”走到“谁还没有被转化、机会在哪里发生”</h2>
+          <p>这层补充 P22 与 P23 的市场证据：前者解释潜在用户为何还未购买，后者识别当前已转化与未来潜在机会更集中的空间信号。它们不重定义六类人群，也不直接等同于产品线或市场规模。</p>
+        </div>
+        <div class="section-index">转化障碍 + 市场信号</div>
+      </div>
+      <div class="legend-row">
+        <span class="legend"><i class="dot evidence"></i>研究证据：P22 潜在用户 n=191；P23 现有用户 n=200 / 潜在用户 n=191</span>
+        <span class="legend"><i class="dot synthesis"></i>基于研究的综合推论：把转化障碍与空间信号连回产品机会</span>
+      </div>
+
+      <div class="market-metrics">
+        <article class="market-metric" style="--metric-color:var(--amber)">
+          <div class="metric-number">76.4%</div>
+          <strong>潜在用户的首要未购买障碍</strong>
+          <p>价格 / 预算压力。P22 开放题 n=191；这说明“需求存在”并不自动代表可转化。</p>
+        </article>
+        <article class="market-metric" style="--metric-color:var(--teal)">
+          <div class="metric-number">72.5%</div>
+          <strong>5 / 6 / 7 分共同最强场景</strong>
+          <p>极端高温 / 热浪。该数字是三档意愿用户的平均最高场景比例。</p>
+        </article>
+        <article class="market-metric" style="--metric-color:var(--green)">
+          <div class="metric-number">53.9%</div>
+          <strong>5 / 6 / 7 分共同最高动机</strong>
+          <p>改善炎热环境下的睡眠；其次是现有空调无法真正冷却某些房间。</p>
+        </article>
+        <article class="market-metric" style="--metric-color:var(--blue)">
+          <div class="metric-number">34.6%</div>
+          <strong>潜在用户更集中的目标房间</strong>
+          <p>客厅，P23 潜在用户 TGI 114。它是未来机会信号，而不是市场份额。</p>
+        </article>
+      </div>
+
+      <div class="market-grid">
+        <article class="market-card">
+          <h3>潜在用户转化：潜在用户不是新的分群</h3>
+          <p><span class="state-chip evidence">研究证据</span> P22 的 5 / 6 / 7 分是“当前家庭制冷方案未完全满足需求，且愿意尝试 / 升级 / 替换”的购买意愿分层。它衡量转化准备度，不应与六类购买任务一一对应。</p>
+          <div class="conversion-ladder">
+            <article class="conversion-step" style="--step-color:var(--blue)">
+              <div class="step-score">购买意愿评分 5 分 · n=84</div>
+              <h4>轻决策实用型</h4>
+              <p>愿意尝试，但仍在“值不值得现在动手”的阶段；更偏向低门槛、灵活、少折腾的改善。</p>
+              <div class="barrier"><strong>首要障碍：</strong>价格 / 预算 81.0%<br />研究、怕选错 3.6%</div>
+            </article>
+            <article class="conversion-step" style="--step-color:var(--navy)">
+              <div class="step-score">购买意愿评分 6 分 · n=58</div>
+              <h4>房间补位升级型</h4>
+              <p>已更明确感知到现有制冷覆盖不足，开始认真寻找“解决热房间”的补位方案。</p>
+              <div class="barrier"><strong>首要障碍：</strong>价格 / 预算 82.8%<br />研究、怕选错 3.4%</div>
+            </article>
+            <article class="conversion-step" style="--step-color:var(--green)">
+              <div class="step-score">购买意愿评分 7 分 · n=49</div>
+              <h4>高热家庭守护型</h4>
+              <p>未满足感最强，已将问题连到睡眠、家人舒适与热浪风险；可靠性和场景痛点开始更重要。</p>
+              <div class="barrier"><strong>首要障碍：</strong>价格 / 预算 61.2%<br />搬家 / 空间不确定 8.2%</div>
+            </article>
+          </div>
+          <div class="device-strip">
+            <strong>“现有制冷方案不够用”才是转化入口</strong>
+            <p>5 / 6 / 7 分潜在用户中，已有 窗式空调 57.3%（94 / 164）与 中央空调 54.3%（89 / 164）。移动空调的机会更像补足未被满足的房间、时段或极端天气，而非从 0 到 1 替代所有制冷设备。</p>
+          </div>
+        </article>
+
+        <article class="market-card">
+          <h3>当前与未来信号：看空间机会，不以户型大小做主切法</h3>
+          <p><span class="state-chip evidence">研究证据</span> P23 的 TGI = 某群体在该细分的占比 / 全体在该细分的占比 × 100；100 表示与整体平均一致。图中展示样本相对稳定、可用于方向性判断的条目。</p>
+          <div class="tgi-legend"><span><i class="current"></i>现有用户 TGI</span><span><i class="future"></i>潜在用户 TGI</span><span>参考线：100 = 总体平均</span></div>
+          <div class="tgi-list">
+            <div class="tgi-row" style="--current:87;--future:114">
+              <div class="tgi-label"><strong>客厅</strong><span>主要房间</span></div>
+              <div class="tgi-axis"><i class="tgi-dot current"></i><i class="tgi-dot future"></i></div>
+              <div class="tgi-values">87 → 114<span>未来偏向</span></div>
+            </div>
+            <div class="tgi-row" style="--current:68;--future:134">
+              <div class="tgi-label"><strong>351–450 sq. ft.</strong><span>主要房间面积</span></div>
+              <div class="tgi-axis"><i class="tgi-dot current"></i><i class="tgi-dot future"></i></div>
+              <div class="tgi-values">68 → 134<span>未来偏向</span></div>
+            </div>
+            <div class="tgi-row" style="--current:111;--future:88">
+              <div class="tgi-label"><strong>251–350 sq. ft.</strong><span>主要房间面积</span></div>
+              <div class="tgi-axis"><i class="tgi-dot current"></i><i class="tgi-dot future"></i></div>
+              <div class="tgi-values">111 → 88<span>当前更成熟</span></div>
+            </div>
+            <div class="tgi-row" style="--current:98;--future:102">
+              <div class="tgi-label"><strong>大户型</strong><span>户型大小</span></div>
+              <div class="tgi-axis"><i class="tgi-dot current"></i><i class="tgi-dot future"></i></div>
+              <div class="tgi-values">98 → 102<span>背景变量</span></div>
+            </div>
+            <div class="tgi-row" style="--current:106;--future:94">
+              <div class="tgi-label"><strong>小户型</strong><span>户型大小</span></div>
+              <div class="tgi-axis"><i class="tgi-dot current"></i><i class="tgi-dot future"></i></div>
+              <div class="tgi-values">106 → 94<span>背景变量</span></div>
+            </div>
+          </div>
+          <div class="market-decision"><strong>PM 应该如何使用：</strong>优先验证“客厅 / 共享空间”和“351–450 平方英尺的中等偏大关键空间”是否对应明确的未满足任务与可行产品能力；不要因为大户型 / 小户型的 TGI 接近 100，就把户型大小本身当作首要人群切法。</div>
+        </article>
+      </div>
+      <div class="planning-note"><strong>连接回产品规划：</strong>六类人群回答“用户为何需要”；P22 回答“为什么尚未转化”；P23 回答“未来机会可能在哪些空间出现”。只有当三层证据同时指向同一任务，并且经由技术、价格与渠道验证后，才应进入 近期 / 下一步 / 未来 的产品规划讨论。</div>
+    </section>
+
+    <section class="section" id="journeys">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">09 / 典型用户与旅程证据</div>
+          <h2>两条已有深度访谈支撑的典型旅程</h2>
+          <p>人物不是用来替代分群，而是让 PM 看见：动机如何在“触发—寻找—安装—使用—维护”的连续过程中变成具体摩擦。这两条只代表已访谈到的典型案例，不能被视为该类所有用户的定量比例。</p>
+        </div>
+        <div class="section-index">定性证据</div>
+      </div>
+      <div class="journey-grid">
+        <article class="journey-card" style="--journey-color:var(--green)">
+          <div class="journey-head">
+            <h3>Sarah · 家庭健康守护型</h3>
+            <p>45 岁女性；大户型老房，中央空调覆盖不到二楼儿童房。角色：“首席舒适官”。</p>
+          </div>
+          <div class="quote">“为了孩子能睡个好觉，我可以忍受所有的不便。”<small>访谈 典型用户原话 / 大户型卧室用户研究</small></div>
+          <div class="journey-stages">
+            <div class="stage"><strong>触发</strong><p>二楼卧室闷热，孩子无法入睡；把全屋中央空调调低又会让其他人太冷、账单上升。</p></div>
+            <div class="stage"><strong>寻找</strong><p>依赖线下卖场、评价和“适用面积”信息；追求立即可得，不想让孩子再多熬一个热夜。</p></div>
+            <div class="stage"><strong>安装</strong><p>窄窗或异形窗让标配窗套失效，需要胶带、泡沫或其他 DIY 密封；设备搬上楼也很吃力。</p></div>
+            <div class="stage"><strong>使用</strong><p>夜间开启约 75°F；孩子睡着后，半夜再进房间调节或关机，在舒适、着凉担忧和电费之间取平衡。</p></div>
+            <div class="stage"><strong>维护</strong><p>电费、滤网和排水成为持续的心理与操作负担；满意度取决于孩子是否整晚安睡，而不是机器参数本身。</p></div>
+          </div>
+          <div class="journey-opportunity"><span class="state-chip hypothesis">假设 / 待验证</span><br />可优先验证：非标窗“到手即装”、夜间温控与低打扰、可理解的能耗引导，是否能显著降低“责任与电费”之间的焦虑。</div>
+        </article>
+
+        <article class="journey-card" style="--journey-color:var(--navy)">
+          <div class="journey-head">
+            <h3>David · 空间自主掌控型</h3>
+            <p>38 岁男性；居家办公者，住宅存在西晒或加建区域，追求个人房间温度主权。</p>
+          </div>
+          <div class="quote">“如果我热得出汗，我就睡不好，生活质量也会下降。”<small>访谈 典型用户原话 / 大户型卧室用户研究</small></div>
+          <div class="journey-stages">
+            <div class="stage"><strong>触发</strong><p>高温影响睡眠和工作效率；与家人存在体感差异，中央空调无法让他的目标房间达到理想温度。</p></div>
+            <div class="stage"><strong>寻找</strong><p>深度研究 Reddit、Google、Amazon 和 BTU 信息，关注真实性能、降温速度、噪音和智能控制。</p></div>
+            <div class="stage"><strong>安装</strong><p>愿意自己处理排气管、密封与摆位，但对软管僵硬、占地和物流损坏容忍度低。</p></div>
+            <div class="stage"><strong>使用</strong><p>倾向最低温度加最高风速，追求进屋即凉；开会或睡眠前再降低功率，试图绕开风噪和灯光干扰。</p></div>
+            <div class="stage"><strong>维护</strong><p>排水、漏水风险、夜间指示灯和噪音不断打断“设好就忘”的理想体验。</p></div>
+          </div>
+          <div class="journey-opportunity"><span class="state-chip hypothesis">假设 / 待验证</span><br />可优先验证：高温速冷与稳定控温的真实表现、低干扰夜间体验、预冷与能耗反馈，是否支撑对高客单和智能功能的支付意愿。</div>
+        </article>
+      </div>
+      <div class="journey-hypothesis">
+        <h3>其余四类：先保留为“待验证旅程假设”，不要伪装为已完成定性画像</h3>
+        <p>便捷安居实用型可验证“从购买到安装是否一气呵成”；局部速冷控温型可验证“高温下为什么现有制冷失效”；有限空间平衡型可验证“噪音、占地、排水与电路约束如何共同影响使用”；理性应急准备型可验证“存放、启动和兼容性如何决定关键时刻的信任”。</p>
+        <div class="tag-row">
+          <span class="state-chip hypothesis">需要补访谈 / 日记研究 / 售后与评论证据</span>
+          <span class="source-chip">不新增或重聚类六类人群</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="opportunity">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">10 / 用户需求 → 产品机会</div>
+          <h2>从用户未满足需求到产品机会，但不强行映射产品线</h2>
+          <p>这里展示的是规划启发，不是最终系列或 SKU 定义。它们可以由同一平台、不同配置、配件、服务、导购工具或传播表达共同承接。</p>
+        </div>
+        <div class="section-index">不是产品线地图</div>
+      </div>
+      <div class="opportunity-flow">
+        <div><strong>研究证据</strong>动机、场景、痛点</div>
+        <div class="arrow">→</div>
+        <div><strong>综合需求</strong>用户要达成的结果</div>
+        <div class="arrow">→</div>
+        <div><strong>能力假设</strong>产品、配件、服务或信息</div>
+        <div class="arrow">→</div>
+        <div><strong>规划判断</strong>平台、系列、SKU、渠道或传播</div>
+      </div>
+      <div class="opportunity-grid" id="opportunityGrid"></div>
+      <div class="planning-note"><strong>规划原则：</strong>“好装、好养、好睡、能耗可控”更接近跨人群的体验底线；只有当某项需求在任务独特性、市场价值、支付意愿和公司能力上都被证实时，才值得进一步讨论是否形成独立系列或 SKU。</div>
+    </section>
+
+    <section class="section" id="review">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">11 / PM 评审框架</div>
+          <h2>PM 需要做的不是“喜欢哪个画像”，而是留下可执行判断</h2>
+          <p>每一类可独立评分，也可以先对五个首要购买任务做第一轮判断。名称、边界和逻辑都允许会后调整，但每次调整必须保留理由与证据缺口。</p>
+        </div>
+        <div class="section-index">会议产出</div>
+      </div>
+      <div class="review-grid">
+        <article class="review-card">
+          <h3>真实性 · 差异性</h3>
+          <p>先判断任务是否真实存在，及其是否值得与其他类型分开。</p>
+          <ol>
+            <li>你在销售、评论、售后、渠道或自身用户中见过这个任务吗？</li>
+            <li>它的触发、动机和期待结果是否清楚？</li>
+            <li>与哪一类重叠？重叠的是场景、痛点还是购买动机？</li>
+          </ol>
+        </article>
+        <article class="review-card">
+          <h3>重要性 · 产品机会</h3>
+          <p>判断需求存在之外的市场与产品意义。</p>
+          <ol>
+            <li>它代表规模、增长、利润、品牌还是战略防御价值？</li>
+            <li>痛点能否转成可定义、可验证的产品能力？</li>
+            <li>是否需要新技术，还是改进现有体验、配件或导购即可？</li>
+          </ol>
+        </article>
+        <article class="review-card">
+          <h3>战略匹配度 · 优先级</h3>
+          <p>明确由谁服务、何时服务，而不是把所有需求都变成当年项目。</p>
+          <ol>
+            <li>是否符合公司的技术积累、供应链、渠道和品牌方向？</li>
+            <li><strong>近期：</strong>近期规划必须处理；<strong>下一步：</strong>补证据后投入；<strong>未来：</strong>保留观察。</li>
+            <li>最合适的承接方式是平台、系列、SKU、配件、服务还是传播？</li>
+          </ol>
+        </article>
+        <article class="review-card">
+          <h3>证据缺口</h3>
+          <p>所有判断都要说明依据与待补研究，尤其要区分业务经验和研究事实。</p>
+          <ol>
+            <li>还缺市场规模、场景频率、支付意愿、渠道数据还是技术可行性？</li>
+            <li>哪些结论应从“综合推论”降级为“待验证假设”？</li>
+            <li>后续优先补访谈、量化验证、评论/售后分析还是概念测试？</li>
+          </ol>
+        </article>
+      </div>
+      <div class="score-table matrix-wrap">
+        <table>
+          <thead><tr><th>维度</th><th>1 分</th><th>3 分</th><th>5 分</th><th>PM 必须留下的依据</th></tr></thead>
+          <tbody>
+            <tr><td>真实性</td><td>基本未见或不稳定</td><td>有迹象但边界不清</td><td>多类业务证据都能对应</td><td>真实案例、渠道、售后、评论或使用数据</td></tr>
+            <tr><td>差异性</td><td>与其他类型几乎相同</td><td>有部分差异</td><td>任务、动机、痛点和结果明显不同</td><td>与哪个类型重叠，重叠在哪里</td></tr>
+            <tr><td>重要性</td><td>当前价值较低</td><td>有价值但规模不清</td><td>对规模、增长或战略很关键</td><td>市场、利润、用户、品牌或战略依据</td></tr>
+            <tr><td>产品机会</td><td>很难通过现有能力解决</td><td>可能可做，需要验证</td><td>能力路径清楚且可兑现</td><td>技术、成本、平台与体验指标依据</td></tr>
+            <tr><td>战略匹配度</td><td>不符合公司方向</td><td>部分匹配</td><td>高度匹配现有优势</td><td>渠道、品牌、供应链与产品路线依据</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="decision-strip">
+        <strong>会议最终要留下的句子</strong>
+        <p>“这个购买任务成立 / 部分成立 / 暂不确认；核心动机是……；关键场景是……；与……存在重叠；当前优先级为……；建议由……承接；下一步需要验证……。”</p>
+      </div>
+    </section>
+
+    <section class="section" id="deliverables">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">12 / 会后沉淀</div>
+          <h2>把本次共识沉淀为可复用的用户研究 → PM 输入</h2>
+          <p>参考框架中的交付物适合放在 PM 完成第一轮校准之后。此时不需要为六类人都强行做完整典型用户，而应优先服务于被确认的重要购买任务。</p>
+        </div>
+        <div class="section-index">建议的会后产出</div>
+      </div>
+      <div class="deliverable-grid">
+        <article class="deliverable"><h3>定稿人群说明卡</h3><p>为确认保留的每类写清：任务、需求模式、动机、触发、痛点、边界、证据等级和 PM 结论。</p></article>
+        <article class="deliverable"><h3>优先任务的典型用户</h3><p>只为 1–3 个高优先任务补足代表人物、典型情境、用户故事和必要的背景描述。</p></article>
+        <article class="deliverable"><h3>关键旅程与摩擦</h3><p>围绕购买、安装、使用、维护、收纳等环节，补齐行为、触点、情绪、痛点和机会。</p></article>
+        <article class="deliverable"><h3>机会与优先级证据包</h3><p>补充规模、频次、支付意愿、技术可行性、渠道和业务价值，作为产品规划或 PRD 的输入。</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="gaps">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">13 / 证据与研究缺口</div>
+          <h2>哪些已有证据，哪些还不能替代产品决策</h2>
+          <p>当前研究足以支持购买任务、动机、场景和痛点的初步框架；但还不足以单独决定产品线数量、SKU 数量或投资优先级。</p>
+        </div>
+        <div class="section-index">待验证</div>
+      </div>
+      <div class="gap-grid">
+        <article class="gap-card" style="--gap-color:var(--teal)">
+          <h3>分群研究缺口</h3>
+          <p>需确认六类是否稳定、可识别，及边界是否需要调整。</p>
+          <ul>
+            <li>六类之间的真实重叠与用户迁移路径。</li>
+            <li>空间自主掌控型与局部速冷控温型是否应长期共享 购买任务 01。</li>
+            <li>用户是否能以购买任务而非研究标签描述自己的需求。</li>
+            <li>不同地区、房型、家庭阶段下，任务重要性是否变化。</li>
+          </ul>
+        </article>
+        <article class="gap-card" style="--gap-color:var(--amber)">
+          <h3>业务验证缺口</h3>
+          <p>需确认哪些任务值得投入，而不仅是需求真实存在。</p>
+          <ul>
+            <li>市场规模、场景频率、销售转化和利润贡献。</li>
+            <li>价格接受度、支付意愿及功能溢价空间。</li>
+            <li>各任务的渠道可触达性与区域机会。</li>
+            <li>哪些人群代表增量，哪些主要承接既有需求。</li>
+            <li>睡眠科技、居家办公与个性化室内微气候三项长期方向的发生频率、跨人群适用范围与溢价空间。</li>
+          </ul>
+        </article>
+        <article class="gap-card" style="--gap-color:var(--rose)">
+          <h3>产品定义缺口</h3>
+          <p>需把痛点转化为明确的能力和体验指标。</p>
+          <ul>
+            <li>速冷与稳定控温是否确实需要不同技术能力。</li>
+            <li>各任务对制冷、噪音、能耗、安装和排水的最低门槛。</li>
+            <li>哪些需求可由同一平台覆盖，哪些需结构或配件差异。</li>
+            <li>“好装、好养、好睡、能耗可控”中哪些是必须底线。</li>
+          </ul>
+        </article>
+        <article class="gap-card" style="--gap-color:var(--blue)">
+          <h3>证据质量边界</h3>
+          <p>需要保留样本与方法边界，避免过度解读。</p>
+          <ul>
+            <li>六类聚类主要来自约 n=380 样本；各类 n=39–89。</li>
+            <li>P22 潜在用户分析基数为 n=191，5/6/7 分分别为 n=84/58/49。</li>
+            <li>P23 TGI 使用现有与潜在用户总基数 n=391。</li>
+            <li>TGI 是相对集中度，不等同于市场规模；小样本细分只作方向参考。</li>
+          </ul>
+        </article>
+      </div>
+      <div class="base-note">
+        <strong>研究材料映射：</strong>P06 提供六类人群总览；P07 提供动机、使用触发和现有/潜在用户差异；P08 提供房间、面积、户型和居住条件；P09 提供人口学辅助信息；P11 提供制冷、能耗、噪音、安装、排水痛点；P22 提供潜在用户未购买原因和购买意愿分层；P23 提供现有/潜在空间机会 TGI。大户型卧室用户访谈 PPT 提供 Sarah 与 David 的典型用户、行为旅程、原话与共性体验摩擦；其中产品及营销建议在本页面均按综合推论或待验证假设处理。第 04 节的三项品牌长期方向来自业务输入，用于提出未来验证议题，不属于上述研究材料的直接结论。
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>移动空调用户分群与场景框架 · 研讨版 5.0</span>
+      <span>研究证据优先 · PM 需要做出判断 · 产品线尚未预设</span>
+    </footer>
+  </main>
+
+  <div class="modal" id="demographicModal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="demographicTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <div class="section-kicker">P09 / 人口学概览</div>
+          <h2 id="demographicTitle">人群人口学与家庭背景</h2>
+        </div>
+        <button class="modal-close" id="demographicClose" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body" id="demographicBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const types = [
+      {
+        name: "空间自主掌控型", color: "var(--navy)", share: "23%", n: "n=89",
+        primary: "购买任务 01 独立空间温度控制", mode: "稳定控温、持续舒适、个人主权",
+        motivation: "对特定房间拥有更多控制权 52.8%；改善炎热环境下睡眠 47.2%；居家办公舒适 40.4%。",
+        context: "居家办公、个人房间、主卧；强日晒导致房间过热 50.6%。",
+        pain: "担心耗电或电费 76.9；高温制冷力不从心 74.4；安装需要额外工具 73.7。",
+        distinctive: "安装时需要额外工具，相较整体高 17.9。",
+        unmet: "需要稳定、主动地管理一个房间，而不仅是短时降温。",
+        opportunity: "稳定制冷、控温反馈、房间匹配和能耗透明。当前为购买任务 01 下的“稳定控温”需求模式。",
+        qual: "已有 David 深访旅程：高温会直接损害工作与睡眠；排水、噪音、灯光打断“设好就忘”的体验。",
+        source: "P06 / P07 / P11；大户型卧室访谈",
+        quadrant: { x: 25, y: 27, label: "个人主权 · 日常舒适" },
+        profileLead: "潜在用户 50.6% · 大户型 69.7% · 独栋住宅 59.6%",
+        demographics: [
+          { title: "用户与使用基础", rows: [["用户阶段", "潜在用户 50.6%；现有用户 49.4%"], ["移动空调经验", "使用超过 4 年 31.8%；1–2 年 29.5%"]] },
+          { title: "居住与目标空间", rows: [["户型与住宅", "大户型 69.7%；独栋住宅 59.6%"], ["住房权属", "自有住房 48.3%；租住 31.5%"], ["主要房间", "主卧 31.5%；客厅 30.3%"], ["主要房间面积", "151–250 sq. ft. 24.7%；101–150 sq. ft. 21.3%"]] },
+          { title: "家庭与人口背景", rows: [["家庭人口", "3–4 人 37.1%；2 人 30.3%"], ["年龄", "35–44 岁 24.7%；25–34 岁 21.3%"], ["性别", "女性 59.6%；男性 39.3%"], ["家庭收入", "$25,000–$49,999 21.3%；$50,000–$74,999 20.2%"]] },
+          { title: "补充样本描述", rows: [["教育程度", "本科 34.8%；未获学位的大学学习经历 12.4%"], ["所在州", "佛罗里达州 15.7%；得克萨斯州 12.4%"]] }
+        ]
+      },
+      {
+        name: "便捷安居实用型", color: "var(--brown)", share: "23%", n: "n=86",
+        primary: "购买任务 02 便捷灵活实用", mode: "好装、好搬、好收纳、少维护",
+        motivation: "不同空间灵活制冷 46.5%；便携、易移动或收纳 29.1%；更容易安装或设置 26.7%。",
+        context: "客厅、主卧、热浪期间和不同房间切换；热浪场景 69.8%。",
+        pain: "担心耗电或电费 77.6；配件缺失或不匹配 71.7；实际体感不如设定温度 70.4。",
+        distinctive: "排水口位置难以够到、操作别扭，相较整体高 11.8。",
+        unmet: "需要一个不增加生活操作负担的可用制冷方案。",
+        opportunity: "安装系统、兼容配件、移动收纳、维护和排水体验。更像通用体验能力或基础方案。",
+        qual: "待验证旅程假设：重点补访“买到—装上—用起来”是否一气呵成，及配件、搬动、收纳在哪一步放大摩擦。",
+        source: "P06 / P07 / P11",
+        quadrant: { x: 68, y: 43, label: "生活现实 · 灵活实用" },
+        profileLead: "现有用户 67.4% · 大户型 73.3% · 自有住房 55.8%",
+        demographics: [
+          { title: "用户与使用基础", rows: [["用户阶段", "现有用户 67.4%；潜在用户 32.6%"], ["移动空调经验", "使用超过 4 年 37.9%；2–3 年 31.0%"]] },
+          { title: "居住与目标空间", rows: [["户型与住宅", "大户型 73.3%；独栋住宅 58.1%"], ["住房权属", "自有住房 55.8%；租住 29.1%"], ["主要房间", "客厅 32.6%；主卧 22.1%"], ["主要房间面积", "151–250 sq. ft. 30.2%；101–150 sq. ft. 19.8%"]] },
+          { title: "家庭与人口背景", rows: [["家庭人口", "3–4 人 38.4%；2 人 31.4%"], ["年龄", "45–54 岁 22.1%；25–34 岁 20.9%"], ["性别", "男性 55.8%；女性 41.9%"], ["家庭收入", "$75,000–$99,999 25.6%；$25,000–$49,999 24.4%"]] },
+          { title: "补充样本描述", rows: [["教育程度", "本科 26.7%；未获学位的大学学习经历 24.4%"], ["所在州", "加利福尼亚州 17.4%；纽约州 9.3%"]] }
+        ]
+      },
+      {
+        name: "家庭健康守护型", color: "var(--green)", share: "16%", n: "n=64",
+        primary: "购买任务 03 家庭睡眠与舒适守护", mode: "持续稳定、夜间低打扰、照护安心",
+        motivation: "改善炎热环境下睡眠 71.9%；保障家人或宠物舒适安全 56.3%。",
+        context: "主卧、次卧、儿童房、老人房；夜间睡眠 70.3%；热浪 73.4%。",
+        pain: "实际体感不如设定温度 76.9；担心耗电 75.5；机器附近凉但无法覆盖全房间 75.2。",
+        distinctive: "标称 BTU / 性能与实际体验不符，相较整体高 21.1。",
+        unmet: "需要关键家庭房间中可被信任的持续舒适。",
+        opportunity: "夜间低噪、持续制冷、真实性能表达、覆盖能力和远程调节；可能是差异化价值主张或配置。",
+        qual: "已有 Sarah 深访旅程：核心不是机器本身，而是让孩子整夜安睡；非标窗安装、电费与夜间手动调节是关键摩擦。",
+        source: "P06 / P07 / P11；大户型卧室访谈",
+        quadrant: { x: 76, y: 24, label: "家庭照护 · 夜间持续" },
+        profileLead: "潜在用户 56.3% · 大户型 87.5% · 独栋住宅 71.9%",
+        demographics: [
+          { title: "用户与使用基础", rows: [["用户阶段", "潜在用户 56.3%；现有用户 43.8%"], ["移动空调经验", "使用超过 4 年 53.6%；1–2 年 17.9%"]] },
+          { title: "居住与目标空间", rows: [["户型与住宅", "大户型 87.5%；独栋住宅 71.9%"], ["住房权属", "自有住房 57.8%；租住 21.9%"], ["主要房间", "主卧 46.9%；其他卧室（儿童/客人/家人）26.6%"], ["主要房间面积", "151–250 sq. ft. 31.3%；251–350 sq. ft. 28.1%"]] },
+          { title: "家庭与人口背景", rows: [["家庭人口", "3–4 人 40.6%；2 人 21.9%"], ["年龄", "45–54 岁 31.3%；35–44 岁 23.4%"], ["性别", "女性 53.1%；男性 46.9%"], ["家庭收入", "$50,000–$74,999 23.4%；$25,000–$49,999 21.9%"]] },
+          { title: "补充样本描述", rows: [["教育程度", "本科 26.6%；硕士 10.9%"], ["所在州", "得克萨斯州 12.5%；加利福尼亚州 9.4%"]] }
+        ]
+      },
+      {
+        name: "局部速冷控温型", color: "var(--rose)", share: "13%", n: "n=51",
+        primary: "购买任务 01 独立空间温度控制", mode: "快速见效、高温下持续有效",
+        motivation: "不冷却全屋只冷目标空间 54.9%；只冷使用空间以降低成本 33.3%。",
+        context: "小卧室、次卧、开间（Studio）、强日晒房间；高温和夜间睡眠场景均 62.7%。",
+        pain: "高温制冷力不从心 76.7；担心耗电 75.4；运行一段时间后制冷变差 74.7。",
+        distinctive: "排水口位置难以操作，相较整体高 17.7。",
+        unmet: "需要快速、明显并且长时间有效的单房间降温。",
+        opportunity: "速冷、高温性能、长时间稳定性和房间匹配。当前为购买任务 01 下的“快速见效”需求模式。",
+        qual: "待验证旅程假设：需要理解用户对“快”的容忍阈值、不同高温条件下的失效体验，以及他们是否为速冷表现付费。",
+        source: "P06 / P07 / P11",
+        quadrant: { x: 24, y: 68, label: "个人体感 · 即时补冷" },
+        profileLead: "潜在用户 58.8% · 大户型 74.5% · 主卧 39.2%",
+        demographics: [
+          { title: "用户与使用基础", rows: [["用户阶段", "潜在用户 58.8%；现有用户 41.2%"], ["移动空调经验", "使用超过 4 年 38.1%；1–2 年 28.6%"]] },
+          { title: "居住与目标空间", rows: [["户型与住宅", "大户型 74.5%；独栋住宅 56.9%"], ["住房权属", "自有住房 52.9%；租住 27.5%"], ["主要房间", "主卧 39.2%；其他卧室（儿童/客人/家人）27.5%"], ["主要房间面积", "151–250 sq. ft. 37.3%；101–150 sq. ft. 23.5%"]] },
+          { title: "家庭与人口背景", rows: [["家庭人口", "3–4 人 43.1%；2 人 29.4%"], ["年龄", "35–44 岁 27.5%；25–34 岁 19.6%"], ["性别", "女性 52.9%；男性 47.1%"], ["家庭收入", "$25,000–$49,999 21.6%；$75,000–$99,999 19.6%"]] },
+          { title: "补充样本描述", rows: [["教育程度", "本科 19.6%；未获学位的大学学习经历 11.8%"], ["所在州", "得克萨斯州 11.8%；宾夕法尼亚州 11.8%"]] }
+        ]
+      },
+      {
+        name: "有限空间平衡型", color: "var(--blue)", share: "13%", n: "n=51",
+        primary: "购买任务 04 受限空间平衡", mode: "低打扰、低负担、空间兼容",
+        motivation: "家人或宠物舒适安全 39.2%；炎热环境睡眠 43.1%；特定房间控制权 41.2%。",
+        context: "公寓、小户型、租住空间、客厅；现有空调局部覆盖不足 51.0%；热浪 66.7%。",
+        pain: "噪音干扰电话、会议、游戏或远程办公 77.6；制冷随时间变差 77.6；高温或隔热差导致机器更吃力 75.0。",
+        distinctive: "排水系统安装或设置不方便，相较整体高 19.2。",
+        unmet: "需要一个进入生活空间后仍然可以长期共处的产品。",
+        opportunity: "紧凑体积、低噪音、低排水负担和低打扰设计。是否独立平台需验证。",
+        qual: "小户型访谈补充了安全/隐私、老旧电路、占地与社交体面等空间约束；仅作为该类的补充定性参照。",
+        source: "P06 / P07 / P11；小户型访谈补充",
+        quadrant: { x: 72, y: 53, label: "空间约束 · 日常平衡" },
+        profileLead: "潜在用户 70.6% · 小户型 45.1% · 公寓 35.3%",
+        demographics: [
+          { title: "用户与使用基础", rows: [["用户阶段", "潜在用户 70.6%；现有用户 29.4%"], ["移动空调经验", "2–3 年 46.7%；使用超过 4 年 33.3%"]] },
+          { title: "居住与目标空间", rows: [["户型与住宅", "大户型 54.9%；小户型 45.1%；独栋住宅 37.3%；公寓 35.3%"], ["住房权属", "自有住房 37.3%；租住 35.3%"], ["主要房间", "客厅 43.1%；主卧 35.3%"], ["主要房间面积", "251–350 sq. ft. 27.5%；151–250 sq. ft. 23.5%"]] },
+          { title: "家庭与人口背景", rows: [["家庭人口", "3–4 人 43.1%；2 人 27.5%"], ["年龄", "25–34 岁 29.4%；35–44 岁 23.5%"], ["性别", "女性 54.9%；男性 45.1%"], ["家庭收入", "$25,000–$49,999 31.4%；$75,000–$99,999 21.6%"]] },
+          { title: "补充样本描述", rows: [["教育程度", "本科 33.3%；高中学历或同等学历 15.7%"], ["所在州", "加利福尼亚州 19.6%；纽约州 9.8%"]] }
+        ]
+      },
+      {
+        name: "理性应急准备型", color: "var(--amber)", share: "10%", n: "n=39",
+        primary: "购买任务 05 应急备用保障", mode: "关键时刻可用、长期存放后可靠",
+        motivation: "应急或备份制冷方案 48.7%；曾遇空调意外停止 43.6%；临时制冷 43.6%。",
+        context: "停电、故障、维修等待、极端天气、备用主卧；停电或紧急场景 59.0%。",
+        pain: "担心耗电或电费 80.6；窗户类型或尺寸不兼容 73.1；不合理安装排气增加能耗 73.1。",
+        distinctive: "不合理安装和排气降低性能并增加能耗，相较整体高 15.2。",
+        unmet: "需要一台平时可收存、关键时刻拿出来就能可靠启动的设备。",
+        opportunity: "快速启动、兼容安装、清晰指引、储存和备用模式；可能由配置、套装、服务或独立方向承接。",
+        qual: "待验证旅程假设：重点补足故障/热浪触发时的购买速度、久放后的启动问题、收纳配件和兼容安装的信任门槛。",
+        source: "P06 / P07 / P11",
+        quadrant: { x: 78, y: 78, label: "家庭保障 · 事件兜底" },
+        profileLead: "现有用户 71.8% · 55–64 岁 28.2% · 主卧 46.2%",
+        demographics: [
+          { title: "用户与使用基础", rows: [["用户阶段", "现有用户 71.8%；潜在用户 28.2%"], ["移动空调经验", "使用超过 4 年 39.3%；1–2 年 21.4%"]] },
+          { title: "居住与目标空间", rows: [["户型与住宅", "大户型 66.7%；独栋住宅 46.2%"], ["住房权属", "租住 38.5%；自有住房 35.9%"], ["主要房间", "主卧 46.2%；客厅 30.8%"], ["主要房间面积", "151–250 sq. ft. 25.6%；251–350 sq. ft. 25.6%"]] },
+          { title: "家庭与人口背景", rows: [["家庭人口", "3–4 人 35.9%；2 人 30.8%"], ["年龄", "55–64 岁 28.2%；25–34 岁 20.5%"], ["性别", "女性 48.7%；男性 46.2%"], ["家庭收入", "$50,000–$74,999 33.3%；低于 $25,000 20.5%"]] },
+          { title: "补充样本描述", rows: [["教育程度", "本科 25.6%；未获学位的大学学习经历 20.5%"], ["所在州", "得克萨斯州 23.1%；佛罗里达州 15.4%"]] }
+        ]
+      }
+    ];
+
+    const matrixRows = [
+      ["空间自主掌控型", "居家办公、个人房间、主卧；强日晒热房间", "特定房间控制权 52.8%；睡眠 47.2%；居家办公 40.4%", "耗电 76.9；高温性能 74.4；安装工具 73.7", "稳定、主动、能耗可控地管理一个房间", "共享购买任务 01 平台下的稳定控温能力"],
+      ["便捷安居实用型", "客厅、主卧、热浪、房间切换", "不同空间灵活制冷 46.5%；便携收纳 29.1%", "耗电 77.6；配件 71.7；体感不达标 70.4", "低操作成本地得到一个可用方案", "跨系列的安装、移动、维护体验"],
+      ["家庭健康守护型", "儿童房、老人房、主卧；夜间热浪", "睡眠 71.9%；家人/宠物舒适 56.3%", "体感不达标 76.9；耗电 75.5；覆盖不足 75.2", "关键家庭房间持续、安静、可信地舒适", "夜间体验、覆盖和真实性能表达"],
+      ["局部速冷控温型", "暴晒房间、次卧、小卧室、开间（Studio）", "只冷目标空间 54.9%；降低局部制冷成本 33.3%", "高温性能 76.7；耗电 75.4；长时间衰减 74.7", "快速、明显、持续有效的单房间降温", "共享购买任务 01 平台下的速冷/高温性能能力"],
+      ["有限空间平衡型", "公寓、小户型、租住空间、客厅", "睡眠 43.1%；特定房间控制 41.2%；家人/宠物舒适 39.2%", "噪音 77.6；长时间衰减 77.6；高温能耗 75.0", "产品进入生活空间后不扰人、可长期共处", "紧凑、低噪、低排水负担；是否需独立结构待定"],
+      ["理性应急准备型", "停电、故障、维修期、备用主卧", "备用方案 48.7%；故障经历 43.6%；临时制冷 43.6%", "耗电 80.6；窗户兼容 73.1；排气安装 73.1", "关键时刻快速、可靠、正确地启动", "备用模式、收纳、安装兼容或服务套装"]
+    ];
+
+    const opportunityRows = [
+      ["独立空间温度控制", "稳定制冷、速冷、高温性能、房间匹配、能耗反馈", "同一平台下的不同需求模式；是否需系列区分待验证", "空间自主掌控型、局部速冷控温型"],
+      ["便捷灵活实用", "安装、配件、移动、收纳、维护和排水流程", "通用体验能力、基础方案或跨系列底线", "便捷安居实用型"],
+      ["家庭睡眠与舒适守护", "夜间低噪、持续制冷、性能可信、关键房间覆盖", "差异化价值主张、配置或高价值能力；不自动等于高端线", "家庭健康守护型"],
+      ["受限空间平衡", "紧凑体积、低噪音、低排水负担、低打扰", "可能需要专门结构或平台，需技术与价格验证", "有限空间平衡型"],
+      ["应急备用保障", "快速启动、安装兼容、长期存放、备用模式和清晰指引", "配置、套装、服务或独立方向，取决于规模与价值", "理性应急准备型"]
+    ];
+
+    function chip(text, kind) {
+      return `<span class="state-chip ${kind}">${text}</span>`;
+    }
+
+    function typeCard(t) {
+      return `
+        <article class="type-card visible" data-type="${t.name}" style="--type-color:${t.color}">
+          <div class="type-card-head">
+            <div class="type-card-head-top">
+              <div>
+                <h3>${t.name}</h3>
+                <div class="type-task">${t.primary}</div>
+              </div>
+              <div class="share"><b>${t.share}</b>${t.n}</div>
+            </div>
+            <div class="meta-row">
+              <span class="task-chip" style="--task-color:${t.color}">${t.mode}</span>
+              ${chip("基于研究的综合推论", "synthesis")}
+            </div>
+          </div>
+          <div class="type-card-body">
+            <div class="type-row"><div class="type-row-label">购买动机</div><div class="type-row-value">${chip("研究证据", "evidence")}<div>${t.motivation}</div></div></div>
+            <div class="type-row"><div class="type-row-label">场景 / 触发条件</div><div class="type-row-value">${chip("研究证据", "evidence")}<div>${t.context}</div></div></div>
+            <div class="type-row"><div class="type-row-label">痛点</div><div class="type-row-value">${chip("研究证据", "evidence")}<div>${t.pain}</div><div class="evidence-line"><strong>差异性痛点：</strong>${t.distinctive}</div></div></div>
+            <div class="type-row"><div class="type-row-label">人口学概览</div><div class="type-row-value">${chip("研究证据", "evidence")}<button class="demographic-button" type="button" data-demographics="${t.name}">人口学特征：${t.profileLead}</button><div class="evidence-line">点击查看该类样本的用户阶段、居住、房间、家庭与人口背景分布。</div></div></div>
+            <div class="type-row"><div class="type-row-label">未满足需求</div><div class="type-row-value">${chip("基于研究的综合推论", "synthesis")}<div>${t.unmet}</div></div></div>
+            <div class="type-row"><div class="type-row-label">产品机会</div><div class="type-row-value">${chip("假设 / 待验证", "hypothesis")}<div>${t.opportunity}</div></div></div>
+            <div class="qual-note"><strong>定性补充：</strong>${t.qual}</div>
+            <div class="evidence-line">来源：${t.source}。百分比为原始报告中的人群选择率或痛点综合分，非同一量纲。</div>
+          </div>
+        </article>
+      `;
+    }
+
+    function matrixRow(row) {
+      return `
+        <tr>
+          <td class="matrix-name">${row[0]}<span class="matrix-sub">${types.find(t => t.name === row[0]).n}</span></td>
+          <td>${row[1]}<div class="matrix-evidence">${chip("研究证据", "evidence")}</div></td>
+          <td>${row[2]}<div class="matrix-evidence">${chip("研究证据", "evidence")}</div></td>
+          <td>${row[3]}<div class="matrix-evidence">${chip("研究证据", "evidence")}</div></td>
+          <td>${row[4]}<div class="matrix-evidence">${chip("基于研究的综合推论", "synthesis")}</div></td>
+          <td>${row[5]}<div class="matrix-evidence">${chip("假设 / 待验证", "hypothesis")}</div></td>
+        </tr>
+      `;
+    }
+
+    function opportunityRow(row) {
+      const t = types.find(t => t.name === row[3]);
+      return `
+        <article class="opportunity-row" style="--type-color:${t ? t.color : 'var(--navy)'}">
+          <div><strong>${row[0]}</strong><p>${row[3]}</p></div>
+          <div><p><strong>可能能力：</strong>${row[1]}</p><p><strong>规划形式：</strong>${row[2]}</p></div>
+        </article>
+      `;
+    }
+
+    function demographicGroup(group) {
+      return `
+        <section class="demo-group">
+          <h3>${group.title}</h3>
+          ${group.rows.map(row => `<div class="demo-row"><strong>${row[0]}</strong><span>${row[1]}</span></div>`).join("")}
+        </section>
+      `;
+    }
+
+    function showDemographics(name) {
+      const type = types.find(item => item.name === name);
+      if (!type) return;
+      document.getElementById("demographicTitle").textContent = `${type.name} · 人口学与家庭背景`;
+      document.getElementById("demographicBody").innerHTML = `
+        <p class="modal-intro"><span class="state-chip evidence">研究证据</span> 来自 P09 的该聚类样本分布（${type.n}）。以下呈现各字段中占比较高的选项，用于辅助形成具体想象，而非该类用户的定义、更不能被理解为单一“典型用户”。</p>
+        <div class="demo-grid">${type.demographics.map(demographicGroup).join("")}</div>
+        <p class="modal-footnote">使用提示：人口学、房型和家庭信息是辅助描述；分群仍以 首要购买任务、需求模式、动机、场景和痛点为准。小样本群体请重点看方向，不做精确市场估计。</p>
+      `;
+      const modal = document.getElementById("demographicModal");
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      document.getElementById("demographicClose").focus();
+    }
+
+    function closeDemographics() {
+      const modal = document.getElementById("demographicModal");
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    function renderQuadrant() {
+      const canvas = document.getElementById("quadrantCanvas");
+      canvas.insertAdjacentHTML("beforeend", types.map(type => `
+        <button class="quadrant-point" type="button" data-demographics="${type.name}" style="--point-color:${type.color};left:${type.quadrant.x}%;top:${type.quadrant.y}%">
+          <strong>${type.name}</strong>
+          <span>${type.quadrant.label}</span>
+        </button>
+      `).join(""));
+    }
+
+    document.getElementById("typeGrid").innerHTML = types.map(typeCard).join("");
+    document.getElementById("matrixBody").innerHTML = matrixRows.map(matrixRow).join("");
+    document.getElementById("opportunityGrid").innerHTML = opportunityRows.map(opportunityRow).join("");
+    renderQuadrant();
+
+    document.querySelectorAll(".type-filter").forEach(button => {
+      button.addEventListener("click", () => {
+        const filter = button.dataset.filter;
+        document.querySelectorAll(".type-filter").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+        document.querySelectorAll(".type-card").forEach(card => card.classList.toggle("visible", filter === "all" || card.dataset.type === filter));
+      });
+    });
+
+    document.querySelectorAll("[data-demographics]").forEach(button => {
+      button.addEventListener("click", () => showDemographics(button.dataset.demographics));
+    });
+    document.getElementById("demographicClose").addEventListener("click", closeDemographics);
+    document.getElementById("demographicModal").addEventListener("click", event => {
+      if (event.target.id === "demographicModal") closeDemographics();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && !document.getElementById("demographicModal").hidden) closeDemographics();
+    });
+  </script>
+</body>
+</html>
