@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户视角下的“好变频”：移动空调（PAC）产品定义与策略决策报告</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#16a34a',
+                            600: '#15803d',
+                            700: '#166534',
+                        },
+                        accent: {
+                            blue: '#2563eb',
+                            purple: '#7c3aed',
+                            amber: '#d97706',
+                            rose: '#e11d48',
+                            cyan: '#0891b2'
+                        },
+                        lightbg: '#f8fafc',
+                        cardbg: '#ffffff',
+                        bordercolor: '#e2e8f0'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Custom Light Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .light-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+        }
+        .gradient-text-light {
+            background: linear-gradient(135deg, #0284c7 0%, #16a34a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-lightbg text-slate-800 font-sans antialiased selection:bg-brand-500 selection:text-white min-h-screen">
+
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="p-2 bg-brand-50 text-brand-600 rounded-lg border border-brand-100">
+                <i class="fa-solid fa-bolt-lightning text-xl"></i>
+            </div>
+            <div>
+                <span class="text-xs uppercase tracking-wider text-slate-500 font-semibold block">移动空调PAC018 IPD 阶段性研究</span>
+                <h1 class="text-base font-bold text-slate-900 leading-tight">用户视角下的“好变频”定义</h1>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3 text-xs">
+            <span class="hidden sm:inline-block px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-medium">
+                <i class="fa-regular fa-calendar mr-1 text-slate-500"></i> 2026 数据复用
+            </span>
+            <button onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition flex items-center gap-1.5 font-medium">
+                <i class="fa-solid fa-print"></i> <span>导出 PDF</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+        <section class="light-card rounded-2xl p-6 sm:p-8 relative overflow-hidden border border-slate-200 bg-gradient-to-br from-white via-slate-50/50 to-emerald-50/30">
+            <div class="absolute -right-10 -bottom-10 w-96 h-96 bg-brand-500/5 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute right-1/3 -top-10 w-64 h-64 bg-accent-blue/5 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 space-y-4 max-w-4xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-700 text-xs font-semibold">
+                    <i class="fa-solid fa-compass"></i> 核心总结
+                </div>
+                <h2 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                    “好变频”不是卖点标签，而是<span class="gradient-text-light">无感、平稳、长效舒爽</span>的体验组合
+                </h2>
+                <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    综合 <strong class="text-slate-900">Reddit 深度语料 (N=4,435)</strong> 与 <strong class="text-slate-900">PAC018 IPD 概念测试问卷 (N=391)</strong> 数据交叉验证：用户真正看重的不是“Inverter”这个技术名词，而是变频带来的运行过程是否更顺、更稳、更少打扰。产品的核心价值在于：<strong class="text-brand-600">接近目标温度后的低负荷连续维持</strong> 与 <strong class="text-brand-600">等舒适度下的显性省电</strong>。
+                </p>
+            </div>
+
+            <!-- Key Metric Quick Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8 pt-6 border-t border-slate-200">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition">
+                    <div class="text-xs text-slate-500 mb-1 flex items-center justify-between font-medium">
+                        <span>卖点关注度对比</span>
+                        <i class="fa-solid fa-chart-simple text-brand-600"></i>
+                    </div>
+                    <div class="text-2xl sm:text-3xl font-bold text-slate-900">96.3% <span class="text-xs font-normal text-slate-500">vs</span> 57.1%</div>
+                    <p class="text-xs text-slate-500 mt-1">认同“最高省电40%”比认同“变频压缩机”高出 39.2个百分点</p>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition">
+                    <div class="text-xs text-slate-500 mb-1 flex items-center justify-between font-medium">
+                        <span>核心体验痛点</span>
+                        <i class="fa-solid fa-plug-circle-exclamation text-amber-600"></i>
+                    </div>
+                    <div class="text-2xl sm:text-3xl font-bold text-amber-600">51.4%</div>
+                    <p class="text-xs text-slate-500 mt-1">用户强烈存在电费担忧（其中 89.7% 认为极其重要）</p>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition">
+                    <div class="text-xs text-slate-500 mb-1 flex items-center justify-between font-medium">
+                        <span>长时间负荷痛点</span>
+                        <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
+                    </div>
+                    <div class="text-2xl sm:text-3xl font-bold text-blue-600">25.1%</div>
+                    <p class="text-xs text-slate-500 mt-1">抱怨需长时间运行保持凉爽（91.9% 视为关键痛点）</p>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-slate-300 transition">
+                    <div class="text-xs text-slate-500 mb-1 flex items-center justify-between font-medium">
+                        <span>证据库样本量</span>
+                        <i class="fa-solid fa-database text-purple-600"></i>
+                    </div>
+                    <div class="text-2xl sm:text-3xl font-bold text-slate-900">4,435 <span class="text-xs text-slate-500 font-normal">条语料</span></div>
+                    <p class="text-xs text-slate-500 mt-1">涵盖 55 篇 Reddit 帖子与 1,000 条精准候选证据。（占比数值多来自问卷）</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-blue-600"></i> 数据基础与量化需求验证
+                    </h3>
+                    <p class="text-sm text-slate-500">结合定性文本筛查 (Reddit) 与 移动空调PAC018 IPD 调查问卷 (N=391) 的交叉校验</p>
+                </div>
+                <div class="text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 font-medium">
+                    <i class="fa-solid fa-circle-info text-brand-600 mr-1"></i> Reddit 集中于自发性的好奇与需求探讨，问卷集中于被动的结构性问答
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Chart 1: Value Prop Keywords -->
+                <div class="lg:col-span-7 light-card p-5 rounded-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-base font-semibold text-slate-900">变频概念测试（PAC018）：用户关注度分布 (%)</h4>
+                            <span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium border border-slate-200">N=391 问卷</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-4">用户对“实际收益（省电、达到温度、平稳）”的敏感度远高于“技术术语（变频、变速模式）”。<br>(当时的概念测试，概念卡明确了“40%”的能源节省)</p>
+                        <div class="relative h-64 w-full">
+                            <canvas id="keywordChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 bg-amber-50/80 rounded-lg border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
+                        <i class="fa-solid fa-lightbulb text-amber-600 mt-0.5"></i>
+                        <span><strong>宣传统计结论：</strong> 产品营销不应只讲“变频压缩机/变速运行”，而应将核心叙事转为“更省电、减少反复启停、温度更平稳、长时间不冷热脱节”。</span>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Energy & Operating Pain Points -->
+                <div class="lg:col-span-5 light-card p-5 rounded-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-base font-semibold text-slate-900">用户主要能耗与运行痛点占比</h4>
+                            <span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium border border-slate-200">多选痛点占比</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-4">电费焦虑与长时间运行效率低下是推动变频需求的核心源头。</p>
+                        <div class="relative h-64 w-full">
+                            <canvas id="painPointChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-3 bg-rose-50/80 rounded-lg border border-rose-200 text-xs text-rose-900 flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-600 mt-0.5"></i>
+                        <span><strong>痛点延伸分析：</strong> 担心电费的用户中 <strong class="text-slate-900">89.7%</strong> 认为极度重要；设备需长时运行的用户中 <strong class="text-slate-900">91.9%</strong> 认为极其痛苦。</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="light-card p-5 rounded-xl">
+                <h4 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                    <i class="fa-brands fa-reddit text-amber-600"></i> Reddit 文本证据库结构 (4,435 条公开评论)
+                </h4>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center">
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                        <span class="text-xs text-slate-500 block">采集帖子数量</span>
+                        <span class="text-lg font-bold text-slate-900">55 篇</span>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                        <span class="text-xs text-slate-500 block">命中变频直接证据</span>
+                        <span class="text-lg font-bold text-brand-600">113 条</span>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                        <span class="text-xs text-slate-500 block">变频间接体验证据</span>
+                        <span class="text-lg font-bold text-blue-600">887 条</span>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                        <span class="text-xs text-slate-500 block">噪音相关提及</span>
+                        <span class="text-lg font-bold text-amber-600">573 次</span>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                        <span class="text-xs text-slate-500 block">能耗/电费提及</span>
+                        <span class="text-lg font-bold text-purple-600">413 次</span>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                        <span class="text-xs text-slate-500 block">高置信证据(High)</span>
+                        <span class="text-lg font-bold text-rose-600">64 条</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-6">
+            <div class="border-l-4 border-brand-600 pl-4">
+                <h3 class="text-2xl font-bold text-slate-900">四维核心产品要求：“好变频”的定义解构</h3>
+                <p class="text-slate-500 text-sm mt-1">从用户真实场景视角出发，变频技术应当满足的四大核心体验标准</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Requirement 1 -->
+                <div class="light-card p-6 rounded-2xl border border-slate-200 hover:border-brand-500 transition group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-brand-50 border border-brand-200 flex items-center justify-center text-brand-600 font-bold text-lg">
+                                01
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition">运行状态变化要平滑</h4>
+                                <span class="text-xs text-slate-500">无感调节 · 拒绝突发打扰</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-wave-square text-xl text-slate-400 group-hover:text-brand-600 transition"></i>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed mb-4">
+                        用户敏感的不是持续的背景风声，而是突然启动、突然停止、突然变吵、突然变调以及风量突变。状态突变会把设备强行拖入用户的注意力中心。
+                    </p>
+                    <div class="space-y-2 text-xs bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">好体验标准：</span>
+                            <span class="text-brand-700 font-semibold">状态切换小步、连续、可预测，状态无突兀感知</span>
+                        </div>
+                        <div class="flex justify-between border-t border-slate-200 pt-1.5">
+                            <span class="text-slate-500">不良表现：</span>
+                            <span class="text-rose-600 font-semibold">频繁 Cycling、Clunk 咔嗒声、突然变调或猛吹大风</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requirement 2 -->
+                <div class="light-card p-6 rounded-2xl border border-slate-200 hover:border-blue-500 transition group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-bold text-lg">
+                                02
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition">接近目标温度后平稳维持</h4>
+                                <span class="text-xs text-slate-500">低负荷调节 · 恒温恒湿</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-temperature-half text-xl text-slate-400 group-hover:text-blue-600 transition"></i>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed mb-4">
+                        房间拉温只是第一步；接下来数小时，用户希望温度不要忽冷忽热，湿度不要迅速回升（凉而黏湿），机器不频繁重启。
+                    </p>
+                    <div class="space-y-2 text-xs bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">好体验标准：</span>
+                            <span class="text-blue-700 font-semibold">低负荷下连续细腻调节，体感凉爽干爽</span>
+                        </div>
+                        <div class="flex justify-between border-t border-slate-200 pt-1.5">
+                            <span class="text-slate-500">需要避免：</span>
+                            <span class="text-rose-600 font-semibold">停机导致湿度骤升、温度过冲、死区范围过大</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requirement 3 -->
+                <div class="light-card p-6 rounded-2xl border border-slate-200 hover:border-purple-500 transition group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 font-bold text-lg">
+                                03
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-900 group-hover:text-purple-600 transition">夜间和长时间使用少打扰</h4>
+                                <span class="text-xs text-slate-500">卧室沉浸睡眠 · 8H+ 稳定性</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-moon text-xl text-slate-400 group-hover:text-purple-600 transition"></i>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed mb-4">
+                        卧室场景叠加了噪音、温度、湿度、能耗、排水和可靠性。用户评估的是“这一整晚是否省心”，而不是实验室里的瞬间 dB 数值。
+                    </p>
+                    <div class="space-y-2 text-xs bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">好体验标准：</span>
+                            <span class="text-purple-700 font-semibold">持续背景声可接受，消除高频啸叫与异响</span>
+                        </div>
+                        <div class="flex justify-between border-t border-slate-200 pt-1.5">
+                            <span class="text-slate-500">不良表现：</span>
+                            <span class="text-rose-600 font-semibold">低频共振、低速高频啸叫、夜间被突变声吵醒</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requirement 4 -->
+                <div class="light-card p-6 rounded-2xl border border-slate-200 hover:border-amber-500 transition group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 font-bold text-lg">
+                                04
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-900 group-hover:text-amber-600 transition">在相同舒适度下节能</h4>
+                                <span class="text-xs text-slate-500">显性账单收益 · 拒绝牺牲舒适换节能</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-piggy-bank text-xl text-slate-400 group-hover:text-amber-600 transition"></i>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed mb-4">
+                        节能只有在“相同舒适度”前提下才有产品价值。如果省电伴随忽冷忽热、闷湿或突发噪音，用户不会将其评价为好变频。
+                    </p>
+                    <div class="space-y-2 text-xs bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">好体验标准：</span>
+                            <span class="text-amber-700 font-semibold">单位舒适度能耗低，长期 8-12h 耗电下降明显</span>
+                        </div>
+                        <div class="flex justify-between border-t border-slate-200 pt-1.5">
+                            <span class="text-slate-500">不能接受：</span>
+                            <span class="text-rose-600 font-semibold">用闷湿、高温波动或降低风速假省电</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-brand-600"></i> 使用场景与产品评价标准转化矩阵
+                    </h3>
+                    <p class="text-sm text-slate-500">将用户真实原话与感知翻译为产品团队可调优、可测试的工程标准</p>
+                </div>
+            </div>
+
+            <div class="light-card rounded-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead class="bg-slate-100 text-slate-700 uppercase font-semibold text-xs border-b border-slate-200">
+                            <tr>
+                                <th class="p-4 w-1/6">使用场景</th>
+                                <th class="p-4 w-1/5">用户目标</th>
+                                <th class="p-4 w-1/4">机器核心运行表现</th>
+                                <th class="p-4 w-1/5">用户可感知结果</th>
+                                <th class="p-4 w-1/5">产品/测试评价标准</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 text-slate-700">
+                            <!-- Row 1 -->
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-4 font-semibold text-slate-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-sun text-amber-600"></i> 高温启动
+                                </td>
+                                <td class="p-4">尽快获得舒适温度</td>
+                                <td class="p-4">高负荷有效输出，拉温后不过冲</td>
+                                <td class="p-4">等待时间可接受，随后不会大幅温度回弹</td>
+                                <td class="p-4 font-medium text-brand-700">快速降温与后续稳定平滑过渡能力</td>
+                            </tr>
+                            <!-- Row 2 -->
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-4 font-semibold text-slate-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-sliders text-blue-600"></i> 接近设定温度
+                                </td>
+                                <td class="p-4">不忽冷忽热，平稳持续维持</td>
+                                <td class="p-4">压缩机/风机平滑降速，低功率连续调节</td>
+                                <td class="p-4">状态变化无感知，体感温度极其稳定</td>
+                                <td class="p-4 font-medium text-brand-700">低负荷调节能力，控制死区&lt;0.8℃，瞬态减少</td>
+                            </tr>
+                            <!-- Row 3 -->
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-4 font-semibold text-slate-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-bed text-purple-600"></i> 夜间睡眠
+                                </td>
+                                <td class="p-4">整夜不被噪音或变调打扰</td>
+                                <td class="p-4">声压、音调(Tone)与风量变化微小且平滑</td>
+                                <td class="p-4">仅留舒适背景声，不被变调/启停吵醒</td>
+                                <td class="p-4 font-medium text-brand-700">突变声压&lt;2dB(A)，消除 2kHz+ 低速高频啸叫</td>
+                            </tr>
+                            <!-- Row 4 -->
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-4 font-semibold text-slate-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-droplet text-cyan-600"></i> 湿热天气
+                                </td>
+                                <td class="p-4">凉爽且干爽不黏腻</td>
+                                <td class="p-4">降温与除湿协调，低负荷下持续抽湿</td>
+                                <td class="p-4">体感不黏，相对湿度维持在 50%-60%</td>
+                                <td class="p-4 font-medium text-brand-700">变频降频时不牺牲基础除湿效率，防湿气回升</td>
+                            </tr>
+                            <!-- Row 5 -->
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="p-4 font-semibold text-slate-900 flex items-center gap-2">
+                                    <i class="fa-solid fa-clock text-brand-600"></i> 长时间运行 (8h+)
+                                </td>
+                                <td class="p-4">长效省心且电费不爆表</td>
+                                <td class="p-4">性能、噪音、功率与系统压差不漂移</td>
+                                <td class="p-4">第二天账单可接受，无异常噪音或漏水保护</td>
+                                <td class="p-4 font-medium text-brand-700">8/24 h 综合能耗评估，整体体验衰减度&lt;5%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-6">
+            <div class="border-l-4 border-amber-500 pl-4">
+                <h3 class="text-xl font-bold text-slate-900">变频与其他整机基础能力的权衡边界</h3>
+                <p class="text-sm text-slate-500">变频是调节方式的升级，不能替代或掩盖风道、单双管、容量匹配与安装密封缺陷</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="light-card p-5 rounded-xl space-y-3">
+                    <div class="flex items-center gap-2 text-amber-700 font-bold text-sm">
+                        <i class="fa-solid fa-pipe"></i> 单管 vs 双管气路影响
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        单管 PAC 的负压抽风会从门缝吸入室外热空气。即使使用了变频压缩机，也可能因热负荷不断补充而导致机器持续高频运行，失去变频降频优势。
+                    </p>
+                    <div class="text-xs text-slate-600 bg-slate-100 p-2.5 rounded border border-slate-200">
+                        <strong class="text-slate-900">决策原则：</strong> 评估变频效果时，必须固定窗封与气路条件，优先在双管或优良封密环境下验证。
+                    </div>
+                </div>
+
+                <div class="light-card p-5 rounded-xl space-y-3">
+                    <div class="flex items-center gap-2 text-blue-700 font-bold text-sm">
+                        <i class="fa-solid fa-weight-hanging"></i> 容量匹配与热负荷
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        若房间过大或隔热极差（问卷中 31.2% 用户提及），空调始终全负荷满奔，变频将退化为“定频满载”，无法产生平滑降噪和省电体验。
+                    </p>
+                    <div class="text-xs text-slate-600 bg-slate-100 p-2.5 rounded border border-slate-200">
+                        <strong class="text-slate-900">决策原则：</strong> 标注使用面积建议，不能把“小马拉大车”导致的无法降频归咎于变频算法。
+                    </div>
+                </div>
+
+                <div class="light-card p-5 rounded-xl space-y-3">
+                    <div class="flex items-center gap-2 text-purple-700 font-bold text-sm">
+                        <i class="fa-solid fa-tint"></i> 湿温解耦与排水
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        低负荷降频时蒸发器温度升高，可能导致除湿能力急剧下降或冷凝水二次蒸发（吹出潮湿风）。
+                    </p>
+                    <div class="text-xs text-slate-600 bg-slate-100 p-2.5 rounded border border-slate-200">
+                        <strong class="text-slate-900">决策原则：</strong> 变频控制策略必须嵌入“防冷凝水回蒸”与最低风量/蒸发温控逻辑。
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TR3 R&D Parameters & Reddit Quantitative Support Section -->
+        <section class="space-y-6">
+            <div class="border-l-4 border-purple-600 pl-4">
+                <h3 class="text-2xl font-bold text-slate-900">TR3 研发可调参数清单与数据支撑</h3>
+                <p class="text-slate-500 text-sm mt-1">基于 Reddit N=4,435 深度语料交叉验证与 TR3 阶段系统控制参数落地指南</p>
+            </div>
+
+            <!-- Reddit Quantitative Analysis & Boundary Notes -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left: Reddit Quantitative Data Table -->
+                <div class="lg:col-span-7 light-card p-5 rounded-xl space-y-4 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <i class="fa-brands fa-reddit text-amber-600"></i> Reddit 细分体验维度分布 (N=1,000 候选证据)
+                            </h4>
+                            <span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">语料总数 4,435 条</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-3">在 1,000 条首轮候选证据中，用户提及的体验维度频次分布（多维叠加）：</p>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-100 text-slate-700 uppercase font-semibold">
+                                    <tr>
+                                        <th class="p-2.5">Reddit 体验维度</th>
+                                        <th class="p-2.5">候选证据 n</th>
+                                        <th class="p-2.5">占比 (%)</th>
+                                        <th class="p-2.5">主要用户关切点</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200">
+                                    <tr class="bg-amber-50/40">
+                                        <td class="p-2.5 font-bold text-slate-900">噪音体验与噪音波动</td>
+                                        <td class="p-2.5 font-bold text-amber-700">573</td>
+                                        <td class="p-2.5 font-bold text-amber-700">57.3%</td>
+                                        <td class="p-2.5 text-slate-600">异响、变调、启停突变打扰</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 font-semibold text-slate-800">非变频因素与混杂变量</td>
+                                        <td class="p-2.5">559</td>
+                                        <td class="p-2.5">55.9%</td>
+                                        <td class="p-2.5 text-slate-600">单双管、窗封、负压吸热、容量匹配</td>
+                                    </tr>
+                                    <tr class="bg-emerald-50/40">
+                                        <td class="p-2.5 font-bold text-slate-900">能耗与电费</td>
+                                        <td class="p-2.5 font-bold text-brand-700">413</td>
+                                        <td class="p-2.5 font-bold text-brand-700">41.3%</td>
+                                        <td class="p-2.5 text-slate-600">长时间开机电费焦虑、电网跳闸</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 text-slate-800">长时间运行体验</td>
+                                        <td class="p-2.5">187</td>
+                                        <td class="p-2.5">18.7%</td>
+                                        <td class="p-2.5 text-slate-600">整夜睡眠、长时连续凉爽度</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 text-slate-800">温度响应与舒适稳定</td>
+                                        <td class="p-2.5">131</td>
+                                        <td class="p-2.5">13.1%</td>
+                                        <td class="p-2.5 text-slate-600">恒温性、冷热脱节、过冲</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 text-slate-800">明确变频/变速认知</td>
+                                        <td class="p-2.5 text-blue-700 font-semibold">113</td>
+                                        <td class="p-2.5 text-blue-700 font-semibold">11.3%</td>
+                                        <td class="p-2.5 text-slate-600">显性提及 Inverter / Variable speed</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 text-slate-800">状态变化是否平滑</td>
+                                        <td class="p-2.5">51</td>
+                                        <td class="p-2.5">5.1%</td>
+                                        <td class="p-2.5 text-slate-600">Cycling 频繁度、切换过渡</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-2.5 text-slate-800">低负荷维持与温湿度稳定</td>
+                                        <td class="p-2.5">22</td>
+                                        <td class="p-2.5">2.2%</td>
+                                        <td class="p-2.5 text-slate-600">低功耗维持、湿度二次回升</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-1">
+                        <span class="font-bold text-slate-900 block"><i class="fa-solid fa-code-compare text-blue-600 mr-1"></i> 113 条变频直接证据交叉关注点：</span>
+                        <p class="text-slate-600">40条交叉噪音/睡眠；37条交叉能耗/电费；11条交叉温度稳定；10条交叉状态切换/cycling；8条交叉长时间运行。</p>
+                    </div>
+                </div>
+
+                <!-- Right: Boundaries & Energy Goal Translation -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="light-card p-5 rounded-xl border-l-4 border-amber-500 space-y-3">
+                        <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-600"></i> 数据定义与边界澄清说明
+                        </h4>
+                        <ul class="text-xs text-slate-600 space-y-2 list-disc pl-4 leading-relaxed">
+                            <li><strong class="text-slate-900">数据性质区别：</strong> Reddit 中的 <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-800">n</code> 是候选文本证据命中数，不等于消费者人口占比或市场份额，各项指标存在重复命中不可相加。</li>
+                            <li><strong class="text-slate-900">噪音感知区别：</strong> 区分整机“绝对声压dB”与“运行状态变化（升降频、变调、咔嗒声）造成的突发注意力打扰”。</li>
+                            <li><strong class="text-slate-900">混杂因素隔绝：</strong> 变频优势容易被房间超载、单管负压吸热、窗封不良等整机/环境缺陷所掩盖。</li>
+                        </ul>
+                    </div>
+
+                    <div class="light-card p-5 rounded-xl border-l-4 border-brand-500 space-y-3">
+                        <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-bullseye text-brand-600"></i> 宣传卖点 → 研发调参转化指南
+                        </h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            概念测试中的“节省最高 40% 能源”为特定sku的营销卖点，<strong class="text-slate-900">不直接作为所有产品的衡量标准</strong>。
+                        </p>
+                        <div class="p-3 bg-brand-50/60 rounded-lg border border-brand-200 text-xs text-brand-900 leading-relaxed">
+                            <strong class="text-brand-800 block mb-1">研发工程转化目标：</strong>
+                            在相同温度、湿度和噪音舒适度条件下，4/8/12 小时长时运行的综合耗电量显著低于定频基线，具体节能幅度需通过定/变频样机和竞品实测确认。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TR3 12 Adjustable Parameters Grid -->
+            <div class="light-card p-6 rounded-2xl space-y-6 bg-gradient-to-b from-white to-slate-50/50">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-2">
+                    <div>
+                        <h4 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-purple-600"></i> TR3 研发首轮建议优先调整参数清单 (12项)
+                        </h4>
+                        <p class="text-xs text-slate-500">TR3 的调参核心不是单独追求极致降温，而是建立“压缩机-风机-温度控制”的三者平滑协同关系</p>
+                    </div>
+                    <span class="px-2.5 py-1 bg-purple-50 text-purple-700 text-xs font-bold rounded-full border border-purple-200 self-start sm:self-auto">
+                        TR3 参考
+                    </span>
+                </div>
+
+                <!-- Parameters Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-900">1. 压缩机最低稳定运行频率</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 font-bold border border-rose-200">核心联动</span>
+                        </div>
+                        <p class="text-slate-500">决定低负荷下能否持续平稳微制冷，避免频繁停机。</p>
+                    </div>
+
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <span class="font-bold text-slate-900 block">2. 压缩机升频斜率</span>
+                        <p class="text-slate-500">控制负荷增加时频率上升速度，避免音调陡升引发感知被打扰。</p>
+                    </div>
+
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <span class="font-bold text-slate-900 block">3. 压缩机降频斜率</span>
+                        <p class="text-slate-500">控制接近目标温度时的降速平滑度，防止快速失冷。</p>
+                    </div>
+
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <span class="font-bold text-slate-900 block">4. 单次频率调整步长</span>
+                        <p class="text-slate-500">控制单次微调幅度，消除变频过程中的阶跃式变调感。</p>
+                    </div>
+
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-900">5. 低负荷退出阈值</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 font-bold border border-rose-200">核心联动</span>
+                        </div>
+                        <p class="text-slate-500">设定低负荷下进入停机保护或切换模式的临界温度差。</p>
+                    </div>
+
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-900">6. 压缩机最短运行时间</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 font-bold border border-rose-200">核心联动</span>
+                        </div>
+                        <p class="text-slate-500">防止在温度交界点频繁启停 (Anti-short cycling)。</p>
+                    </div>
+
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-900">7. 压缩机重启延迟/最短停机</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 font-bold border border-rose-200">核心联动</span>
+                        </div>
+                        <p class="text-slate-500">控制停机后重新启动的最短等待间隔，保护电容与声学舒适度。</p>
+                    </div>
+
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <span class="font-bold text-slate-900 block">8. 目标温度控制死区 (Hysteresis)</span>
+                        <p class="text-slate-500">控制死区区间（建议 &lt;0.8℃），防止温度小幅度抖动引发频繁调节。</p>
+                    </div>
+
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <span class="font-bold text-slate-900 block">9. 温差到压缩机频率映射曲线</span>
+                        <p class="text-slate-500">定义 ΔT (实际-目标) 与目标转速的 PID / 模糊控制映射表。</p>
+                    </div>
+
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <span class="font-bold text-slate-900 block">10. 风机升速/降速斜率</span>
+                        <p class="text-slate-500">风机与压缩机调速同步平滑化，防止风噪陡增或骤降。</p>
+                    </div>
+
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <span class="font-bold text-slate-900 block">11. 压缩机与风机状态切换时序</span>
+                        <p class="text-slate-500">先升风速再升频率、先降频率再降风速，消除机械异响。</p>
+                    </div>
+
+                    <div class="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-1 hover:border-purple-300 transition">
+                        <span class="font-bold text-slate-900 block">12. 低速禁用频率区间</span>
+                        <p class="text-slate-500">避开整机结构共振点与低速高频电气啸叫频段 (Skip frequencies)。</p>
+                    </div>
+                </div>
+
+                <!-- Core 4 Parameters Linkage Spotlight Box -->
+                <div class="p-4 bg-purple-50/70 rounded-xl border border-purple-200 text-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <span class="font-extrabold text-purple-900 text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-link text-purple-600"></i> 四大核心参数联动逻辑：
+                        </span>
+                        <p class="text-purple-800 font-medium">
+                            「最低稳定运行频率」 + 「低负荷退出阈值」 + 「最短运行时间」 + 「重启延迟」
+                        </p>
+                        <p class="text-slate-600">
+                            这 4 项参数的协同设计，决定了移动空调在接近目标温度后是进入<strong class="text-brand-700">“平滑低负荷维持”</strong>，还是退化为定频式的<strong class="text-rose-600">“反复全开全停 (Cycling)”</strong>。
+                        </p>
+                    </div>
+                    <div class="shrink-0 bg-white px-4 py-2 rounded-lg border border-purple-200 text-center font-bold text-purple-900 shadow-sm">
+                        TR3 指标举例：<br><span class="text-brand-600 font-extrabold text-sm">低负荷不停机维持 ≥ 2小时</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Decisions & Action Roadmap -->
+        <section class="light-card p-6 sm:p-8 rounded-2xl border border-brand-200 bg-gradient-to-br from-white to-emerald-50/40 relative">
+            <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 pb-4 mb-6 gap-4">
+                <div>
+                    <span class="text-xs font-bold text-brand-700 uppercase tracking-widest block mb-1">Executive Decision Matrix</span>
+                    <h3 class="text-2xl font-extrabold text-slate-900">产品团队阶段性决策与研发落地指引</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="px-3 py-1 bg-brand-50 text-brand-700 text-xs rounded-full border border-brand-200 font-semibold">
+                        当前阶段：阶段性结论确认
+                    </span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Decision Item 1 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-slate-900 text-base">1. 变频路线规划</h4>
+                        <span class="px-2 py-0.5 rounded bg-brand-50 text-brand-700 text-xs font-bold border border-brand-200">继续推进</span>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        变频路线完全值得继续推进，但营销与产品卖点须从单纯宣扬“有变频压缩机”转向宣扬“平稳维持、卧室无感打扰、长时间省电”。
+                    </p>
+                </div>
+
+                <!-- Decision Item 2 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-slate-900 text-base">2. 研发优先调优项</h4>
+                        <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200">优先攻坚</span>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        研发首要优化的不是最大制冷量，而是<strong class="text-slate-900">接近设定温度后的低负荷维持算法</strong>与<strong class="text-slate-900">切换状态时的过渡平滑度</strong>。
+                    </p>
+                </div>
+
+                <!-- Decision Item 3 -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-slate-900 text-base">3. 声学定义维度</h4>
+                        <span class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200">维度拆分</span>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        禁止仅用“平均 dBA”作为声学评估指标！必须引入 <strong class="text-slate-900">dB(A) 突变波动幅度</strong>、<strong class="text-slate-900">低速高频啸叫抑制</strong> 与 <strong class="text-slate-900">变频转速变调率</strong>。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Document Footer -->
+        <footer class="text-center text-xs text-slate-500 pt-6 pb-12 border-t border-slate-200 space-y-2">
+            <p>便携式空调用户视角的好变频定义</p>
+            <p>证据底稿：01_Reddit_证据库 | 02_变频体验维度分析 | 03_好变频技术指标验证框架 | 概念测试PAC018IPD_20260605</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // Chart Styling Defaults for Light Mode
+        Chart.defaults.color = '#475569';
+        Chart.defaults.font.family = 'Inter, -apple-system, sans-serif';
+
+        // 1. Keyword Importance Chart (Horizontal Bar)
+        const ctxKeyword = document.getElementById('keywordChart').getContext('2d');
+        new Chart(ctxKeyword, {
+            type: 'bar',
+            data: {
+                labels: [
+                    '节省最高40%能源',
+                    '达到目标温度',
+                    '平稳运行',
+                    '变频压缩机',
+                    '频繁调节/运行',
+                    '变速模式'
+                ],
+                datasets: [{
+                    label: '用户认为重要的比例 (%)',
+                    data: [96.3, 90.2, 71.8, 57.1, 55.2, 36.2],
+                    backgroundColor: [
+                        '#16a34a', // Save energy
+                        '#2563eb', // Reach temp
+                        '#0891b2', // Smooth
+                        '#7c3aed', // Compressor
+                        '#d97706', // Adjustment
+                        '#64748b'  // Speed mode
+                    ],
+                    borderRadius: 6,
+                    barThickness: 18
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` 重要度占比: ${context.parsed.x}%`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        max: 100,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: {
+                            font: { size: 14 },
+                            callback: v => v + '%'
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 14 }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Pain Points Chart (Vertical Bar)
+        const ctxPain = document.getElementById('painPointChart').getContext('2d');
+        new Chart(ctxPain, {
+            type: 'bar',
+            data: {
+                labels: [
+                    '担心电费/用电',
+                    '酷热/隔热差',
+                    '长时运行才冷',
+                    '设备效率低',
+                    '电路负载跳闸',
+                    '排风影响效率'
+                ],
+                datasets: [{
+                    label: '痛点选择比例 (%)',
+                    data: [51.4, 31.2, 25.1, 19.4, 13.6, 13.3],
+                    backgroundColor: [
+                        '#d97706',
+                        '#e11d48',
+                        '#2563eb',
+                        '#7c3aed',
+                        '#64748b',
+                        '#475569'
+                    ],
+                    borderRadius: 6,
+                    barThickness: 16
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` 痛点比例: ${context.parsed.y}%`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        max: 60,
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: {
+                            font: { size: 14 },
+                            callback: v => v + '%'
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 14 }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
